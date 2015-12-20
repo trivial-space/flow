@@ -1,0 +1,48 @@
+{
+  "name": "trivialspace-flow",
+  "version": "0.0.1",
+  "description": "a dataflow system",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "karma start"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/trivial-space/flow.git"
+  },
+  "keywords": [
+    "data-flow"
+  ],
+  "author": "Thomas Gorny",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/trivial-space/flow/issues"
+  },
+  "homepage": "https://github.com/trivial-space/flow#readme",
+  "devDependencies": {
+    "babel": "^6.3.13",
+    "babel-core": "^6.3.21",
+    "babel-loader": "^6.2.0",
+    "babel-preset-es2015": "^6.3.13",
+    "chai": "^3.4.1",
+    "karma": "^0.13.15",
+    "karma-chai-sinon": "^0.1.5",
+    "karma-chrome-launcher": "^0.2.2",
+    "karma-coverage": "^0.5.3",
+    "karma-firefox-launcher": "^0.1.7",
+    "karma-mocha": "^0.2.1",
+    "karma-mocha-reporter": "^1.1.3",
+    "karma-safari-launcher": "^0.1.1",
+    "karma-sourcemap-loader": "^0.3.6",
+    "karma-webpack": "^1.7.0",
+    "mocha": "^2.3.4",
+    "rewire": "^2.5.1",
+    "rewire-webpack": "^1.0.1",
+    "sinon": "^1.17.2",
+    "sinon-chai": "^2.8.0",
+    "webpack": "^1.12.9"
+  },
+  "dependencies": {
+    "uuid": "^2.0.1"
+  }
+}
