@@ -1,14 +1,14 @@
 // Karma configuration
 var assign = require('object-assign'),
-config = require('./webpack.config.js'),
+    config = require('./webpack.config.js'),
 
-// add custom option to webpack config
-webpack = assign({}, config, {
-  cache: true,
-  debug: true,
-  watch: true,
-  devtool: '#inline-source-map'
-});
+    // add custom option to webpack config
+    webpack = assign({}, config, {
+      cache: true,
+      debug: true,
+      watch: true,
+      devtool: '#inline-source-map'
+    })
 
 
 module.exports = function (config) {

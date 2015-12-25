@@ -24,7 +24,7 @@ module.exports = {
   },
 
   resolve: {
-    extensions: ['', '.js', '.json', '.coffee'],
+    extensions: ['', '.js', '.json'],
     root: [
       path.resolve(__dirname, "./lib")
     ]
