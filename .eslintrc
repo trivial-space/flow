@@ -1,10 +1,29 @@
 {
+  "extend": "eslint:recommended",
+  "parser": "babel-eslint",
+  "settings": {
+    "ecmascript": 6
+  },
   "ecmaFeatures": {
     "modules": true
   },
   "env": {
+    "node": true,
+    "mocha": true,
     "browser": true,
-    "node": true
+    "jquery": true
   },
-  "parser": "babel-eslint"
+  "globals": {
+    "expect": true,
+    "src": true,
+    "src_rewire": true,
+    "sinon": true,
+    "__rootDir": true
+  },
+  "rules": {
+    "no-unused-vars": 1,
+    "no-undef": 2,
+    "no-const-assign": 2,
+    "no-class-assign": 2
+  }
 }

@@ -11,6 +11,15 @@ describe('Flow runtime', function() {
   })
 
 
+  it('can report its state', function() {
+    expect(sys.getState()).to.deep.equal({
+      entities: {},
+      processes: {},
+      arcs: {}
+    })
+  })
+
+
   describe('entities', function() {
 
     it('can be get and set', function() {
@@ -32,12 +41,28 @@ describe('Flow runtime', function() {
 
 
     it('can explicitly be added with an initial Value', function() {
-      sys.addEntity({
+      const spec = {
         id: 'foo',
         value: 22
-      })
+      }
+      let entity = sys.addEntity(spec)
 
       expect(sys.get('foo')).to.equal(22)
+      expect(entity.id).to.equal(spec.id)
+      expect(entity.value).to.equal(spec.value)
+    })
+  })
+
+
+  describe('arcs', function() {
+
+    it('can be added', function() {
+      const spec = {
+        process: 'fufu',
+        entity: 'bar'
+      }
+      let arc = sys.addArc(spec)
+      expect(arc.id).to.be.a('string')
     })
   })
 
@@ -63,6 +88,21 @@ describe('Flow runtime', function() {
     })
 
 
+    it('can be added', function() {
+      const spec = {
+        code: 'function(input, out) {out("fufu");}'
+      }, out = sinon.stub()
+      let process = sys.addProcess(spec)
+      expect(process.id).to.be.a('string')
+      expect(process.procedure).to.be.a('function')
+
+      process.procedure(null, out)
+      expect(out).to.be.calledWith('fufu')
+
+      expect(process.code).to.equal(spec.code)
+    })
+
+
     it('can add procedures and connections that produce values', function () {
       let procedure = sinon.spy((input, out) => { out('fooValue') })
 
@@ -75,9 +115,9 @@ describe('Flow runtime', function() {
 
       expect(procedure).not.to.be.called
 
-      sys.addChannel({
-        src: 'fooProcess',
-        dest: 'dest'
+      sys.addArc({
+        process: 'fooProcess',
+        entity: 'dest'
       })
 
       expect(procedure).not.to.be.called
@@ -102,15 +142,15 @@ describe('Flow runtime', function() {
         procedure
       })
 
-      sys.addChannel({
-        src: 'src1',
-        dest: 'process',
+      sys.addArc({
+        entity: 'src1',
+        process: 'process',
         port: 'val'
       })
 
-      sys.addChannel({
-        src: 'process',
-        dest: 'dest'
+      sys.addArc({
+        process: 'process',
+        entity: 'dest'
       })
 
       sys.set('src1', 2)
@@ -135,9 +175,9 @@ describe('Flow runtime', function() {
         procedure
       })
 
-      sys.addChannel({
-        src: 'process',
-        dest: 'dest'
+      sys.addArc({
+        process: 'process',
+        entity: 'dest'
       })
 
       sys.set('dest', 1)
@@ -167,21 +207,21 @@ describe('Flow runtime', function() {
         procedure
       })
 
-      sys.addChannel({
-        src: 'src2',
-        dest: 'process',
+      sys.addArc({
+        entity: 'src2',
+        process: 'process',
         port: 'val2'
       })
 
-      sys.addChannel({
-        src: 'src1',
-        dest: 'process',
+      sys.addArc({
+        entity: 'src1',
+        process: 'process',
         port: 'val1'
       })
 
-      sys.addChannel({
-        src: 'process',
-        dest: 'dest'
+      sys.addArc({
+        process: 'process',
+        entity: 'dest'
       })
 
       sys.set('src2', 2)

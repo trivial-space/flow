@@ -3,7 +3,7 @@ var RewirePlugin = require("rewire-webpack")
 
 module.exports = {
 
-  entry: path.resolve(__dirname, "./lib/index"),
+  entry: path.resolve(__dirname, "./lib/index.js"),
 
   output: {
     path: path.resolve(__dirname, "./build"),
@@ -18,7 +18,8 @@ module.exports = {
       loader: 'babel-loader',
       test: /\.js$/,
       query: {
-        presets: ['es2015']
+        presets: ['es2015'],
+        plugins: ["transform-object-rest-spread"]
       }
     }]
   },
