@@ -1,5 +1,5 @@
 import runtime from 'runtime'
-import runtimeTypes from 'runtime-types'
+import types from 'runtime-types'
 
 
 describe('Flow runtime', function() {
@@ -22,14 +22,14 @@ describe('Flow runtime', function() {
 
   describe('entities', function() {
 
-    it('can be get and set', function() {
+    it('can get and set their values', function() {
       expect(sys.get('fufu')).be.undefined
       sys.set('fufu', 6)
       expect(sys.get('fufu')).to.equal(6)
     })
 
 
-    it('update by function', function() {
+    it('update values by function', function() {
       sys.set('foo', 10)
 
       sys.update('foo', function(x) {
@@ -51,6 +51,20 @@ describe('Flow runtime', function() {
       expect(entity.id).to.equal(spec.id)
       expect(entity.value).to.equal(spec.value)
     })
+
+
+    it('can be removed', function() {
+      sys.addEntity({id: 'foo'})
+      sys.addArc({id: 'bar', entity: 'foo', process: 'baz'})
+
+      expect(sys.getState().entities.foo).to.exist
+      expect(sys.getState().arcs.bar).to.exist
+
+      sys.removeEntity('foo')
+
+      expect(sys.getState().entities.foo).not.to.exist
+      expect(sys.getState().arcs.bar).not.to.exist
+    })
   })
 
 
@@ -63,11 +77,62 @@ describe('Flow runtime', function() {
       }
       let arc = sys.addArc(spec)
       expect(arc.id).to.be.a('string')
+
+      expect(sys.getState().arcs[arc.id]).to.exist
+    })
+
+
+    it('can be removed', function() {
+      sys.addArc({id: 'foo', process: 'bar', entity: 'baz'})
+
+      expect(sys.getState().arcs.foo).to.exist
+
+      sys.removeArc('foo')
+
+      expect(sys.getState().arcs.foo).not.to.exist
     })
   })
 
 
   describe('processes', function() {
+
+    it('can be added', function() {
+      const spec = { code: '"kuku"' }
+      let process = sys.addProcess(spec)
+      expect(process.id).to.be.a('string')
+      expect(process.code).to.equal(spec.code)
+
+      expect(sys.getState().processes[process.id]).to.exist
+    })
+
+
+    it('can evaluate code into a procedure', function() {
+      const spec = {
+        code: 'function(input, out) {out("fufu");}'
+      }, out = sinon.stub()
+      let process = sys.addProcess(spec)
+      expect(process.procedure).to.be.a('function')
+
+      process.procedure(null, out)
+      expect(out).to.be.calledWith('fufu')
+    })
+
+
+    it('can be removed', function() {
+      sys.addProcess({id: 'foo', code: ''})
+      sys.addArc({id: 'bar', process: 'foo', entity: 'baz'})
+      sys.addArc({id: 'baz', process: 'foooo', entity: 'baz'})
+
+      sys.removeProcess('foo')
+
+      expect(sys.getState().processes.foo).not.to.exist
+      expect(sys.getState().arcs.bar).not.to.exist
+      expect(sys.getState().arcs.baz).to.exist
+    })
+  })
+
+
+  describe('dataflow', function() {
 
     const src1 = {
       id: 'src1',
@@ -88,21 +153,6 @@ describe('Flow runtime', function() {
     })
 
 
-    it('can be added', function() {
-      const spec = {
-        code: 'function(input, out) {out("fufu");}'
-      }, out = sinon.stub()
-      let process = sys.addProcess(spec)
-      expect(process.id).to.be.a('string')
-      expect(process.procedure).to.be.a('function')
-
-      process.procedure(null, out)
-      expect(out).to.be.calledWith('fufu')
-
-      expect(process.code).to.equal(spec.code)
-    })
-
-
     it('can add procedures and connections that produce values', function () {
       let procedure = sinon.spy((input, out) => { out('fooValue') })
 
@@ -111,16 +161,13 @@ describe('Flow runtime', function() {
         procedure
       })
 
-      expect(procedure).not.to.be.called
-
-      expect(procedure).not.to.be.called
-
       sys.addArc({
         process: 'fooProcess',
         entity: 'dest'
       })
 
       expect(procedure).not.to.be.called
+      expect(sys.get('dest')).to.not.exist
 
       sys.start('fooProcess')
 
@@ -137,7 +184,7 @@ describe('Flow runtime', function() {
       sys.addProcess({
         id: 'process',
         ports: {
-          'val': runtimeTypes.PORT_TYPES.HOT
+          'val': types.PORT_TYPES.HOT
         },
         procedure
       })
@@ -170,7 +217,7 @@ describe('Flow runtime', function() {
       sys.addProcess({
         id: 'process',
         ports: {
-          'val': runtimeTypes.PORT_TYPES.ACCUMULATOR
+          'val': types.PORT_TYPES.ACCUMULATOR
         },
         procedure
       })
@@ -201,8 +248,8 @@ describe('Flow runtime', function() {
       sys.addProcess({
         id: 'process',
         ports: {
-          'val1': runtimeTypes.PORT_TYPES.HOT,
-          'val2': runtimeTypes.PORT_TYPES.COLD
+          'val1': types.PORT_TYPES.HOT,
+          'val2': types.PORT_TYPES.COLD
         },
         procedure
       })
@@ -236,6 +283,71 @@ describe('Flow runtime', function() {
         'val1': 3, 'val2': 2
       })
     })
-  })
 
+
+    it('stops propagation on removed arc', function() {
+      sys.set('dest', 1)
+
+      sys.addProcess({
+        id: 'fooProcess',
+        procedure: function(input, out) {
+          out(input.val + 1)
+        },
+        ports: {
+          val: types.PORT_TYPES.ACCUMULATOR
+        }
+      })
+
+      let arc = sys.addArc({
+        process: 'fooProcess',
+        entity: 'dest'
+      })
+
+      sys.start('fooProcess')
+
+      expect(sys.get('dest')).to.equal(2)
+
+      sys.removeArc(arc.id)
+      sys.start('fooProcess')
+
+      expect(sys.get('dest')).to.equal(2)
+    })
+
+
+    it('stops on removed arc2', function() {
+      let procedure = sinon.spy((input, out) => {
+        out(input.val + 1)
+      })
+
+      sys.addProcess({
+        id: 'process',
+        ports: {
+          'val': types.PORT_TYPES.HOT
+        },
+        procedure
+      })
+
+      let arc = sys.addArc({
+        entity: 'src1',
+        process: 'process',
+        port: 'val'
+      })
+
+      sys.addArc({
+        process: 'process',
+        entity: 'dest'
+      })
+
+      sys.set('src1', 2)
+
+      expect(sys.get('dest')).to.equal(3)
+
+      sys.removeArc(arc.id)
+      sys.set('src1', 3)
+
+      expect(sys.get('dest')).to.equal(3)
+      expect(procedure).to.be.calledOnce
+    })
+
+  })
 })

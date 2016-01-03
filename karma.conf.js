@@ -31,7 +31,7 @@ module.exports = function (config) {
 
     preprocessors: {
       // add webpack as preprocessor
-      'spec/test-main.js': ['webpack', 'coverage', 'sourcemap'] // use this for source maps
+      'spec/test-main.js': ['webpack', /*'coverage',*/ 'sourcemap'] // use this for source maps
     },
 
 
