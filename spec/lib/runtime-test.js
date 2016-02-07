@@ -237,6 +237,8 @@ describe('Flow runtime', function() {
       expect(sys.get('dest')).to.equal(3)
       sys.start('process')
       expect(sys.get('dest')).to.equal(4)
+
+      expect(procedure).to.be.calledThrice
     })
 
 
