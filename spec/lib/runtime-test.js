@@ -350,6 +350,55 @@ describe('Flow runtime', function() {
       expect(sys.get('dest')).to.equal(3)
       expect(procedure).to.be.calledOnce
     })
+  })
 
+
+  describe('callbacks', function() {
+
+    it('can be registered and unregistered', function() {
+      let cb = sinon.stub()
+      sys.on('foo', cb)
+      expect(cb).to.not.be.called
+
+      sys.set('foo', 22)
+
+      expect(cb).to.be.calledWith(22)
+      cb.reset()
+
+      sys.off('foo')
+
+      sys.set('foo', 12)
+      expect(cb).to.not.be.called
+    })
+
+
+    it('triggers on propagation', function() {
+      let cb = sinon.stub()
+      sys.on('bar', cb)
+      sys.addEntity({id: 'bar'})
+      sys.addEntity({id: 'foo'})
+      sys.addProcess({
+        id: 'p1',
+        ports: {
+          'in': types.PORT_TYPES.HOT
+        },
+        procedure: (ports, send) => {
+          send(ports.in + 10)
+        }
+      })
+      sys.addArc({
+        entity: 'foo',
+        process: 'p1',
+        port: 'in'
+      })
+      sys.addArc({
+        entity: 'bar',
+        process: 'p1'
+      })
+
+      sys.set('foo', 22)
+
+      expect(cb).to.be.calledWith(32)
+    })
   })
 })
