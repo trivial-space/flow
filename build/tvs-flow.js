@@ -67,6 +67,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	exports.default = _runtime2.default;
+	module.exports = exports['default'];
 
 /***/ },
 /* 1 */
@@ -281,6 +282,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = {
 	  create: create
 	};
+	module.exports = exports['default'];
 
 /***/ },
 /* 2 */
@@ -389,6 +391,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  createArc: createArc,
 	  PORT_TYPES: PORT_TYPES
 	};
+	module.exports = exports['default'];
 
 /***/ },
 /* 3 */

@@ -19,7 +19,10 @@ module.exports = {
       test: /\.js$/,
       query: {
         presets: ['es2015'],
-        plugins: ["transform-object-rest-spread"]
+        plugins: [
+          "transform-object-rest-spread",
+          "add-module-exports"
+        ]
       }
     }]
   },
