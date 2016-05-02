@@ -367,6 +367,11 @@ describe('Flow runtime', function() {
       sys.stop('foo')
 
       expect(stop).to.be.called
+
+      sys.stop('foo')
+      sys.stop('foo')
+
+      expect(stop).to.be.calledOnce
     })
 
 
