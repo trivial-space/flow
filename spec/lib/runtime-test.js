@@ -350,6 +350,48 @@ describe('Flow runtime', function() {
       expect(sys.get('dest')).to.equal(3)
       expect(procedure).to.be.calledOnce
     })
+
+
+    it('can stop running processes by calling the function returned by a procedure', function() {
+      let stop = sinon.stub(),
+          procedure = function() { return stop }
+
+      sys.addProcess({
+        id: "foo",
+        procedure
+      })
+
+      sys.start('foo')
+
+      expect(stop).to.not.be.called
+
+      sys.stop('foo')
+
+      expect(stop).to.be.called
+    })
+
+
+    it('stops running processes before restarting', function() {
+      let stop = sinon.stub(),
+          procedure = function() { return stop }
+
+      sys.addProcess({
+        id: "foo",
+        procedure
+      })
+
+      sys.start('foo')
+
+      expect(stop).to.not.be.called
+
+      sys.start('foo')
+
+      expect(stop).to.be.calledOnce
+
+      sys.start('foo')
+
+      expect(stop).to.be.calledTwice
+    })
   })
 
 
