@@ -79,6 +79,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  value: true
 	});
 
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
 	var _runtimeTypes = __webpack_require__(2);
 
 	var _runtimeTypes2 = _interopRequireDefault(_runtimeTypes);
@@ -237,7 +239,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    for (var portId in gP.es) {
 	      ports[portId] = graph.e[gP.es[portId]].val;
 	    }
-	    processes[processId].procedure(ports, gP.out);
+	    gP.stop && gP.stop();
+	    gP.stop = processes[processId].procedure(ports, gP.out);
+	  }
+
+	  function stop(processId) {
+	    var gP = graphP(processId);
+	    gP.stop && gP.stop();
 	  }
 
 	  // ===== helpers =====
@@ -275,7 +283,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    removeProcess: removeProcess,
 	    addArc: addArc,
 	    removeArc: removeArc,
-	    start: start
+	    start: start,
+	    stop: stop,
+
+	    PORT_TYPES: _extends({}, _runtimeTypes2.default.PORT_TYPES)
 	  };
 	}
 
