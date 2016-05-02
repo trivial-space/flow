@@ -246,6 +246,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  function stop(processId) {
 	    var gP = graphP(processId);
 	    gP.stop && gP.stop();
+	    delete gP.stop;
 	  }
 
 	  // ===== helpers =====
