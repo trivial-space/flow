@@ -1,5 +1,4 @@
 import runtime from 'runtime'
-import types from 'runtime-types'
 
 
 describe('Flow runtime', function() {
@@ -184,7 +183,7 @@ describe('Flow runtime', function() {
       sys.addProcess({
         id: 'process',
         ports: {
-          'val': types.PORT_TYPES.HOT
+          'val': sys.PORT_TYPES.HOT
         },
         procedure
       })
@@ -217,7 +216,7 @@ describe('Flow runtime', function() {
       sys.addProcess({
         id: 'process',
         ports: {
-          'val': types.PORT_TYPES.ACCUMULATOR
+          'val': sys.PORT_TYPES.ACCUMULATOR
         },
         procedure
       })
@@ -250,8 +249,8 @@ describe('Flow runtime', function() {
       sys.addProcess({
         id: 'process',
         ports: {
-          'val1': types.PORT_TYPES.HOT,
-          'val2': types.PORT_TYPES.COLD
+          'val1': sys.PORT_TYPES.HOT,
+          'val2': sys.PORT_TYPES.COLD
         },
         procedure
       })
@@ -296,7 +295,7 @@ describe('Flow runtime', function() {
           out(input.val + 1)
         },
         ports: {
-          val: types.PORT_TYPES.ACCUMULATOR
+          val: sys.PORT_TYPES.ACCUMULATOR
         }
       })
 
@@ -324,7 +323,7 @@ describe('Flow runtime', function() {
       sys.addProcess({
         id: 'process',
         ports: {
-          'val': types.PORT_TYPES.HOT
+          'val': sys.PORT_TYPES.HOT
         },
         procedure
       })
@@ -422,7 +421,7 @@ describe('Flow runtime', function() {
       sys.addProcess({
         id: 'p1',
         ports: {
-          'in': types.PORT_TYPES.HOT
+          'in': sys.PORT_TYPES.HOT
         },
         procedure: (ports, send) => {
           send(ports.in + 10)
