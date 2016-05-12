@@ -10,12 +10,61 @@ describe('Flow runtime', function() {
   })
 
 
-  it('can report its state', function() {
-    expect(sys.getState()).to.deep.equal({
+  it('can return its graph', function() {
+    expect(sys.getGraph()).to.deep.equal({
       entities: {},
       processes: {},
-      arcs: {}
+      arcs: {},
+      meta: {}
     })
+  })
+
+
+  it('can report its current state', function() {
+    sys.set('foo', 22)
+    sys.set('bar', "barbar")
+    sys.set('baz', [1, 2])
+    sys.addEntity({id: 'faa'})
+    sys.update('baz', function(baz) {baz.push(3); return baz})
+
+    let state = sys.getState()
+    expect(state).to.deep.equal({
+      foo: 22,
+      bar: 'barbar',
+      baz: [1, 2, 3],
+      faa: undefined
+    })
+  })
+
+
+  it('can load a whole graph Spec', function() {
+    sys.addGraph({
+      entities: [{
+        id: "foo"
+      }, {
+        id: "bar",
+        value: 22
+      }],
+      processes: [{
+        id: "lala",
+        ports: {bar: sys.PORT_TYPES.HOT},
+        procedure: function(ports, send) {
+          send(ports.bar + 1)
+        }
+      }],
+      arcs: [{
+        entity: 'bar',
+        process: 'lala',
+        port: 'bar'
+      }, {
+        entity: 'foo',
+        process: 'lala'
+      }]
+    })
+
+    sys.start('lala')
+
+    expect(sys.get('foo')).to.equal(23)
   })
 
 
@@ -52,17 +101,49 @@ describe('Flow runtime', function() {
     })
 
 
+    it('adds falsy but valid values', function() {
+      const spec1 = {
+        id: 'foo',
+        value: false
+      }
+      const spec2 = {
+        id: 'bar',
+        value: ""
+      }
+      const spec3 = {
+        id: 'baz',
+        value: 0
+      }
+      sys.addEntity(spec1)
+      sys.addEntity(spec2)
+      sys.addEntity(spec3)
+
+      expect(sys.get('foo')).to.equal(false)
+      expect(sys.get('bar')).to.equal("")
+      expect(sys.get('baz')).to.equal(0)
+    })
+
+
+    it("doesn't set the current value if already present", function() {
+      sys.set('foo', false)
+      sys.addEntity({id: 'foo', value: true})
+
+      expect(sys.get('foo')).to.be.false
+      expect(sys.getGraph().entities.foo.value).to.be.true
+    })
+
+
     it('can be removed', function() {
       sys.addEntity({id: 'foo'})
       sys.addArc({id: 'bar', entity: 'foo', process: 'baz'})
 
-      expect(sys.getState().entities.foo).to.exist
-      expect(sys.getState().arcs.bar).to.exist
+      expect(sys.getGraph().entities.foo).to.exist
+      expect(sys.getGraph().arcs.bar).to.exist
 
       sys.removeEntity('foo')
 
-      expect(sys.getState().entities.foo).not.to.exist
-      expect(sys.getState().arcs.bar).not.to.exist
+      expect(sys.getGraph().entities.foo).not.to.exist
+      expect(sys.getGraph().arcs.bar).not.to.exist
     })
   })
 
@@ -77,18 +158,18 @@ describe('Flow runtime', function() {
       let arc = sys.addArc(spec)
       expect(arc.id).to.be.a('string')
 
-      expect(sys.getState().arcs[arc.id]).to.exist
+      expect(sys.getGraph().arcs[arc.id]).to.exist
     })
 
 
     it('can be removed', function() {
       sys.addArc({id: 'foo', process: 'bar', entity: 'baz'})
 
-      expect(sys.getState().arcs.foo).to.exist
+      expect(sys.getGraph().arcs.foo).to.exist
 
       sys.removeArc('foo')
 
-      expect(sys.getState().arcs.foo).not.to.exist
+      expect(sys.getGraph().arcs.foo).not.to.exist
     })
   })
 
@@ -101,7 +182,7 @@ describe('Flow runtime', function() {
       expect(process.id).to.be.a('string')
       expect(process.code).to.equal(spec.code)
 
-      expect(sys.getState().processes[process.id]).to.exist
+      expect(sys.getGraph().processes[process.id]).to.exist
     })
 
 
@@ -124,9 +205,9 @@ describe('Flow runtime', function() {
 
       sys.removeProcess('foo')
 
-      expect(sys.getState().processes.foo).not.to.exist
-      expect(sys.getState().arcs.bar).not.to.exist
-      expect(sys.getState().arcs.baz).to.exist
+      expect(sys.getGraph().processes.foo).not.to.exist
+      expect(sys.getGraph().arcs.bar).not.to.exist
+      expect(sys.getGraph().arcs.baz).to.exist
     })
   })
 
