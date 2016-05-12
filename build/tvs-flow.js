@@ -92,13 +92,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var entities = {},
 	      processes = {},
 	      arcs = {},
+	      meta = {},
 	      graph = {
 	    e: {},
 	    p: {}
 	  };
 
+	  function getGraph() {
+	    return { entities: entities, processes: processes, arcs: arcs, meta: meta };
+	  }
+
 	  function getState() {
-	    return { entities: entities, processes: processes, arcs: arcs };
+	    var state = {};
+	    for (var eId in graph.e) {
+	      state[eId] = graph.e[eId].val;
+	    }
+	    return state;
 	  }
 
 	  // ===== entity operations =====
@@ -137,7 +146,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  function addEntity(spec) {
 	    var e = _runtimeTypes2.default.createEntity(spec);
 	    entities[e.id] = e;
-	    if (e.value) {
+	    var gE = graphE(e.id);
+	    if (e.value != null && gE.val == null) {
 	      set(e.id, e.value);
 	    }
 	    return e;
@@ -231,6 +241,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	  }
 
+	  function addGraph(graphSpec) {
+	    for (var i in graphSpec.entities) {
+	      addEntity(graphSpec.entities[i]);
+	    }
+	    for (var _i in graphSpec.processes) {
+	      addProcess(graphSpec.processes[_i]);
+	    }
+	    for (var _i2 in graphSpec.arcs) {
+	      addArc(graphSpec.arcs[_i2]);
+	    }
+	  }
+
 	  // ===== flow execution =====
 
 	  function start(processId) {
@@ -272,18 +294,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // ===== runtime api =====
 
 	  return {
-	    get: get,
-	    set: set,
-	    update: update,
-	    on: on,
-	    off: off,
-	    getState: getState,
+
 	    addEntity: addEntity,
 	    removeEntity: removeEntity,
 	    addProcess: addProcess,
 	    removeProcess: removeProcess,
 	    addArc: addArc,
 	    removeArc: removeArc,
+	    addGraph: addGraph,
+
+	    getGraph: getGraph,
+	    getState: getState,
+
+	    get: get,
+	    set: set,
+	    update: update,
+	    on: on,
+	    off: off,
+
 	    start: start,
 	    stop: stop,
 
