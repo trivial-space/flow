@@ -2,7 +2,7 @@
   "extend": "eslint:recommended",
   "parser": "babel-eslint",
   "settings": {
-    "ecmascript": 6
+    "ecmascript": 7
   },
   "ecmaFeatures": {
     "modules": true
