@@ -37,7 +37,11 @@ describe('Flow runtime', function() {
   })
 
 
-  it('can load a whole graph Spec', function() {
+  it('can load and transfer a whole graph', function() {
+    function p(ports, send) {
+      send(ports.bar + 1)
+    }
+
     sys.addGraph({
       entities: [{
         id: "foo"
@@ -48,9 +52,7 @@ describe('Flow runtime', function() {
       processes: [{
         id: "lala",
         ports: {bar: sys.PORT_TYPES.HOT},
-        procedure: function(ports, send) {
-          send(ports.bar + 1)
-        }
+        procedure: p
       }],
       arcs: [{
         entity: 'bar',
@@ -65,6 +67,61 @@ describe('Flow runtime', function() {
     sys.start('lala')
 
     expect(sys.get('foo')).to.equal(23)
+
+    expect(sys.getGraph()).to.deep.equal({
+      entities: {
+        foo: {
+          id: "foo",
+          meta: {},
+          value: undefined
+        },
+        bar: {
+          id: "bar",
+          value: 22,
+          meta: {}
+        }
+      },
+      processes: {
+        lala: {
+          id: "lala",
+          ports: {
+            bar: "hot"
+          },
+          code: p.toString(),
+          procedure: p,
+          meta: {}
+        }
+      },
+      arcs: {
+        "bar->lala::bar": {
+          id: "bar->lala::bar",
+          entity: "bar",
+          process: "lala",
+          port: "bar",
+          meta: {}
+        },
+        "lala->foo": {
+          id: "lala->foo",
+          entity: "foo",
+          process: "lala",
+          port: undefined,
+          meta: {}
+        }
+      },
+      meta: {}
+    })
+
+    let sys2 = runtime.create()
+
+    expect(sys2.getGraph()).to.not.deep.equal(sys.getGraph())
+
+    sys2.addGraph(sys.getGraph())
+
+    expect(sys2.getGraph()).to.deep.equal(sys.getGraph())
+
+    sys2.start('lala')
+
+    expect(sys2.get('foo')).to.equal(23)
   })
 
 
@@ -322,6 +379,48 @@ describe('Flow runtime', function() {
     })
 
 
+    it('reacts on accumulator changes', function() {
+      const procedure = sinon.spy((input, out) => {
+        out(input.val + 1)
+      })
+      const p = {
+        id: 'process',
+        ports: {
+          val: sys.PORT_TYPES.HOT
+        },
+        procedure
+      }
+
+      sys.addProcess(p)
+
+      sys.addArc({
+        process: 'process',
+        entity: 'dest'
+      })
+
+      let a = sys.addArc({
+        process: 'process',
+        entity: 'src1',
+        port: 'val'
+      })
+
+      sys.set('src1', 1)
+
+      expect(sys.get('dest')).to.equal(2)
+
+      sys.removeArc(a.id)
+
+      sys.addProcess({
+        ...p,
+        ...{ports: {val: sys.PORT_TYPES.ACCUMULATOR}}
+      })
+
+      sys.start('process')
+
+      expect(sys.get('dest')).to.equal(3)
+    })
+
+
     it('have processes that dont react on cold entity ports', function() {
       let procedure = sinon.spy((input, out) => {
         out(input.val1 + input.val2)
@@ -524,6 +623,15 @@ describe('Flow runtime', function() {
       })
 
       sys.set('foo', 22)
+
+      expect(cb).to.be.calledWith(32)
+    })
+
+
+    it('triggers when entity added with new value', function() {
+      let cb = sinon.stub()
+      sys.on('bar', cb)
+      sys.addEntity({id: 'bar', value: 32})
 
       expect(cb).to.be.calledWith(32)
     })
