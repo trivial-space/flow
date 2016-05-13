@@ -136,6 +136,7 @@ describe('Flow runtime', function() {
           },
           code: p.toString(),
           procedure: p,
+          autostart: undefined,
           meta: {}
         }
       },
@@ -624,6 +625,73 @@ describe('Flow runtime', function() {
       sys.start('foo')
 
       expect(stop).to.be.calledTwice
+    })
+
+
+    it('autostarts processes when all ports connected', function() {
+      expect(sys.get('dest')).to.not.be.defined
+
+      sys.addProcess({
+        id: "foo",
+        procedure: (ports, send) => send(42),
+        autostart: true
+      })
+
+      expect(sys.get('dest')).to.not.be.defined
+
+      sys.addArc({
+        process: "foo",
+        entity: "dest"
+      })
+
+      expect(sys.get('dest')).to.equal(42)
+    })
+
+
+    it('autostarts only if all ports are connected', function() {
+      const procedure = sinon.spy((ports, send) => {
+        send(ports.val)
+      })
+
+      sys.addProcess({
+        id: "foo",
+        procedure,
+        ports: {
+          val: sys.PORT_TYPES.HOT
+        },
+        autostart: true
+      })
+
+      let a = sys.addArc({
+        process: "foo",
+        entity: "src1",
+        port: "val"
+      })
+
+      expect(procedure).to.not.be.called
+
+      sys.addArc({
+        process: "foo",
+        entity: "dest",
+      })
+
+      expect(procedure).to.be.called
+      expect(sys.get('dest')).to.equal('src1_value')
+
+      procedure.reset()
+
+      sys.removeArc(a.id)
+
+      expect(procedure).to.not.be.called
+
+      sys.addArc({
+        process: "foo",
+        entity: "src2",
+        port: "val"
+      })
+
+      expect(procedure).to.be.called
+      expect(sys.get('dest')).to.equal('src2_value')
     })
   })
 
