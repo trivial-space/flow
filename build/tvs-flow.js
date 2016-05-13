@@ -73,13 +73,15 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 1 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
+	"use strict";
 
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
 
 	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
 
 	var _runtimeTypes = __webpack_require__(2);
 
@@ -108,6 +110,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	      state[eId] = graph.e[eId].val;
 	    }
 	    return state;
+	  }
+
+	  function getMeta() {
+	    return meta;
+	  }
+
+	  function setMeta(newMeta) {
+	    if (newMeta != null && (typeof newMeta === "undefined" ? "undefined" : _typeof(newMeta)) === "object" && !(newMeta instanceof Array)) {
+	      meta = _extends({}, meta, newMeta);
+	    }
 	  }
 
 	  // ===== entity operations =====
@@ -166,9 +178,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var p = _runtimeTypes2.default.createProcess(spec);
 	    processes[p.id] = p;
 	    var gP = graphP(p.id);
+
 	    for (var portId in p.ports) {
 	      if (p.ports[portId] === _runtimeTypes2.default.PORT_TYPES.ACCUMULATOR) {
 	        gP.acc = portId;
+
+	        // check if outputPort already connected
+	        for (var aId in gP.as) {
+	          var arc = arcs[aId];
+	          if (arc.port == null) {
+	            updateArc(arc);
+	          }
+	        }
 	      }
 	    }
 	    return p;
@@ -196,6 +217,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (arc) {
 	      var gP = graphP(arc.process),
 	          gE = graphE(arc.entity);
+
+	      delete gP.as[id];
+	      delete gE.as[id];
 
 	      if (arc.port) {
 	        delete gE.ps[arc.process];
@@ -238,18 +262,32 @@ return /******/ (function(modules) { // webpackBootstrap
 	            gP.es[gP.acc] = eId;
 	          }
 	        }
+
+	      // autostart
+	      if (p.autostart === true && Object.keys(gP.as).length === Object.keys(p.ports).length + 1) {
+	        start(p.id);
+	      }
 	    }
 	  }
 
 	  function addGraph(graphSpec) {
-	    for (var i in graphSpec.entities) {
-	      addEntity(graphSpec.entities[i]);
+	    if (graphSpec.entities) {
+	      for (var i in graphSpec.entities) {
+	        addEntity(graphSpec.entities[i]);
+	      }
 	    }
-	    for (var _i in graphSpec.processes) {
-	      addProcess(graphSpec.processes[_i]);
+	    if (graphSpec.processes) {
+	      for (var _i in graphSpec.processes) {
+	        addProcess(graphSpec.processes[_i]);
+	      }
 	    }
-	    for (var _i2 in graphSpec.arcs) {
-	      addArc(graphSpec.arcs[_i2]);
+	    if (graphSpec.arcs) {
+	      for (var _i2 in graphSpec.arcs) {
+	        addArc(graphSpec.arcs[_i2]);
+	      }
+	    }
+	    if (graphSpec.meta) {
+	      setMeta(graphSpec.meta);
 	    }
 	  }
 
@@ -287,7 +325,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return graph.p[id] || (graph.p[id] = {
 	      acc: null,
 	      es: {},
-	      as: {}
+	      as: {},
+	      out: function out() {}
 	    });
 	  }
 
@@ -305,6 +344,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    getGraph: getGraph,
 	    getState: getState,
+	    setMeta: setMeta,
+	    getMeta: getMeta,
 
 	    get: get,
 	    set: set,
@@ -322,7 +363,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = {
 	  create: create
 	};
-	module.exports = exports['default'];
+	module.exports = exports["default"];
 
 /***/ },
 /* 2 */
@@ -366,6 +407,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var ports = _ref2$ports === undefined ? {} : _ref2$ports;
 	  var procedure = _ref2.procedure;
 	  var code = _ref2.code;
+	  var autostart = _ref2.autostart;
 	  var meta = _ref2.meta;
 
 
@@ -380,6 +422,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    ports: ports,
 	    procedure: procedure,
 	    code: code,
+	    autostart: autostart,
 	    meta: _extends({}, meta)
 	  };
 	}
