@@ -37,6 +37,50 @@ describe('Flow runtime', function() {
   })
 
 
+  it('can set and get meta data', function() {
+    const meta = {
+      foo: "bar"
+    }
+    sys.setMeta(meta)
+
+    expect(sys.getMeta()).to.deep.equal(meta)
+  })
+
+
+  it('merges new meta to old one', function() {
+    sys.setMeta({
+      foo: "foo",
+      bar: "bar"
+    })
+
+    sys.setMeta({
+      bar: "baz",
+      lala: "lala"
+    })
+
+    expect(sys.getMeta()).to.deep.equal({
+      foo: "foo",
+      bar: "baz",
+      lala: "lala"
+    })
+  })
+
+
+  it('allows only objects', function() {
+    sys.setMeta({
+      foo: "foo"
+    })
+
+    sys.setMeta(123)
+    sys.setMeta([1, 3, 4])
+    sys.setMeta(null)
+    sys.setMeta(undefined)
+    sys.setMeta("bar")
+
+    expect(sys.getMeta()).to.deep.equal({foo: "foo"})
+  })
+
+
   it('can load and transfer a whole graph', function() {
     function p(ports, send) {
       send(ports.bar + 1)
@@ -61,7 +105,10 @@ describe('Flow runtime', function() {
       }, {
         entity: 'foo',
         process: 'lala'
-      }]
+      }],
+      meta: {
+        foo: "bar"
+      }
     })
 
     sys.start('lala')
@@ -108,7 +155,9 @@ describe('Flow runtime', function() {
           meta: {}
         }
       },
-      meta: {}
+      meta: {
+        foo: "bar"
+      }
     })
 
     let sys2 = runtime.create()
