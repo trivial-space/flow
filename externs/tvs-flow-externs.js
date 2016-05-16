@@ -25,6 +25,10 @@ tvsFlow.create = function() {
     start: function() {},
     stop: function() {},
 
-    PORT_TYPES: {}
+    PORT_TYPES: {
+      HOT: "",
+      COLD: "",
+      ACCUMULATOR: ""
+    }
   }
 }
