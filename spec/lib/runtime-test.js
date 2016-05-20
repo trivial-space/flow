@@ -184,6 +184,13 @@ describe('Flow runtime', function() {
     })
 
 
+    it('can be created by set', function() {
+      sys.set('foo', 33)
+
+      expect(sys.getGraph().entities.foo).to.exist
+    })
+
+
     it('update values by function', function() {
       sys.set('foo', 10)
 
@@ -416,9 +423,6 @@ describe('Flow runtime', function() {
 
       sys.set('dest', 1)
 
-      expect(procedure).to.not.be.called
-
-      sys.start('process')
       expect(sys.get('dest')).to.equal(2)
       sys.start('process')
       expect(sys.get('dest')).to.equal(3)
@@ -429,7 +433,78 @@ describe('Flow runtime', function() {
     })
 
 
-    it('reacts on accumulator changes', function() {
+    it('runs all connected accumulator processes when entity is reset', function() {
+      const procedure = sinon.spy((input, out) => {
+        out(input.val + input.self)
+      })
+      const procedureEnd = sinon.spy((input, out) => {
+        out(input.val + 1000)
+      })
+      const callback = sinon.stub()
+      const ports = {
+        val: sys.PORT_TYPES.HOT,
+        self: sys.PORT_TYPES.ACCUMULATOR
+      }
+      sys.set('src1', 5)
+      sys.set('src2', 7)
+      sys.addGraph({
+        entities: [{
+          id: "state"
+        }],
+        processes: [{
+          id: "foo",
+          procedure, ports
+        }, {
+          id: "bar",
+          procedure, ports
+        }, {
+          id: "baz",
+          procedure: procedureEnd,
+          ports: {val: sys.PORT_TYPES.HOT}
+        }],
+        arcs: [{
+          entity: 'src1',
+          process: 'foo',
+          port: 'val'
+        }, {
+          entity: 'src2',
+          process: 'bar',
+          port: 'val'
+        }, {
+          entity: 'state',
+          process: 'bar',
+        }, {
+          entity: 'state',
+          process: 'foo',
+        }, {
+          entity: 'state',
+          process: 'baz',
+          port: 'val'
+        }, {
+          entity: 'dest',
+          process: 'baz',
+        }]
+      })
+
+      sys.on('state', callback)
+
+      sys.set('state', 100)
+
+      expect(sys.get('state')).to.equal(112)
+      expect(sys.get('dest')).to.equal(1112)
+
+      expect(procedure).to.be.calledTwice
+      expect(procedureEnd).to.be.calledOnce
+      expect(callback).to.be.calledOnce
+      expect(callback).to.be.calledWith(112)
+
+      sys.set('src2', 2)
+
+      expect(sys.get('state')).to.equal(114)
+    })
+
+
+    it('reacts on changes of port type to accumulator', function() {
       const procedure = sinon.spy((input, out) => {
         out(input.val + 1)
       })
@@ -693,6 +768,48 @@ describe('Flow runtime', function() {
       expect(procedure).to.be.called
       expect(sys.get('dest')).to.equal('src2_value')
     })
+
+
+    it('doesnt autostart processes with accumulator port', function() {
+      sys.addProcess({
+        id: "foo",
+        ports: {foo: sys.PORT_TYPES.ACCUMULATOR},
+        procedure: (ports, send) => send(42),
+        autostart: true
+      })
+
+      expect(sys.get('dest')).to.not.be.defined
+
+      sys.addArc({
+        process: "foo",
+        entity: "dest"
+      })
+
+      expect(sys.get('dest')).to.not.be.defined
+
+      sys.addProcess({
+        id: "bar",
+        ports: {
+          bar: sys.PORT_TYPES.ACCUMULATOR,
+          foo: sys.PORT_TYPES.HOT
+        },
+        procedure: (ports, send) => send(ports.foo),
+        autostart: true
+      })
+
+      sys.addArc({
+        process: "bar",
+        entity: "dest"
+      })
+
+      sys.addArc({
+        process: "bar",
+        port: "foo",
+        entity: "src1"
+      })
+
+      expect(sys.get('dest')).to.not.be.defined
+    })
   })
 
 
@@ -726,7 +843,7 @@ describe('Flow runtime', function() {
           'in': sys.PORT_TYPES.HOT
         },
         procedure: (ports, send) => {
-          send(ports.in + 10)
+          send(ports.in + 20)
         }
       })
       sys.addArc({
@@ -735,13 +852,14 @@ describe('Flow runtime', function() {
         port: 'in'
       })
       sys.addArc({
-        entity: 'bar',
-        process: 'p1'
+        process: 'p1',
+        entity: 'bar'
       })
 
       sys.set('foo', 22)
+      expect(sys.get('bar')).to.equal(42)
 
-      expect(cb).to.be.calledWith(32)
+      expect(cb).to.be.calledWith(42)
     })
 
 
