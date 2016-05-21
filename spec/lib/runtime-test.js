@@ -814,6 +814,7 @@ describe('Flow runtime', function() {
 
 
     it('doesnt propagate autostart changes on sync execution', function(done) {
+      let sys = runtime.create()
       sys.addProcess({
         id: "p2",
         procedure: (ports, send) => send(ports.val + 10),
@@ -835,7 +836,7 @@ describe('Flow runtime', function() {
           send(42)
           setTimeout(function() {
             send(62)
-          }, 10)
+          }, 1)
         },
         autostart: true
       })
@@ -851,7 +852,7 @@ describe('Flow runtime', function() {
         expect(sys.get('dest')).to.equal(62)
         expect(sys.get('foo')).to.equal(72)
         done()
-      }, 20)
+      }, 40)
     })
 
 
@@ -1007,6 +1008,82 @@ describe('Flow runtime', function() {
       sys.addEntity({id: 'bar', value: 32})
 
       expect(cb).to.be.calledWith(32)
+    })
+  })
+
+
+  describe('context', function() {
+
+    const context = {
+      foo: 'bar',
+      lala: 'fufu'
+    }
+
+    beforeEach(function() {
+      sys.setContext(context)
+    })
+
+    it('can be set and get', function() {
+      expect(sys.getContext()).to.deep.equal(context)
+    })
+
+
+    it('is available during every process execution', function() {
+      sys.addGraph({
+        processes: [{
+          id: "p1",
+          procedure: function (ports, sink) {
+            expect(this).to.deep.equal(context)
+            sink(42)
+          }
+        }, {
+          id: "p2",
+          ports: {val: sys.PORT_TYPES.HOT},
+          procedure: function (ports, sink) {
+            expect(this).to.deep.equal(context)
+            sink('' + ports.val + this.lala)
+          }
+        }],
+        arcs: [{
+          process: 'p1',
+          entity: 'foo',
+        }, {
+          entity: 'foo',
+          process: 'p2',
+          port: 'val'
+        }, {
+          process: 'p2',
+          entity: 'bar',
+        }]
+      })
+
+      sys.start('p1')
+
+      expect(sys.get('bar')).to.equal('42fufu')
+    })
+
+
+    it('is available in procedure generation code', function() {
+      sys.setContext({
+        createProcedure: function() {
+          return (srcs, sink) => {
+            sink(42)
+          }
+        }
+      })
+
+      sys.addProcess({
+        id: 'p',
+        code: 'this.createProcedure()'
+      })
+
+      sys.addArc({
+        process: 'p',
+        entity: 'foo'
+      })
+
+      sys.start('p')
+      expect(sys.get('foo')).to.equal(42)
     })
   })
 })
