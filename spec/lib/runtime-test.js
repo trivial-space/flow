@@ -472,18 +472,18 @@ describe('Flow runtime', function() {
           process: 'bar',
           port: 'val'
         }, {
-          entity: 'state',
           process: 'bar',
-        }, {
           entity: 'state',
+        }, {
           process: 'foo',
+          entity: 'state',
         }, {
           entity: 'state',
           process: 'baz',
           port: 'val'
         }, {
-          entity: 'dest',
           process: 'baz',
+          entity: 'dest',
         }]
       })
 
@@ -704,6 +704,124 @@ describe('Flow runtime', function() {
     })
 
 
+    it('adopts properly to different port changes', function() {
+      const p = {
+        id: "p",
+        procedure: (srcs, sink) => sink(srcs.val + 10),
+        ports: {val: sys.PORT_TYPES.HOT}
+      }
+
+      sys.addGraph({
+        processes: [p],
+        arcs: [{
+          entity: 'src',
+          process: 'p',
+          port: 'val'
+        }, {
+          process: 'p',
+          entity: 'dest'
+        }]
+      })
+
+      sys.set('src', 20)
+
+      expect(sys.get('dest')).to.equal(30)
+
+      sys.addProcess({
+        ...p,
+        ports: {val: sys.PORT_TYPES.COLD}
+      })
+
+      sys.set('src', 10)
+      expect(sys.get('dest')).to.equal(30)
+
+      sys.start('p')
+
+      expect(sys.get('dest')).to.equal(20)
+
+      sys.addProcess(p)
+
+      sys.set('src', 40)
+      expect(sys.get('dest')).to.equal(50)
+
+      sys.addProcess({
+        id: 'p',
+        ports: {foo: sys.PORT_TYPES.COLD},
+        procedure: (srcs, sink) => sink(srcs.foo + 20)
+      })
+
+      expect(sys.getGraph().arcs).to.deep.equal({
+        'p->dest': types.createArc({
+          process: 'p',
+          entity: 'dest'
+        })
+      })
+
+      sys.addArc({
+        entity: 'src',
+        process: 'p',
+        port: 'foo'
+      })
+
+      sys.set('src', 0)
+      sys.start('p')
+      expect(sys.get('dest')).to.equal(20)
+
+      sys.addProcess({
+        ...sys.getGraph().processes.p,
+        ports: {foo: sys.PORT_TYPES.ACCUMULATOR},
+      })
+
+      expect(sys.getGraph().arcs).to.deep.equal({
+        'p->dest': types.createArc({
+          process: 'p',
+          entity: 'dest'
+        })
+      })
+
+      sys.start('p')
+
+      expect(sys.get('dest')).to.equal(40)
+
+      sys.addProcess({
+        ...sys.getGraph().processes.p,
+        ports: {foo: sys.PORT_TYPES.HOT},
+      })
+
+      sys.addArc({
+        entity: 'src',
+        process: 'p',
+        port: 'foo'
+      })
+
+      sys.set('src', 10)
+      expect(sys.get('dest')).to.equal(30)
+    })
+
+  })
+
+
+  describe('autostart of processes', function() {
+
+    const src1 = {
+      id: 'src1',
+      value: 'src1_value'
+    }
+    const src2 = {
+      id: 'src2',
+      value: 'src2_value'
+    }
+    const dest = {
+      id: 'dest'
+    }
+
+    beforeEach(function () {
+      sys.addEntity(src1)
+      sys.addEntity(src2)
+      sys.addEntity(dest)
+    })
+
+
     it('autostarts processes when all ports connected', function() {
       expect(sys.get('dest')).to.not.be.defined
 
@@ -834,9 +952,6 @@ describe('Flow runtime', function() {
         id: "p_auto",
         procedure: (ports, send) => {
           send(42)
-          setTimeout(function() {
-            send(62)
-          }, 1)
         },
         autostart: true
       })
@@ -849,105 +964,58 @@ describe('Flow runtime', function() {
       expect(sys.get('foo')).to.be.undefined
 
       setTimeout(function() {
-        expect(sys.get('dest')).to.equal(62)
-        expect(sys.get('foo')).to.equal(72)
+        expect(sys.get('foo')).to.equal(52)
         done()
       }, 40)
     })
 
 
-    it('adopts properly to different port changes', function() {
-      const p = {
-        id: "p",
-        procedure: (srcs, sink) => sink(srcs.val + 10),
-        ports: {val: sys.PORT_TYPES.HOT}
-      }
-
-      sys.addGraph({
-        processes: [p],
-        arcs: [{
-          entity: 'src',
-          process: 'p',
-          port: 'val'
-        }, {
-          process: 'p',
-          entity: 'dest'
-        }]
+    it('propagates changes asynchronously', function(done) {
+      sys.addProcess({
+        id: "p1",
+        procedure: (ports, send) => send(10),
+        autostart: true
       })
-
-      sys.set('src', 20)
-
-      expect(sys.get('dest')).to.equal(30)
+      sys.addProcess({
+        id: "p2",
+        procedure: (ports, send) => send(20),
+        autostart: true
+      })
+      sys.addArc({
+        entity: "dest",
+        process: "p2"
+      })
+      sys.addArc({
+        process: "p1",
+        entity: "foo"
+      })
 
       sys.addProcess({
-        ...p,
-        ports: {val: sys.PORT_TYPES.COLD}
-      })
-
-      sys.set('src', 10)
-      expect(sys.get('dest')).to.equal(30)
-
-      sys.start('p')
-
-      expect(sys.get('dest')).to.equal(20)
-
-      sys.addProcess(p)
-
-      sys.set('src', 40)
-      expect(sys.get('dest')).to.equal(50)
-
-      sys.addProcess({
-        id: 'p',
-        ports: {foo: sys.PORT_TYPES.COLD},
-        procedure: (srcs, sink) => sink(srcs.foo + 20)
-      })
-
-      expect(sys.getGraph().arcs).to.deep.equal({
-        'p->dest': types.createArc({
-          process: 'p',
-          entity: 'dest'
-        })
+        id: "p_acc",
+        ports: {
+          foo: sys.PORT_TYPES.HOT,
+          self: sys.PORT_TYPES.ACCUMULATOR
+        },
+        procedure: (ports, send) => {
+          send(ports.self + ports.foo)
+        }
       })
 
       sys.addArc({
-        entity: 'src',
-        process: 'p',
-        port: 'foo'
+        process: "p_acc",
+        entity: "dest"
       })
-
-      sys.set('src', 0)
-      sys.start('p')
-      expect(sys.get('dest')).to.equal(20)
-
-      sys.addProcess({
-        ...sys.getGraph().processes.p,
-        ports: {foo: sys.PORT_TYPES.ACCUMULATOR},
-      })
-
-      expect(sys.getGraph().arcs).to.deep.equal({
-        'p->dest': types.createArc({
-          process: 'p',
-          entity: 'dest'
-        })
-      })
-
-      sys.start('p')
-
-      expect(sys.get('dest')).to.equal(40)
-
-      sys.addProcess({
-        ...sys.getGraph().processes.p,
-        ports: {foo: sys.PORT_TYPES.HOT},
-      })
-
       sys.addArc({
-        entity: 'src',
-        process: 'p',
-        port: 'foo'
+        entity: "foo",
+        process: "p_acc",
+        port: "foo"
       })
 
-      sys.set('src', 10)
-      expect(sys.get('dest')).to.equal(30)
+      expect(sys.get('dest')).to.equal(20)
+      setTimeout(function() {
+        expect(sys.get('dest')).to.equal(30)
+        done()
+      }, 100)
     })
   })
 
