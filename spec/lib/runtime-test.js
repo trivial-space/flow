@@ -1017,6 +1017,40 @@ describe('Flow runtime', function() {
         done()
       }, 100)
     })
+
+
+    it('doesnt execute on process update', function() {
+      const procedure = sinon.stub()
+      const process = {
+        id: "foo",
+        procedure,
+        ports: {
+          bar: sys.PORT_TYPES.HOT
+        },
+        autostart: true
+      }
+
+      sys.addProcess(process)
+
+      sys.addArc({
+        process: 'foo',
+        entity: 'dest'
+      })
+
+      sys.addArc({
+        entity: 'src1',
+        process: 'foo',
+        port: 'bar'
+      })
+
+      expect(procedure).to.be.called
+
+      procedure.reset()
+
+      sys.addProcess(process)
+
+      expect(procedure).to.not.be.called
+    })
   })
 
 
