@@ -324,6 +324,26 @@ describe('Flow runtime', function() {
       expect(sys.getGraph().arcs.bar).not.to.exist
       expect(sys.getGraph().arcs.baz).to.exist
     })
+
+
+    it('stop when removed', function() {
+      let cleanup = sinon.stub()
+      sys.addProcess({
+        id: 'foo',
+        procedure: (ports, send) => {
+          send(42)
+          return cleanup
+        }
+      })
+
+      sys.start('foo')
+
+      expect(cleanup).to.not.be.called
+
+      sys.removeProcess('foo')
+
+      expect(cleanup).to.be.called
+    })
   })
 
 
