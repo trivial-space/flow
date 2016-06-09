@@ -490,7 +490,16 @@ describe('Flow runtime', function() {
       expect(callback).to.be.calledOnce
       expect(callback).to.be.calledWith(112)
 
+      procedure.reset()
+      procedureEnd.reset()
+      callback.reset()
+
       sys.set('src2', 2)
+
+      expect(procedure).to.be.calledOnce
+      expect(procedureEnd).to.be.calledOnce
+      expect(callback).to.be.calledOnce
+      expect(callback).to.be.calledWith(114)
 
       expect(sys.get('state')).to.equal(114)
     })
@@ -796,7 +805,7 @@ describe('Flow runtime', function() {
         procedure: (input, out) => out(input.val + 1),
         async: true,
         ports: {
-          val: sys.PORT_TYPES.ACCUMULATOR
+          val: sys.PORT_TYPES.HOT
         }
       })
 
@@ -804,13 +813,19 @@ describe('Flow runtime', function() {
         process: 'fooProcess',
         entity: 'dest'
       })
+      sys.addArc({
+        entity: 'src1',
+        process: 'fooProcess',
+        port: 'val'
+      })
 
-      sys.start('fooProcess')
+      sys.set('src1', 1)
 
       expect(sys.get('dest')).to.equal(2)
 
       sys.removeArc(arc.id)
-      sys.start('fooProcess')
+
+      sys.set('src1', 4)
 
       expect(sys.get('dest')).to.equal(2)
     })
@@ -966,7 +981,7 @@ describe('Flow runtime', function() {
     })
 
 
-    it('doesnt propagate autostart changes on sync execution', function(done) {
+    it('doesnt propagate async autostart changes on sync execution', function(done) {
       let sys = runtime.create()
       sys.addProcess({
         id: "p2",
@@ -985,7 +1000,8 @@ describe('Flow runtime', function() {
 
       sys.addProcess({
         id: "p_auto",
-        procedure: () => 42,
+        procedure: (_, send) => send(42),
+        async: true,
         autostart: true
       })
       sys.addArc({
@@ -993,17 +1009,18 @@ describe('Flow runtime', function() {
         entity: "dest"
       })
 
-      expect(sys.get('dest')).to.equal(42)
+      expect(sys.get('dest')).to.undefined
       expect(sys.get('foo')).to.be.undefined
 
       setTimeout(function() {
+        expect(sys.get('dest')).to.equal(42)
         expect(sys.get('foo')).to.equal(52)
         done()
       }, 40)
     })
 
 
-    it('propagates changes asynchronously', function(done) {
+    it('propagates changes on first flush', function() {
       sys.addProcess({
         id: "p1",
         procedure: () => 10,
@@ -1043,10 +1060,10 @@ describe('Flow runtime', function() {
       })
 
       expect(sys.get('dest')).to.equal(20)
-      setTimeout(function() {
-        expect(sys.get('dest')).to.equal(30)
-        done()
-      }, 100)
+
+      sys.set('foo', 11)
+
+      expect(sys.get('dest')).to.equal(31)
     })
 
 
@@ -1081,6 +1098,74 @@ describe('Flow runtime', function() {
       sys.addProcess(process)
 
       expect(procedure).to.not.be.called
+    })
+  })
+
+
+  describe("execution order", function() {
+
+    it('propagates level by level', function() {
+      let p1 = sinon.spy((ports) => ports.val)
+      let p2 = sinon.spy((ports) => ports.val)
+      let p3 = sinon.spy((ports) => ports.val)
+      let p4 = sinon.spy((ports) => ports.val)
+      let ports = {val: sys.PORT_TYPES.HOT}
+
+      sys.addGraph({
+        entities: [{ id: "src" }, { id: "e1" }, { id: "e2" }],
+        processes: [{
+          id: "p1",
+          procedure: p1,
+          ports
+        }, {
+          id: "p2",
+          procedure: p2,
+          ports
+        }, {
+          id: "p3",
+          procedure: p3,
+          ports
+        }, {
+          id: "p4",
+          procedure: p4,
+          ports
+        }],
+        arcs: [{
+          entity: "src",
+          process: "p1",
+          port: "val"
+        }, {
+          entity: "src",
+          process: "p2",
+          port: "val"
+        }, {
+          process: "p1",
+          entity: "e1",
+        }, {
+          process: "p2",
+          entity: "e2",
+        }, {
+          entity: "e1",
+          process: "p3",
+          port: "val"
+        }, {
+          entity: "e2",
+          process: "p4",
+          port: "val"
+        }]
+      })
+
+      sys.set('src', true)
+
+      expect(p1).to.be.called
+      expect(p2).to.be.called
+      expect(p3).to.be.called
+      expect(p4).to.be.called
+
+      expect(p1.calledBefore(p3)).to.be.true
+      expect(p1.calledBefore(p4)).to.be.true
+      expect(p2.calledBefore(p3)).to.be.true
+      expect(p2.calledBefore(p4)).to.be.true
     })
   })
 
@@ -1163,7 +1248,7 @@ describe('Flow runtime', function() {
       sys.addGraph({
         processes: [{
           id: "p1",
-          procedure: function (ports) {
+          procedure: function () {
             expect(this).to.deep.equal(context)
             return 42
           }
