@@ -44,8 +44,5 @@
     "sinon": "^1.17.2",
     "sinon-chai": "^2.8.0",
     "webpack": "^1.12.9"
-  },
-  "dependencies": {
-    "uuid": "^2.0.1"
   }
 }
