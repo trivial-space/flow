@@ -175,6 +175,40 @@ describe('Flow runtime', function() {
   })
 
 
+  it('has a debug mode', function() {
+    sinon.spy(console, "log")
+
+    sys.addGraph({
+      entities: [{
+        id: "foo"
+      }, {
+        id: "bar",
+        value: 22
+      }],
+      processes: [{
+        id: "lala",
+        ports: {bar: sys.PORT_TYPES.HOT},
+        procedure: (ports) => ports.bar + 1
+      }],
+      arcs: [{
+        entity: 'bar',
+        process: 'lala',
+        port: 'bar'
+      }, {
+        process: 'lala',
+        entity: 'foo'
+      }]
+    })
+
+    sys.setDebug(true)
+
+    sys.set('bar', 1)
+
+    expect(sys.get('foo')).to.equal(2)
+    expect(console.log.getCall(0).args[1]).to.match(/lala/)
+  })
+
+
   describe('entities', function() {
 
     it('can get and set their values', function() {
