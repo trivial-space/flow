@@ -119,11 +119,13 @@ describe('Flow runtime', function() {
         foo: {
           id: "foo",
           meta: {},
+          json: undefined,
           value: undefined
         },
         bar: {
           id: "bar",
           value: 22,
+          json: undefined,
           meta: {}
         }
       },
@@ -292,6 +294,19 @@ describe('Flow runtime', function() {
 
       expect(sys.getGraph().entities.foo).not.to.exist
       expect(sys.getGraph().arcs.bar).not.to.exist
+    })
+
+
+    it('can evaluate a json string as initial value', function() {
+      sys.addEntity({
+        id: 'foo',
+        json: '{"foo": 23, "bar": 42}'
+      })
+
+      expect(sys.get('foo')).to.deep.equal({
+        foo: 23,
+        bar: 42
+      })
     })
   })
 
