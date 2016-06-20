@@ -110,8 +110,6 @@ describe('Flow runtime', function() {
       }
     })
 
-    sys.start('lala')
-
     expect(sys.get('foo')).to.equal(23)
 
     expect(sys.getGraph()).to.deep.equal({
@@ -607,13 +605,13 @@ describe('Flow runtime', function() {
       })
 
       sys.addArc({
-        entity: 'src2',
+        entity: 'src_2',
         process: 'process',
         port: 'val2'
       })
 
       sys.addArc({
-        entity: 'src1',
+        entity: 'src_1',
         process: 'process',
         port: 'val1'
       })
@@ -623,12 +621,12 @@ describe('Flow runtime', function() {
         entity: 'dest'
       })
 
-      sys.set('src2', 2)
+      sys.set('src_2', 2)
 
       expect(sys.get('dest')).to.be.undefined
       expect(procedure).to.not.be.called
 
-      sys.set('src1', 3)
+      sys.set('src_1', 3)
 
       expect(sys.get('dest')).to.equal(5)
       expect(procedure.args[0][0]).to.deep.equal({
@@ -1267,10 +1265,10 @@ describe('Flow runtime', function() {
     })
 
 
-    it('triggers when entity added with new value', function() {
+    it('triggers when entity set with new value', function() {
       let cb = sinon.stub()
       sys.on('bar', cb)
-      sys.addEntity({id: 'bar', value: 32})
+      sys.set('bar', 32)
 
       expect(cb).to.be.calledWith(32)
     })
