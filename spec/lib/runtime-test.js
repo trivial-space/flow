@@ -792,7 +792,6 @@ describe('Flow runtime', function() {
 
 
     it('executes hot processes before accumulator processes', function() {
-      sys.setDebug(true)
       sys.addGraph({
         processes: [{
           id: "p1",
@@ -931,6 +930,35 @@ describe('Flow runtime', function() {
       sys.removeProcess('foo')
 
       expect(cleanup).to.be.called
+    })
+
+
+    it('flow propagates to async processes', function() {
+      sys.addGraph({
+        processes: [{
+          id: "p1",
+          autostart: true,
+          procedure: () => 42
+        }, {
+          id: "p2",
+          async: true,
+          ports: { val: sys.PORT_TYPES.HOT },
+          procedure: (ports, send) => send(ports.val)
+        }],
+        arcs: [{
+          process: "p1",
+          entity: "src1"
+        }, {
+          entity: "src1",
+          process: "p2",
+          port: "val"
+        }, {
+          process: "p2",
+          entity: "dest"
+        }]
+      })
+
+      expect(sys.get('dest')).to.equal(42)
     })
   })
 
