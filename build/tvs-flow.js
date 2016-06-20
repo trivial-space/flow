@@ -174,12 +174,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (e.value != null && eE.val == null) {
 	      eE.val = e.value;
 	      touchEntity(eE);
-	      flush();
 	    }
 	    if (e.json != null && eE.val == null) {
 	      eE.val = JSON.parse(e.json);
 	      touchEntity(eE);
-	      flush();
 	    }
 	    return e;
 	  }
@@ -332,6 +330,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (graphSpec.meta) {
 	      setMeta(graphSpec.meta);
 	    }
+	    flush();
 	  }
 
 	  // ===== flow execution =====
