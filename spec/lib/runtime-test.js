@@ -790,6 +790,41 @@ describe('Flow runtime', function() {
       expect(sys.get('dest')).to.equal(30)
     })
 
+
+    it('executes hot processes before accumulator processes', function() {
+      sys.setDebug(true)
+      sys.addGraph({
+        processes: [{
+          id: "p1",
+          ports: {
+            self: sys.PORT_TYPES.ACCUMULATOR,
+            val: sys.PORT_TYPES.HOT
+          },
+          procedure: (ports) => ports.self + '-' + ports.val
+        }, {
+          id: "p2",
+          ports: { val: sys.PORT_TYPES.HOT },
+          procedure: (ports) => ports.val
+        }],
+        arcs: [{
+          entity: "src1",
+          process: "p1",
+          port: "val"
+        }, {
+          entity: "src2",
+          process: "p2",
+          port: "val"
+        }, {
+          process: "p1",
+          entity: "dest"
+        }, {
+          process: "p2",
+          entity: "dest"
+        }]
+      })
+
+      expect(sys.get('dest')).to.equal('src2_value-src1_value')
+    })
   })
 
 

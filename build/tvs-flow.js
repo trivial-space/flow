@@ -339,14 +339,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	      executedProcesses = {};
 
 	  function touchEntity(eE) {
-	    var level = arguments.length <= 1 || arguments[1] === undefined ? 0 : arguments[1];
-	    var eP = arguments[2];
+	    touchedEntities[eE.id] = eE;
+	  }
 
-	    if (!touchedEntities[eE.id]) {
-	      touchedEntities[eE.id] = { level: level };
+	  function getTouches(touches, eE) {
+	    var level = arguments.length <= 2 || arguments[2] === undefined ? 0 : arguments[2];
+	    var eP = arguments[3];
+
+	    if (!touches[eE.id]) {
+	      touches[eE.id] = { level: level };
 	    }
 
-	    var touch = touchedEntities[eE.id];
+	    var touch = touches[eE.id];
 
 	    if (!eP || !eP.acc) {
 	      touch.reload = true;
@@ -366,8 +370,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    for (var pId in eE.effects) {
 	      var pNext = eE.effects[pId];
+	      if (pNext.acc) {
+	        touch.level += 1;
+	      }
 	      if (pNext.out && !pNext.async) {
-	        touchEntity(pNext.out, level + 1, pNext);
+	        getTouches(touches, pNext.out, level + 1, pNext);
 	      }
 	    }
 	  }
@@ -375,11 +382,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	  function flush() {
 	    var order = [],
 	        later = [],
+	        touches = {},
 	        p = undefined;
 
 	    for (var eId in touchedEntities) {
-	      var touch = touchedEntities[eId];
-	      touch.eE = engine.es[eId];
+	      getTouches(touches, touchedEntities[eId]);
+	    }
+
+	    for (var _eId in touches) {
+	      var touch = touches[_eId];
+	      touch.eE = engine.es[_eId];
 	      if (order[touch.level]) {
 	        order[touch.level].push(touch);
 	      } else {
