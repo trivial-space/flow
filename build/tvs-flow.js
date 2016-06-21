@@ -87,8 +87,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
 	function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj; }
 
 	function create() {
@@ -335,115 +333,91 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  // ===== flow execution =====
 
-	  var touchedEntities = {},
-	      executedProcesses = {};
+	  var touchedEntities = {};
 
-	  function touchEntity(eE) {
-	    touchedEntities[eE.id] = eE;
+	  function touchEntity(eE, eP) {
+	    touchedEntities[eE.id] = eP || true;
 	  }
 
-	  function getTouches(touches, eE) {
-	    var level = arguments.length <= 2 || arguments[2] === undefined ? 0 : arguments[2];
-	    var eP = arguments[3];
+	  function getSchedule(syncSchedule, asyncSchedule, callbacks, eE) {
+	    var level = arguments.length <= 4 || arguments[4] === undefined ? 0 : arguments[4];
+	    var pLast = arguments[5];
 
-	    if (!touches[eE.id]) {
-	      touches[eE.id] = { level: level };
+	    if (eE.cb) {
+	      callbacks[eE.id] = eE;
 	    }
 
-	    var touch = touches[eE.id];
+	    if (!pLast || !pLast.acc) {
+	      var inc = false;
+	      for (var pId in eE.reactions) {
+	        inc = true;
+	        if (!syncSchedule[pId]) {
+	          syncSchedule[pId] = { level: level, eP: eE.reactions[pId] };
+	        } else {
+	          syncSchedule[pId].level = level;
+	        }
+	      }
 
-	    if (!eP || !eP.acc) {
-	      touch.reload = true;
+	      if (inc) level++;
 	    }
 
-	    if (touch.level < level) {
-	      touch.level = level;
-	    }
+	    for (var _pId in eE.effects) {
+	      var eP = eE.effects[_pId];
 
-	    if (!touch.reload && eP.acc) {
-	      if (touch.acc) {
-	        touch.acc[eP.id] = true;
+	      if (eP.async) {
+	        asyncSchedule[_pId] = eP;
 	      } else {
-	        touch.acc = _defineProperty({}, eP.id, eP);
-	      }
-	    }
 
-	    for (var pId in eE.effects) {
-	      var pNext = eE.effects[pId];
-	      if (pNext.acc) {
-	        touch.level += 1;
-	      }
-	      if (pNext.out && !pNext.async) {
-	        getTouches(touches, pNext.out, level + 1, pNext);
+	        if (!syncSchedule[_pId]) {
+	          syncSchedule[_pId] = { level: level, eP: eP };
+	        }
+
+	        var step = syncSchedule[_pId];
+	        if (step.level < level) {
+	          step.level = level;
+	        }
+
+	        if (eP.out) {
+	          getSchedule(syncSchedule, asyncSchedule, callbacks, eP.out, level + 1, eP);
+	        }
 	      }
 	    }
 	  }
 
 	  function flush() {
 	    var order = [],
-	        later = [],
-	        touches = {},
-	        p = undefined;
+	        callbacks = {},
+	        syncSchedule = {},
+	        asyncSchedule = {};
 
 	    for (var eId in touchedEntities) {
-	      getTouches(touches, touchedEntities[eId]);
-	    }
-
-	    for (var _eId in touches) {
-	      var touch = touches[_eId];
-	      touch.eE = engine.es[_eId];
-	      if (order[touch.level]) {
-	        order[touch.level].push(touch);
-	      } else {
-	        order[touch.level] = [touch];
-	      }
-	    }
-
-	    for (var i in order) {
-	      for (var j in order[i]) {
-	        var _touch = order[i][j],
-	            eE = _touch.eE;
-	        if (_touch.reload) {
-	          for (var pId in eE.reactions) {
-	            p = engine.ps[pId];
-	            if (p.async) {
-	              later.push(p);
-	            } else if (!executedProcesses[p.id]) {
-	              execute(p);
-	              executedProcesses[p.id] = true;
-	            }
-	          }
-	        } else if (_touch.acc) {
-	          for (var _pId in _touch.acc) {
-	            p = engine.ps[_pId];
-	            if (p.async) {
-	              later.push(p);
-	            } else if (!executedProcesses[p.id]) {
-	              execute(p);
-	              executedProcesses[p.id] = true;
-	            }
-	          }
-	        }
-	        for (var _pId2 in eE.effects) {
-	          p = engine.ps[_pId2];
-	          if (p.async) {
-	            later.push(p);
-	          } else if (!executedProcesses[p.id]) {
-	            execute(p);
-	            executedProcesses[p.id] = true;
-	          }
-	        }
-	        if (eE.cb) {
-	          eE.cb(eE.val);
-	        }
-	      }
+	      getSchedule(syncSchedule, asyncSchedule, callbacks, engine.es[eId], 0, touchedEntities[eId]);
 	    }
 
 	    touchedEntities = {};
-	    executedProcesses = {};
 
-	    for (var _i3 in later) {
-	      execute(later[_i3]);
+	    for (var _eId in syncSchedule) {
+	      var step = syncSchedule[_eId];
+	      if (order[step.level]) {
+	        order[step.level].push(step.eP);
+	      } else {
+	        order[step.level] = [step.eP];
+	      }
+	    }
+
+	    for (var i = 0; i < order.length; i++) {
+	      for (var j = 0; j < order[i].length; j++) {
+	        var eP = order[i][j];
+	        execute(eP);
+	      }
+	    }
+
+	    for (var _eId2 in callbacks) {
+	      callbacks[_eId2].cb(callbacks[_eId2].val);
+	    }
+
+	    for (var pId in asyncSchedule) {
+	      execute(asyncSchedule[pId]);
 	    }
 	  }
 
@@ -478,8 +452,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var eP = engineP(processId);
 	    execute(eP);
 	    if (eP.out && !eP.async) {
-	      executedProcesses[processId] = true;
-	      touchEntity(eP.out);
+	      touchEntity(eP.out, eP);
 	      flush();
 	    }
 	  }
