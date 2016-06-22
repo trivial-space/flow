@@ -205,7 +205,8 @@ describe('Flow runtime', function() {
     sys.set('bar', 1)
 
     expect(sys.get('foo')).to.equal(2)
-    expect(console.log.getCall(0).args[1]).to.match(/lala/)
+    expect(console.log.getCall(0).args[0]).to.match(/flush/)
+    expect(console.log.getCall(1).args[1]).to.match(/lala/)
   })
 
 

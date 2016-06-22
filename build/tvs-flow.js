@@ -382,6 +382,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }
 
 	  function flush() {
+	    if (debug) {
+	      console.log("flushing graph with", touchedEntities);
+	    }
+
 	    var order = [],
 	        callbacks = {},
 	        syncSchedule = {},
