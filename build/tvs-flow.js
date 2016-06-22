@@ -353,7 +353,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        inc = true;
 	        if (!syncSchedule[pId]) {
 	          syncSchedule[pId] = { level: level, eP: eE.reactions[pId] };
-	        } else {
+	        } else if (syncSchedule[pId].level < level) {
 	          syncSchedule[pId].level = level;
 	        }
 	      }
@@ -370,11 +370,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        if (!syncSchedule[_pId]) {
 	          syncSchedule[_pId] = { level: level, eP: eP };
-	        }
-
-	        var step = syncSchedule[_pId];
-	        if (step.level < level) {
-	          step.level = level;
+	        } else if (syncSchedule[_pId].level < level) {
+	          syncSchedule[_pId].level = level;
 	        }
 
 	        if (eP.out) {

@@ -1017,8 +1017,8 @@ describe('Flow runtime', function() {
       })
 
       let a = sys.addArc({
-        process: "foo",
         entity: "src1",
+        process: "foo",
         port: "val"
       })
 
@@ -1039,8 +1039,8 @@ describe('Flow runtime', function() {
       expect(procedure).to.not.be.called
 
       sys.addArc({
-        process: "foo",
         entity: "src2",
+        process: "foo",
         port: "val"
       })
 
