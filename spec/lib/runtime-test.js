@@ -118,14 +118,14 @@ describe('Flow runtime', function() {
           id: "foo",
           value: undefined,
           json: undefined,
-          event: undefined,
+          isEvent: undefined,
           meta: {}
         },
         bar: {
           id: "bar",
           value: 22,
           json: undefined,
-          event: undefined,
+          isEvent: undefined,
           meta: {}
         }
       },
@@ -832,7 +832,7 @@ describe('Flow runtime', function() {
     it('has event entities that are only defined when set or changed', function() {
       sys.addEntity({
         id: "event",
-        event: true
+        isEvent: true
       })
 
       let p = sinon.stub()
