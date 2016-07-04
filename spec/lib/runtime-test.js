@@ -116,14 +116,16 @@ describe('Flow runtime', function() {
       entities: {
         foo: {
           id: "foo",
-          meta: {},
+          value: undefined,
           json: undefined,
-          value: undefined
+          event: undefined,
+          meta: {}
         },
         bar: {
           id: "bar",
           value: 22,
           json: undefined,
+          event: undefined,
           meta: {}
         }
       },
@@ -824,6 +826,37 @@ describe('Flow runtime', function() {
       })
 
       expect(sys.get('dest')).to.equal('src2_value-src1_value')
+    })
+
+
+    it('has event entities that are only defined when set or changed', function() {
+      sys.addEntity({
+        id: "event",
+        event: true
+      })
+
+      let p = sinon.stub()
+      sys.addProcess({
+        id: "p",
+        ports: {e: sys.PORT_TYPES.HOT},
+        procedure: p
+      })
+
+      sys.addArc({
+        entity: "event",
+        process: "p",
+        port: 'e'
+      })
+
+      sys.set('event', 30)
+      expect(p).to.be.calledWith({e: 30})
+
+      p.reset()
+      sys.start('p')
+
+      expect(p).to.be.calledWith({e: undefined})
+
+      expect(sys.get('event')).to.equal(30)
     })
   })
 
