@@ -457,10 +457,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	    for (var portId in eP.sources) {
 	      var src = eP.sources[portId];
-	      if (!src.event || activeEntities && activeEntities[src.id]) {
-	        eP.values[portId] = src.val;
-	      } else {
+	      if (src.event && !(activeEntities && activeEntities[src.id])) {
 	        eP.values[portId] = undefined;
+	      } else {
+	        eP.values[portId] = src.val;
 	      }
 	    }
 	    if (eP.async) {
