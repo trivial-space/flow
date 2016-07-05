@@ -168,11 +168,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	  function addEntity(spec) {
 	    var e = _runtimeTypes2.default.createEntity(spec);
 	    entities[e.id] = e;
+
 	    var eE = engineE(e.id);
+	    eE.event = e.isEvent;
+
 	    if (e.value != null && eE.val == null) {
 	      eE.val = e.value;
 	      touchEntity(eE);
 	    }
+
 	    if (e.json != null && eE.val == null) {
 	      eE.val = JSON.parse(e.json);
 	      touchEntity(eE);
@@ -339,9 +343,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	    touchedEntities[eE.id] = eP || true;
 	  }
 
-	  function getSchedule(syncSchedule, asyncSchedule, callbacks, eE) {
-	    var level = arguments.length <= 4 || arguments[4] === undefined ? 0 : arguments[4];
-	    var pLast = arguments[5];
+	  function getSchedule(_ref) {
+	    var syncSchedule = _ref.syncSchedule;
+	    var asyncSchedule = _ref.asyncSchedule;
+	    var callbacks = _ref.callbacks;
+	    var activeEntities = _ref.activeEntities;
+	    var eE = _ref.eE;
+	    var _ref$level = _ref.level;
+	    var level = _ref$level === undefined ? 0 : _ref$level;
+	    var pLast = _ref.pLast;
+
+	    activeEntities[eE.id] = true;
 
 	    if (eE.cb) {
 	      callbacks[eE.id] = eE;
@@ -375,7 +387,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 
 	        if (eP.out) {
-	          getSchedule(syncSchedule, asyncSchedule, callbacks, eP.out, level + 1, eP);
+	          getSchedule({
+	            syncSchedule: syncSchedule,
+	            asyncSchedule: asyncSchedule,
+	            callbacks: callbacks,
+	            activeEntities: activeEntities,
+	            eE: eP.out,
+	            level: level + 1,
+	            pLast: eP
+	          });
 	        }
 	      }
 	    }
@@ -389,10 +409,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var order = [],
 	        callbacks = {},
 	        syncSchedule = {},
-	        asyncSchedule = {};
+	        asyncSchedule = {},
+	        activeEntities = {};
 
 	    for (var eId in touchedEntities) {
-	      getSchedule(syncSchedule, asyncSchedule, callbacks, engine.es[eId], 0, touchedEntities[eId]);
+	      getSchedule({
+	        syncSchedule: syncSchedule,
+	        asyncSchedule: asyncSchedule,
+	        callbacks: callbacks,
+	        activeEntities: activeEntities,
+	        eE: engine.es[eId],
+	        level: 0,
+	        pLast: touchedEntities[eId]
+	      });
 	    }
 
 	    touchedEntities = {};
@@ -409,7 +438,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    for (var i = 0; i < order.length; i++) {
 	      for (var j = 0; j < order[i].length; j++) {
 	        var eP = order[i][j];
-	        execute(eP);
+	        execute(eP, activeEntities);
 	      }
 	    }
 
@@ -418,16 +447,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 
 	    for (var pId in asyncSchedule) {
-	      execute(asyncSchedule[pId]);
+	      execute(asyncSchedule[pId], activeEntities);
 	    }
 	  }
 
-	  function execute(eP) {
+	  function execute(eP, activeEntities) {
 	    if (debug) {
 	      console.log("executing process", eP.id);
 	    }
 	    for (var portId in eP.sources) {
-	      eP.values[portId] = eP.sources[portId].val;
+	      var src = eP.sources[portId];
+	      if (!src.event || activeEntities && activeEntities[src.id]) {
+	        eP.values[portId] = src.val;
+	      } else {
+	        eP.values[portId] = undefined;
+	      }
 	    }
 	    if (eP.async) {
 	      eP.stop && eP.stop();
@@ -550,12 +584,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	  var id = _ref$id === undefined ? (0, _uuid.v4)() : _ref$id;
 	  var value = _ref.value;
 	  var json = _ref.json;
+	  var isEvent = _ref.isEvent;
 	  var meta = _ref.meta;
 
 	  return {
 	    id: id,
 	    value: value,
 	    json: json,
+	    isEvent: isEvent,
 	    meta: _extends({}, meta)
 	  };
 	}
