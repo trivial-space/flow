@@ -10,15 +10,11 @@
   "env": {
     "node": true,
     "mocha": true,
-    "browser": true,
-    "jquery": true
+    "browser": true
   },
   "globals": {
     "expect": true,
-    "src": true,
-    "src_rewire": true,
-    "sinon": true,
-    "__rootDir": true
+    "sinon": true
   },
   "rules": {
     "no-unused-vars": 1,

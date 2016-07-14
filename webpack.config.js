@@ -1,12 +1,12 @@
-var path = require('path')
-var RewirePlugin = require("rewire-webpack")
+var path = require('path'),
+    webpack = require('webpack')
 
 module.exports = {
 
   entry: path.resolve(__dirname, "./lib/index.js"),
 
   output: {
-    path: path.resolve(__dirname, "./build"),
+    path: path.resolve(__dirname, "./dist"),
     filename: "tvs-flow.js",
     library: 'tvsFlow',
     libraryTarget: "umd"
@@ -35,6 +35,8 @@ module.exports = {
   },
 
   plugins: [
-    new RewirePlugin()
+    new webpack.optimize.UglifyJsPlugin({
+      beautify: true
+    })
   ]
 }

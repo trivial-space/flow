@@ -1,8 +1,8 @@
 {
-  "name": "trivialspace-flow",
-  "version": "0.0.1",
-  "description": "a dataflow system",
-  "main": "lib/index.js",
+  "name": "tvs-flow",
+  "version": "0.1.0",
+  "description": "trivialspace flow: a dataflow system for javascript",
+  "main": "dist/tvs-flow.js",
   "scripts": {
     "test": "karma start"
   },
@@ -11,7 +11,7 @@
     "url": "git+https://github.com/trivial-space/flow.git"
   },
   "keywords": [
-    "data-flow"
+    "data-flow", "reactive programming"
   ],
   "author": "Thomas Gorny",
   "license": "MIT",
@@ -39,8 +39,6 @@
     "karma-sourcemap-loader": "^0.3.6",
     "karma-webpack": "^1.7.0",
     "mocha": "^2.3.4",
-    "rewire": "^2.5.1",
-    "rewire-webpack": "^1.0.1",
     "sinon": "^1.17.2",
     "sinon-chai": "^2.8.0",
     "webpack": "^1.12.9"
