@@ -188,12 +188,9 @@
                     var c = r[s];
                     e[c.level] ? e[c.level].push(c.eP) : e[c.level] = [ c.eP ];
                 }
-                for (var u = 0; u < e.length; u++) for (var i = 0; i < e[u].length; i++) {
-                    var l = e[u][i];
-                    _(l, o);
-                }
-                for (var f in t) t[f].cb(t[f].val);
-                for (var v in n) _(n[v], o);
+                for (var u = 0; u < e.length; u++) for (var i = 0; i < e[u].length; i++) _(e[u][i], o);
+                for (var l in t) t[l].cb(t[l].val);
+                for (var f in n) _(n[f], o);
             }
             function _(e, t) {
                 F && console.log("executing process", e.id);
