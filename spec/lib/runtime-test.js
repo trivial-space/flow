@@ -1,5 +1,5 @@
-import runtime from 'runtime'
-import types from 'runtime-types'
+import * as types from 'runtime-types'
+import * as runtime from 'runtime'
 
 
 describe('Flow runtime', function() {

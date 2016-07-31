@@ -1,9 +1,8 @@
 // Karma configuration
-var assign = require('object-assign'),
-    config = require('./webpack.config.js'),
+var config = require('./webpack.config.js'),
 
     // add custom option to webpack config
-    webpack = assign({}, config, {
+    webpack = Object.assign({}, config, {
       cache: true,
       debug: true,
       watch: true,
