@@ -595,6 +595,45 @@ describe('Flow runtime', function() {
     })
 
 
+    it('doesnt activate accumulator processes and doesnt propagate unless accumulator entity is defined', function() {
+      const p = sinon.spy(ports => ports.acc + ports.v)
+      sys.addGraph({
+        processes: [{
+          id: 'p1',
+          ports: {v: sys.PORT_TYPES.HOT, acc: sys.PORT_TYPES.ACCUMULATOR},
+          procedure: p
+        }, {
+          id: 'p2',
+          ports: {v: sys.PORT_TYPES.HOT},
+          procedure: ports => ports.v + ports.v
+        }],
+        arcs: [{
+          process: 'p1',
+          entity: 'dest'
+        }, {
+          entity: 'src1',
+          process: 'p1',
+          port: 'v'
+        }, {
+          process: 'p2',
+          entity: 'dest'
+        }, {
+          entity: 'start',
+          process: 'p2',
+          port: 'v'
+        }]
+      })
+
+      expect(p).to.not.be.called
+      expect(sys.get('dest')).to.be.undefined
+
+      sys.set('start', 22)
+
+      expect(p).to.be.calledWith({acc: 44, v: 'src1_value'})
+      expect(sys.get('dest')).to.equal('44src1_value')
+    })
+
+
     it('have processes that dont react on cold entity ports', function() {
       let procedure = sinon.spy((input) => input.val1 + input.val2)
 
