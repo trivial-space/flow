@@ -1,6 +1,6 @@
 {
   "name": "tvs-flow",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "trivialspace flow: a dataflow system for javascript",
   "main": "dist/tvs-flow.js",
   "scripts": {
