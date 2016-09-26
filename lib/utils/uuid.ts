@@ -13,7 +13,7 @@ var _rnds = new Array(16),
     };
 
 // Maps for number <-> hex string conversion
-var _byteToHex = [];
+var _byteToHex: string[] = [];
 var _hexToByte = {};
 for (var i = 0; i < 256; i++) {
   _byteToHex[i] = (i + 0x100).toString(16).substr(1);

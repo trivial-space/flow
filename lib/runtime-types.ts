@@ -16,7 +16,7 @@ export function createEntity ({
     value,
     json,
     isEvent,
-    meta: {...meta}
+    meta: Object.assign({}, meta)
   }
 }
 
@@ -44,7 +44,7 @@ export function createProcess ({
     code,
     autostart,
     async: async,
-    meta: {...meta},
+    meta: Object.assign({}, meta)
   }
 }
 
@@ -76,7 +76,7 @@ export function createArc ({
     entity,
     process,
     port,
-    meta: {...meta}
+    meta: Object.assign({}, meta)
   }
 }
 

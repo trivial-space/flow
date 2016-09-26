@@ -20,6 +20,15 @@ export function create() {
   }
 
 
+  function getState() {
+    let state = {}
+    for (let eId in engine.es) {
+      state[eId] = engine.es[eId].val
+    }
+    return state
+  }
+
+
   function getContext() {
     return context
   }
@@ -37,10 +46,7 @@ export function create() {
 
   function setMeta(newMeta) {
     if (newMeta != null && typeof newMeta === "object" && !(newMeta instanceof Array)) {
-      meta = {
-        ...meta,
-        ...newMeta
-      }
+      meta = Object.assign({}, meta, newMeta)
     }
   }
 
@@ -270,7 +276,7 @@ export function create() {
   var touchedEntities = {}
 
 
-  function touchEntity(eE, eP) {
+  function touchEntity(eE, eP?) {
     touchedEntities[eE.id] = eP || true
   }
 
@@ -343,7 +349,7 @@ export function create() {
       console.log("flushing graph with", touchedEntities)
     }
 
-    let order = [],
+    let order: any[][] = [],
         callbacks = {},
         syncSchedule = {},
         asyncSchedule = {},
@@ -388,7 +394,7 @@ export function create() {
   }
 
 
-  function execute(eP, activeEntities) {
+  function execute(eP, activeEntities?) {
     if(debug) {
       console.log("executing process", eP.id)
     }
@@ -479,6 +485,7 @@ export function create() {
     addGraph,
 
     getGraph,
+    getState,
     setMeta,
     getMeta,
     getContext,
@@ -494,6 +501,6 @@ export function create() {
     start,
     stop,
 
-    PORT_TYPES: {...types.PORT_TYPES}
+    PORT_TYPES: Object.assign({}, types.PORT_TYPES)
   }
 }

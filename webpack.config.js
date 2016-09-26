@@ -3,7 +3,7 @@ var path = require('path'),
 
 module.exports = {
 
-  entry: path.resolve(__dirname, "./lib/index.js"),
+  entry: path.resolve(__dirname, "./lib/index.ts"),
 
   output: {
     path: path.resolve(__dirname, "./dist"),
@@ -24,11 +24,15 @@ module.exports = {
           "add-module-exports"
         ]
       }
+    }, {
+      exclude: /node_modules/,
+      loader: 'ts-loader',
+      test: /\.ts$/
     }]
   },
 
   resolve: {
-    extensions: ['', '.js', '.json'],
+    extensions: ['', '.js', '.json', '.ts'],
     root: [
       path.resolve(__dirname, "./lib")
     ]

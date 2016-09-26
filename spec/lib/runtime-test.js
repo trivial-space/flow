@@ -21,6 +21,23 @@ describe('Flow runtime', function() {
   })
 
 
+  it('can report its current state', function() {
+    sys.set('foo', 22)
+    sys.set('bar', "barbar")
+    sys.set('baz', [1, 2])
+    sys.addEntity({id: 'faa'})
+    sys.update('baz', function(baz) {baz.push(3); return baz})
+
+    let state = sys.getState()
+    expect(state).to.deep.equal({
+      foo: 22,
+      bar: 'barbar',
+      baz: [1, 2, 3],
+      faa: undefined
+    })
+  })
+
+
   it('can set and get meta data', function() {
     const meta = {
       foo: "bar"
