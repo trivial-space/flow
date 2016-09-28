@@ -363,7 +363,7 @@ describe('Flow runtime', function() {
 
 
     it('can be removed', function() {
-      sys.addProcess({id: 'foo', code: ''})
+      sys.addProcess({id: 'foo', code: '123'})
       sys.addArc({id: 'bar', process: 'foo', entity: 'baz'})
       sys.addArc({id: 'baz', process: 'foooo', entity: 'baz'})
 

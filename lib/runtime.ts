@@ -58,12 +58,12 @@ export function create() {
 
   // ===== entity operations =====
 
-  function get (id) {
+  function get (id: string): any {
     return engine.es[id] && engine.es[id].val
   }
 
 
-  function set (id, value) {
+  function set (id: string, value: any) {
     let eE = engineE(id)
     eE.val = value
     touchEntity(eE)
@@ -71,18 +71,18 @@ export function create() {
   }
 
 
-  function update (id, fn) {
+  function update (id: string, fn: (val: any) => any) {
     set(id, fn(get(id)))
   }
 
 
-  function on (id, cb) {
+  function on (id: string, cb: (val: any) => void) {
     let eE = engineE(id)
     eE.cb = cb
   }
 
 
-  function off (id) {
+  function off (id: string) {
     let eE = engineE(id)
     delete eE.cb
   }
@@ -90,7 +90,7 @@ export function create() {
 
   // ===== update flow topology =====
 
-  function addEntity(spec) {
+  function addEntity(spec: types.EntityData): types.Entity {
     let e = types.createEntity(spec)
     entities[e.id] = e
 
@@ -110,7 +110,7 @@ export function create() {
   }
 
 
-  function removeEntity(id) {
+  function removeEntity(id: string) {
     let eE = engineE(id)
     for (let aId in eE.arcs) {
       removeArc(aId)
@@ -120,7 +120,7 @@ export function create() {
   }
 
 
-  function addProcess(spec) {
+  function addProcess(spec: types.ProcessData): types.Process {
     let p = types.createProcess(spec, context)
     processes[p.id] = p
     let eP = engineP(p.id)
@@ -155,7 +155,7 @@ export function create() {
   }
 
 
-  function removeProcess(id) {
+  function removeProcess(id: string) {
     let eP = engineP(id)
     eP.stop && eP.stop()
     for (let aId in eP.arcs) {
@@ -166,7 +166,7 @@ export function create() {
   }
 
 
-  function addArc(spec) {
+  function addArc(spec: types.ArcData): types.Arc {
     let arc = types.createArc(spec)
     arcs[arc.id] = arc
     updateArc(arc)
@@ -183,7 +183,7 @@ export function create() {
   }
 
 
-  function removeArc(id) {
+  function removeArc(id: string) {
     let arc = arcs[id]
 
     if (arc) {
@@ -207,7 +207,7 @@ export function create() {
   }
 
 
-  function updateArc(arc) {
+  function updateArc(arc: types.Arc) {
     let pId = arc.process,
         eId = arc.entity,
         eP = engineP(pId),
@@ -248,7 +248,7 @@ export function create() {
   }
 
 
-  function addGraph(graphSpec) {
+  function addGraph(graphSpec: types.Graph) {
     if (graphSpec.entities) {
       for (let i in graphSpec.entities) {
         addEntity(graphSpec.entities[i])
