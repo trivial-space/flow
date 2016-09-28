@@ -1199,7 +1199,7 @@ describe('Flow runtime', function() {
         expect(sys.get('dest')).to.equal(42)
         expect(sys.get('foo')).to.equal(52)
         done()
-      }, 40)
+      }, 100)
     })
 
 
