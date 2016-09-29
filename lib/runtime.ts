@@ -236,6 +236,8 @@ export function create() {
           touchEntity(eE)
           if (!blockFlush) {
             flush()
+          } else {
+            continueFlush = true
           }
         }
         eP.out = eE
@@ -287,7 +289,8 @@ export function create() {
       syncSchedule = {},
       asyncSchedule = {},
       activeEntities = {},
-      blockFlush = false
+      blockFlush = false,
+      continueFlush = false
 
 
   function getSchedule(eE, level = 0, pLast) {
@@ -347,14 +350,14 @@ export function create() {
     asyncSchedule = {}
     callbacks = {}
 
-
+    // schedule
     for (let eId in touchedEntities) {
       getSchedule(engine.es[eId], 0, touchedEntities[eId])
     }
 
     touchedEntities = {}
 
-
+    // sync calls
     for (let eId in syncSchedule) {
       let step = syncSchedule[eId]
       if (order[step.level]) {
@@ -372,19 +375,20 @@ export function create() {
 
     order.length = 0
 
+    // callbacks
     for (let eId in callbacks) {
       callbacks[eId].cb(callbacks[eId].val)
     }
 
-    let flushAsync = false
+    // async calls
     blockFlush = true
+    continueFlush = false
     for (let pId in asyncSchedule) {
-      flushAsync = true
       execute(asyncSchedule[pId], activeEntities)
     }
     blockFlush = false
 
-    flushAsync && flush()
+    continueFlush && flush()
   }
 
 

@@ -18,10 +18,10 @@
         function n(e) {
             for (var r in e) t.hasOwnProperty(r) || (t[r] = e[r]);
         }
-        var s = r(1), o = r(5);
+        var s = r(1), o = r(5), c = r(2);
         Object.defineProperty(t, "__esModule", {
             value: !0
-        }), t["default"] = s, t.runtime = s, n(r(1)), t.utils = {
+        }), t["default"] = s, t.runtime = s, n(r(1)), t.types = c, t.utils = {
             entitySpec: o
         };
     }, function(e, t, r) {
@@ -124,7 +124,7 @@
             function P(e) {
                 var t = e.process, r = e.entity, n = R(t), o = S(r), c = M[t];
                 o.arcs[e.id] = !0, c && (n.arcs[e.id] = !0, e.port ? (n.sources[e.port] = o, c.ports[e.port] == s.PORT_TYPES.HOT ? o.effects[t] = n : delete o.effects[t]) : (n.sink = function(e) {
-                    o.val = e, h(o), q || b();
+                    o.val = e, h(o), q ? z = !0 : b();
                 }, n.out = o, n.acc ? (n.sources[n.acc] = o, o.reactions[t] = n) : delete o.reactions[t]));
             }
             function g(e) {
@@ -167,10 +167,9 @@
                 for (var r = 0; r < D.length; r++) for (var n = 0; n < D[r].length; n++) j(D[r][n], N);
                 D.length = 0;
                 for (var e in G) G[e].cb(G[e].val);
-                var s = !1;
-                q = !0;
-                for (var o in J) s = !0, j(J[o], N);
-                q = !1, s && b();
+                q = !0, z = !1;
+                for (var s in J) j(J[s], N);
+                q = !1, z && b();
             }
             function j(e, t) {
                 Y && console.log("executing process", e.id);
@@ -219,7 +218,7 @@
             var U = {}, M = {}, k = {}, w = {}, L = null, _ = {
                 es: {},
                 ps: {}
-            }, Y = !1, H = {}, D = [], G = {}, F = {}, J = {}, N = {}, q = !1;
+            }, Y = !1, H = {}, D = [], G = {}, F = {}, J = {}, N = {}, q = !1, z = !1;
             return {
                 addEntity: p,
                 removeEntity: d,
