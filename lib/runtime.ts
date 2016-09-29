@@ -234,7 +234,9 @@ export function create() {
         eP.sink = value => {
           eE.val = value
           touchEntity(eE)
-          flush()
+          if (!blockFlush) {
+            flush()
+          }
         }
         eP.out = eE
         if (eP.acc) {
@@ -280,16 +282,15 @@ export function create() {
     touchedEntities[eE.id] = eP || true
   }
 
+  let order: any[][] = [],
+      callbacks = {},
+      syncSchedule = {},
+      asyncSchedule = {},
+      activeEntities = {},
+      blockFlush = false
 
-  function getSchedule({
-    syncSchedule,
-    asyncSchedule,
-    callbacks,
-    activeEntities,
-    eE,
-    level = 0,
-    pLast
-  }) {
+
+  function getSchedule(eE, level = 0, pLast) {
 
     activeEntities[eE.id] = true
 
@@ -329,15 +330,7 @@ export function create() {
         }
 
         if (eP.out) {
-          getSchedule({
-            syncSchedule,
-            asyncSchedule,
-            callbacks,
-            activeEntities,
-            eE: eP.out,
-            level: level + 1,
-            pLast: eP
-          })
+          getSchedule(eP.out, level + 1, eP)
         }
       }
     }
@@ -349,25 +342,18 @@ export function create() {
       console.log("flushing graph with", touchedEntities)
     }
 
-    let order: any[][] = [],
-        callbacks = {},
-        syncSchedule = {},
-        asyncSchedule = {},
-        activeEntities = {}
+    activeEntities = {}
+    syncSchedule = {}
+    asyncSchedule = {}
+    callbacks = {}
+
 
     for (let eId in touchedEntities) {
-      getSchedule({
-        syncSchedule,
-        asyncSchedule,
-        callbacks,
-        activeEntities,
-        eE: engine.es[eId],
-        level: 0,
-        pLast: touchedEntities[eId]
-      })
+      getSchedule(engine.es[eId], 0, touchedEntities[eId])
     }
 
     touchedEntities = {}
+
 
     for (let eId in syncSchedule) {
       let step = syncSchedule[eId]
@@ -384,13 +370,21 @@ export function create() {
       }
     }
 
+    order.length = 0
+
     for (let eId in callbacks) {
       callbacks[eId].cb(callbacks[eId].val)
     }
 
+    let flushAsync = false
+    blockFlush = true
     for (let pId in asyncSchedule) {
+      flushAsync = true
       execute(asyncSchedule[pId], activeEntities)
     }
+    blockFlush = false
+
+    flushAsync && flush()
   }
 
 

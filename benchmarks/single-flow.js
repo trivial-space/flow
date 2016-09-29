@@ -48,6 +48,7 @@ function run(iterations = 100000) {
   const time = Date.now() - start
   console.log('iterations', iterations)
   console.log('time', time)
+  console.log('result e4', flow.get('e4'))
   console.log('==============')
   return time
 }
@@ -64,7 +65,7 @@ function test(runs = 20, results = []) {
 
   setTimeout(function() {
     test(runs - 1, results)
-  }, 100)
+  }, 10)
 }
 
-test(10)
+test()

@@ -682,7 +682,7 @@ describe('Flow runtime', function() {
 
       sys.addProcess({
         id: 'fooProcess',
-        procedure: (input) => input.val + 1,
+        procedure: input => input.val + 1,
         ports: {
           val: sys.PORT_TYPES.ACCUMULATOR
         }
