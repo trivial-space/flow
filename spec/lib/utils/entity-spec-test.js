@@ -27,6 +27,27 @@ describe('flow entitySpec', function () {
     })
 
 
+    it('can declare its own id', function() {
+      const p = () => {}
+      const spec = {
+        id: 'fooo',
+        do: p
+      }
+
+      expect(processProcessSpec("e", spec)).to.deep.equal({
+        entities: [],
+        processes: [{
+          id: "fooo",
+          procedure: p,
+        }],
+        arcs: [{
+          process: "fooo",
+          entity: "e"
+        }]
+      })
+    })
+
+
     it('takes other valid process props', function () {
       const p = () => 100
       const spec = {
@@ -57,7 +78,7 @@ describe('flow entitySpec', function () {
       const p = ({e1, e2, e3}) => e1 + e2 + e3
 
       const spec = {
-        deps: {
+        with: {
           e1: "H entity1",
           e3: "C entity3",
           e2: "A"
@@ -96,7 +117,7 @@ describe('flow entitySpec', function () {
       const p = ({e1, e2, e3}) => e1 + e2 + e3
 
       const spec = {
-        deps: {
+        with: {
           e1: "h entity1",
           e3: "c entity3",
           e2: "a"
@@ -121,7 +142,7 @@ describe('flow entitySpec', function () {
       const p = ({e2, e3}) => e2 + e3
 
       const spec = {
-        deps: {
+        with: {
           e2: "H entity2",
           e3: "C #entity3",
         },
@@ -158,7 +179,7 @@ describe('flow entitySpec', function () {
       const p = () => {}
 
       const spec = {
-        deps: {
+        with: {
           e1: "C #entity1",
         },
         do: p
@@ -268,7 +289,7 @@ describe('flow entitySpec', function () {
 
       const spec = {
         stream: {
-          deps: {
+          with: {
             e1: "H entity1"
           },
           do: p
@@ -305,7 +326,7 @@ describe('flow entitySpec', function () {
           do: p1
         }, {
           do: p2,
-          deps: {
+          with: {
             e1: "H entity1",
             e2: "A"
           }
@@ -368,7 +389,7 @@ describe('flow entitySpec', function () {
       const spec = {
         entity2: {
           stream: {
-            deps: {
+            with: {
               e1: "H entity1"
             },
             do: p
@@ -403,7 +424,7 @@ describe('flow entitySpec', function () {
       const spec = {
         entity2: {
           stream: {
-            deps: {
+            with: {
               e1: "H #entity1"
             },
             do: p

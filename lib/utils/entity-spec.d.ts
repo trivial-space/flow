@@ -9,11 +9,12 @@ export interface EntitySpec {
 }
 export interface ProcessSpec {
     do: Procedure;
-    deps?: {
+    with?: {
         [portId: string]: string;
     };
-    autostart?: boolean;
+    id?: string;
     async?: boolean;
+    autostart?: boolean;
     meta?: Meta;
 }
 export declare type Spec = {

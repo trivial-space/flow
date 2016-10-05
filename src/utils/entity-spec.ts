@@ -15,9 +15,10 @@ export interface EntitySpec {
 
 export interface ProcessSpec {
   do: Procedure
-  deps?: {[portId: string]: string}
-  autostart?: boolean
+  with?: {[portId: string]: string}
+  id?: string
   async?: boolean
+  autostart?: boolean
   meta?: Meta
 }
 
@@ -60,7 +61,7 @@ export function processProcessSpec (
     eid = mergePath(eid, path)
   }
 
-  const pid = eid + processNameSuffix
+  const pid = spec.id || eid + processNameSuffix
 
   const process: ProcessData = {
     id: pid,
@@ -88,11 +89,11 @@ export function processProcessSpec (
     process.meta = spec.meta
   }
 
-  if (spec.deps) {
+  if (spec.with) {
     process.ports = {} as Ports
 
-    for (let portId in spec.deps) {
-      const port = parseDepsString(spec.deps[portId])
+    for (let portId in spec.with) {
+      const port = parseDepsString(spec.with[portId])
       process.ports[portId] = port.type
       if (port.eid) {
 
