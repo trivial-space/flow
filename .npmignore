@@ -7,3 +7,5 @@ src
 .tern-project
 karma.conf.js
 webpack.config.js
+tsconfig.json
+.git
