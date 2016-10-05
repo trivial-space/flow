@@ -1,7 +1,7 @@
 import * as types from './runtime-types'
 
 
-export function create() {
+export function create(): types.Runtime {
 
   var entities = {},
       processes = {},
@@ -51,7 +51,7 @@ export function create() {
   }
 
 
-  function setDebug(isDebug) {
+  function setDebug(isDebug: boolean) {
     debug = isDebug
   }
 
@@ -426,7 +426,7 @@ export function create() {
   }
 
 
-  function start(processId) {
+  function start(processId: string) {
     let eP = engineP(processId)
     execute(eP)
     if (eP.out && !eP.async) {
@@ -436,7 +436,7 @@ export function create() {
   }
 
 
-  function stop(processId) {
+  function stop(processId: string) {
     let eP = engineP(processId)
     eP.stop && eP.stop()
     delete eP.stop
@@ -445,7 +445,7 @@ export function create() {
 
   // ===== helpers =====
 
-  function engineE(id) {
+  function engineE(id: string) {
     if (!entities[id]) {
       addEntity({id})
     }
@@ -458,7 +458,7 @@ export function create() {
   }
 
 
-  function engineP(id) {
+  function engineP(id: string) {
     return engine.ps[id] || (engine.ps[id] = {
       id,
       acc: null,

@@ -85,6 +85,41 @@ export interface Graph {
 }
 
 
+export interface Runtime {
+    addEntity: (spec: EntityData) => Entity
+    removeEntity: (id: string) => void
+    addProcess: (spec: ProcessData) => Process
+    removeProcess: (id: string) => void
+    addArc: (spec: ArcData) => Arc
+    removeArc: (id: string) => void
+    addGraph: (graphSpec: Graph) => void
+    getGraph: () => {
+        entities: {[id: string]: Entity}
+        processes: {[id: string]: Process}
+        arcs: {[id: string]: Arc}
+        meta: {}
+    }
+    getState: () => {}
+    setMeta: (newMeta: any) => void
+    getMeta: () => Meta
+    getContext: () => null
+    setContext: (ctx: any) => void
+    setDebug: (isDebug: boolean) => void
+    get: (id: string) => any
+    set: (id: string, value: any) => void
+    update: (id: string, fn: (val: any) => any) => void
+    on: (id: string, cb: (val: any) => void) => void
+    off: (id: string) => void
+    start: (processId: string) => void
+    stop: (processId: string) => void
+    PORT_TYPES: {
+        COLD: "COLD"
+        HOT: "HOT"
+        ACCUMULATOR: "ACCUMULATOR"
+    }
+}
+
+
 // ===== entity system factories =====
 
 export function createEntity ({
@@ -170,7 +205,7 @@ export function createArc ({
 // ===== Porttypes =====
 
 export const PORT_TYPES = {
-  COLD: 'COLD' as PortType,
-  HOT: 'HOT' as PortType,
-  ACCUMULATOR: 'ACCUMULATOR' as PortType
+  COLD: 'COLD' as 'COLD',
+  HOT: 'HOT' as 'HOT',
+  ACCUMULATOR: 'ACCUMULATOR' as 'ACCUMULATOR'
 }

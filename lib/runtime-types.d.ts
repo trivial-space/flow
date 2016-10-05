@@ -60,11 +60,50 @@ export interface Graph {
     arcs: ArcData[];
     meta?: Meta;
 }
+export interface Runtime {
+    addEntity: (spec: EntityData) => Entity;
+    removeEntity: (id: string) => void;
+    addProcess: (spec: ProcessData) => Process;
+    removeProcess: (id: string) => void;
+    addArc: (spec: ArcData) => Arc;
+    removeArc: (id: string) => void;
+    addGraph: (graphSpec: Graph) => void;
+    getGraph: () => {
+        entities: {
+            [id: string]: Entity;
+        };
+        processes: {
+            [id: string]: Process;
+        };
+        arcs: {
+            [id: string]: Arc;
+        };
+        meta: {};
+    };
+    getState: () => {};
+    setMeta: (newMeta: any) => void;
+    getMeta: () => Meta;
+    getContext: () => null;
+    setContext: (ctx: any) => void;
+    setDebug: (isDebug: boolean) => void;
+    get: (id: string) => any;
+    set: (id: string, value: any) => void;
+    update: (id: string, fn: (val: any) => any) => void;
+    on: (id: string, cb: (val: any) => void) => void;
+    off: (id: string) => void;
+    start: (processId: string) => void;
+    stop: (processId: string) => void;
+    PORT_TYPES: {
+        COLD: "COLD";
+        HOT: "HOT";
+        ACCUMULATOR: "ACCUMULATOR";
+    };
+}
 export declare function createEntity({id, value, json, isEvent, meta}: EntityData): Entity;
 export declare function createProcess({id, ports, procedure, code, autostart, async, meta}: ProcessData, context: any): Process;
 export declare function createArc({id, entity, process, port, meta}: ArcData): Arc;
 export declare const PORT_TYPES: {
-    COLD: "HOT" | "COLD" | "ACCUMULATOR";
-    HOT: "HOT" | "COLD" | "ACCUMULATOR";
-    ACCUMULATOR: "HOT" | "COLD" | "ACCUMULATOR";
+    COLD: "COLD";
+    HOT: "HOT";
+    ACCUMULATOR: "ACCUMULATOR";
 };
