@@ -2,4 +2,8 @@
 node_modules
 spec
 benchmarks
+src
 /*.log
+.tern-project
+karma.conf.js
+webpack.config.js

@@ -2,20 +2,22 @@
   "compilerOptions": {
     "target": "es5",
     "lib": ["es6", "dom"],
-    "module": "commonjs",
+    "module": "es6",
     "strictNullChecks": true,
     "sourceMap": true,
     "moduleResolution": "node",
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "declaration": false,
+    "declaration": true,
     "removeComments": true,
-    "preserveConstEnums": true
+    "preserveConstEnums": true,
+    "outDir": "lib",
+    "rootDir": "src"
   },
-  "exclude": [
-    "node_modules"
+  "files": [
+    "src/index.ts"
   ],
-  "compileOnSave": false,
+  "compileOnSave": true,
   "buildOnSave": false,
   "atom": {
     "rewriteTsconfig": false
