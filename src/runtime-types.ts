@@ -33,7 +33,7 @@ export type Ports = {[portId: string]: PortType}
 
 export type Procedure = (
   ports: { [portId: string]: any },
-  send?: (val: any) => void
+  send?: (val?: any) => void
 ) => any
 
 
