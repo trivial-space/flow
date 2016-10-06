@@ -5,7 +5,7 @@ const spec = {
   e1: {
     val: 0,
     stream: {
-      deps: {
+      with: {
         self: 'a',
         tick: 'h tick' },
       do: p => p.self + 1 } },
@@ -14,7 +14,7 @@ const spec = {
     val: 0,
     stream: {
       async: true,
-      deps: {e1: 'h e1'},
+      with: {e1: 'h e1'},
       do: (p, send) => {
         if (p.e1 % 2 === 0) send(p.e1)
       } } },
@@ -23,7 +23,7 @@ const spec = {
     val: 0,
     stream: {
       async: true,
-      deps: {e1: 'h e1'},
+      with: {e1: 'h e1'},
       do: (p, send) => {
         if (p.e1 % 4 === 0) send(p.e1)
       } } },
@@ -31,7 +31,7 @@ const spec = {
   e4: {
     json: '[]',
     stream: {
-      deps: {
+      with: {
         e4: 'a',
         e2: 'h e2',
         e3: 'h e3'},
@@ -59,7 +59,7 @@ function run(iterations = 100000) {
   const time = Date.now() - start
   console.log('iterations', iterations)
   console.log('time', time)
-  // console.log('result e4', flow.get('e4'))
+  //console.log('result e4', flow.get('e4'))
   console.log('==============')
   return time
 }

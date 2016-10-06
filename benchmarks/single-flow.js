@@ -5,20 +5,20 @@ const spec = {
   e1: {
     val: 0,
     stream: {
-      deps: {
+      with: {
         self: 'A',
         tick: 'H tick' },
       do: ports => ports.self++ } },
 
   e2: {
     stream: {
-      deps: {e1: 'h e1'},
+      with: {e1: 'h e1'},
       do: p => p.e1 * 10 } },
 
   e3: {
     val: [],
     stream: {
-      deps: {
+      with: {
         e3: 'a',
         e2: 'h e2'},
       do: p => {
@@ -28,7 +28,7 @@ const spec = {
 
   e4: {
     stream: {
-      deps: {e3: 'h e3'},
+      with: {e3: 'h e3'},
       do: p => p.e3.length } } }
 
 
