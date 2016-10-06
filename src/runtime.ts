@@ -271,7 +271,6 @@ export function create(): types.Runtime {
     if (graphSpec.meta) {
       setMeta(graphSpec.meta)
     }
-    flush()
   }
 
 
@@ -498,6 +497,8 @@ export function create(): types.Runtime {
 
     start,
     stop,
+
+    flush,
 
     PORT_TYPES: Object.assign({}, types.PORT_TYPES)
   }

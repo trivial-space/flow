@@ -154,7 +154,7 @@
                 if (e.entities) for (var t in e.entities) d(e.entities[t]);
                 if (e.processes) for (var t in e.processes) O(e.processes[t]);
                 if (e.arcs) for (var t in e.arcs) b(e.arcs[t]);
-                e.meta && c(e.meta), x();
+                e.meta && c(e.meta);
             }
             function T(e, t) {
                 D[e.id] = t || !0;
@@ -264,6 +264,7 @@
                 off: p,
                 start: A,
                 stop: C,
+                flush: x,
                 PORT_TYPES: Object.assign({}, i.PORT_TYPES)
             };
         }

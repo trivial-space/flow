@@ -112,6 +112,7 @@ export interface Runtime {
     off: (id: string) => void
     start: (processId: string) => void
     stop: (processId: string) => void
+    flush: () => void
     PORT_TYPES: {
         COLD: "COLD"
         HOT: "HOT"

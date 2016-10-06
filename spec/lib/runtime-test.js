@@ -110,6 +110,8 @@ describe('Flow runtime', function() {
       }
     })
 
+    sys.flush()
+
     expect(sys.get('foo')).to.equal(23)
 
     expect(sys.getGraph()).to.deep.equal({
@@ -864,6 +866,8 @@ describe('Flow runtime', function() {
         }]
       })
 
+      sys.flush()
+
       expect(sys.get('dest')).to.equal('src2_value-src1_value')
     })
 
@@ -1030,6 +1034,8 @@ describe('Flow runtime', function() {
           entity: "dest"
         }]
       })
+
+      sys.flush()
 
       expect(sys.get('dest')).to.equal(42)
     })
