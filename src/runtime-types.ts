@@ -31,10 +31,18 @@ export type PortType = "HOT" | "COLD" | "ACCUMULATOR"
 export type Ports = {[portId: string]: PortType}
 
 
-export type Procedure = (
-  ports: { [portId: string]: any },
-  send?: (val?: any) => void
+export type ProcedureSync = (
+  ports: { [portId: string]: any }
 ) => any
+
+
+export type ProcedureAsync = (
+  ports: { [portId: string]: any },
+  send: (val?: any) => void
+) => any
+
+
+export type Procedure = ProcessSync | ProcedureAsync
 
 
 export interface ProcessData {
@@ -48,15 +56,29 @@ export interface ProcessData {
 }
 
 
-export interface Process {
+export interface ProcessSync {
   id: string
   ports: Ports
-  procedure: Procedure
+  procedure: ProcedureSync
   code: string
   autostart?: boolean
-  async?: boolean
+  async: false
   meta: Meta
 }
+
+
+export interface ProcessAsync {
+  id: string
+  ports: Ports
+  procedure: ProcedureAsync
+  code: string
+  autostart?: boolean
+  async: true
+  meta: Meta
+}
+
+
+export type Process = ProcessSync | ProcessAsync
 
 
 export interface ArcData {
@@ -106,7 +128,7 @@ export interface Runtime {
     setContext: (ctx: any) => void
     setDebug: (isDebug: boolean) => void
     get: (id: string) => any
-    set: (id: string, value: any) => void
+    set: (id: string, value?: any) => void
     update: (id: string, fn: (val: any) => any) => void
     on: (id: string, cb: (val: any) => void) => void
     off: (id: string) => void
@@ -165,9 +187,9 @@ export function createProcess ({
     procedure,
     code,
     autostart,
-    async: async,
+    async: !!async,
     meta: Object.assign({}, meta)
-  }
+  } as Process
 }
 
 

@@ -56,24 +56,16 @@ module.exports = function (config) {
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter
     reporters: ['mocha', 'coverage'],
 
+
+    mochaReporter: {
+      showDiff: true
+    },
+
+
     coverageReporter: {
       type : 'html',
       dir : 'spec/coverage/'
     },
-
-    // these need to be included explicitly, for webpack to work
-    plugins: [
-      require('karma-webpack'),
-      require('karma-mocha'),
-      require('karma-chai-sinon'),
-      require('karma-chrome-launcher'),
-      require('karma-firefox-launcher'),
-      require('karma-safari-launcher'),
-      require('karma-mocha-reporter'),
-      require('karma-sourcemap-loader'),
-      require('karma-coverage')
-    ],
-
 
     // web server port
     port: 9876,

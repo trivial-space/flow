@@ -1,4 +1,4 @@
-import { Graph, Procedure, Meta } from "../runtime-types";
+import { Graph, ProcedureSync, ProcedureAsync, Meta } from "../runtime-types";
 export interface EntitySpec {
     val?: any;
     stream?: ProcessSpec;
@@ -7,16 +7,27 @@ export interface EntitySpec {
     isEvent?: boolean;
     meta?: Meta;
 }
-export interface ProcessSpec {
-    do: Procedure;
+export interface ProcessSyncSpec {
+    do: ProcedureSync;
     with?: {
         [portId: string]: string;
     };
     id?: string;
     async?: boolean;
+    autostart?: false;
+    meta?: Meta;
+}
+export interface ProcessAsyncSpec {
+    do: ProcedureAsync;
+    with?: {
+        [portId: string]: string;
+    };
+    id?: string;
+    async: true;
     autostart?: boolean;
     meta?: Meta;
 }
+export declare type ProcessSpec = ProcessSyncSpec | ProcessAsyncSpec;
 export declare type Spec = {
     [id: string]: EntitySpec;
 };

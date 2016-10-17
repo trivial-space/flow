@@ -1,4 +1,4 @@
-import {EntityData, Graph, ProcessData, Procedure, Meta, Ports, PortType} from "../runtime-types"
+import {EntityData, Graph, ProcessData, ProcedureSync, ProcedureAsync, Meta, Ports, PortType} from "../runtime-types"
 
 
 // ===== types =====
@@ -13,14 +13,27 @@ export interface EntitySpec {
 }
 
 
-export interface ProcessSpec {
-  do: Procedure
+export interface ProcessSyncSpec {
+  do: ProcedureSync
   with?: {[portId: string]: string}
   id?: string
   async?: boolean
+  autostart?: false
+  meta?: Meta
+}
+
+
+export interface ProcessAsyncSpec {
+  do: ProcedureAsync
+  with?: {[portId: string]: string}
+  id?: string
+  async: true
   autostart?: boolean
   meta?: Meta
 }
+
+
+export type ProcessSpec = ProcessSyncSpec | ProcessAsyncSpec
 
 
 export type Spec = { [id: string]: EntitySpec }

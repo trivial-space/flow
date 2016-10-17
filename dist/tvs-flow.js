@@ -294,7 +294,7 @@
                 procedure: a,
                 code: u,
                 autostart: f,
-                async: l,
+                async: !!l,
                 meta: Object.assign({}, v)
             };
         }
