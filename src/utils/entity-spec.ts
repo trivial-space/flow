@@ -59,8 +59,24 @@ function parseDepsString(str: string) {
 }
 
 
-function mergePath(id: string, path: string) {
-  return path + '.' + id
+function mergePath(id: string, path?: string): string {
+  return path ? path + '.' + id : id
+}
+
+
+function resolvePath(id: string, path?: string): string {
+  const prefix = /^\.*/.exec(id)
+  const length = prefix ? prefix[0].length : 0
+  const depId = id.substr(length)
+  if (path) {
+    const steps = path.trim().split('.')
+    for (let i = 0; i < length - 1; i++) {
+      steps.pop()
+    }
+    path = steps.join('.')
+    return mergePath(depId, path)
+  }
+  return depId
 }
 
 
@@ -70,9 +86,7 @@ export function processProcessSpec (
   path?: string
 ): Graph {
 
-  if (path) {
-    eid = mergePath(eid, path)
-  }
+  eid = mergePath(eid, path)
 
   const pid = spec.id || eid + processNameSuffix
 
@@ -110,9 +124,8 @@ export function processProcessSpec (
       process.ports[portId] = port.type
       if (port.eid) {
 
-        if (port.eid.indexOf('#') === 0 ) {
-          const depId = port.eid.substr(1)
-          port.eid = path ? mergePath(depId, path) : depId
+        if (port.eid.indexOf('.') === 0 ) {
+          port.eid = resolvePath(port.eid, path)
         }
 
         graph.arcs.push({
@@ -154,7 +167,7 @@ export function processEntitySpec (
 
   let graph = newGraph()
 
-  const id = path ? mergePath(eid, path): eid
+  const id = mergePath(eid, path)
 
   const entity: EntityData = { id }
 

@@ -350,84 +350,87 @@
     }, function(e, t) {
         "use strict";
         function r(e) {
-            var t = e.split(" "), r = t[0], n = t[1], o = f[r.toUpperCase()];
+            var t = e.split(" "), r = t[0], n = t[1], o = l[r.toUpperCase()];
             return {
                 type: o,
                 eid: n
             };
         }
         function n(e, t) {
-            return t + "." + e;
+            return t ? t + "." + e : e;
         }
-        function o(e, t, o) {
-            o && (e = n(e, o));
-            var s = t.id || e + u, c = {
-                id: s,
+        function o(e, t) {
+            var r = /^\.*/.exec(e), o = r ? r[0].length : 0, s = e.substr(o);
+            if (t) {
+                for (var c = t.trim().split("."), i = 0; o - 1 > i; i++) c.pop();
+                return t = c.join("."), n(s, t);
+            }
+            return s;
+        }
+        function s(e, t, s) {
+            e = n(e, s);
+            var c = t.id || e + f, i = {
+                id: c,
                 procedure: t["do"]
-            }, i = {
+            }, a = {
                 entities: [],
-                processes: [ c ],
+                processes: [ i ],
                 arcs: [ {
-                    process: s,
+                    process: c,
                     entity: e
                 } ]
             };
-            if (t.autostart && (c.autostart = t.autostart), t.async && (c.async = t.async), 
-            t.meta && (c.meta = t.meta), t["with"]) {
-                c.ports = {};
-                for (var a in t["with"]) {
-                    var f = r(t["with"][a]);
-                    if (c.ports[a] = f.type, f.eid) {
-                        if (0 === f.eid.indexOf("#")) {
-                            var l = f.eid.substr(1);
-                            f.eid = o ? n(l, o) : l;
-                        }
-                        i.arcs.push({
-                            entity: f.eid,
-                            process: s,
-                            port: a
-                        });
-                    }
+            if (t.autostart && (i.autostart = t.autostart), t.async && (i.async = t.async), 
+            t.meta && (i.meta = t.meta), t["with"]) {
+                i.ports = {};
+                for (var u in t["with"]) {
+                    var l = r(t["with"][u]);
+                    i.ports[u] = l.type, l.eid && (0 === l.eid.indexOf(".") && (l.eid = o(l.eid, s)), 
+                    a.arcs.push({
+                        entity: l.eid,
+                        process: c,
+                        port: u
+                    }));
                 }
             }
-            return i;
+            return a;
         }
-        function s() {
+        function c() {
             return {
                 entities: [],
                 processes: [],
                 arcs: []
             };
         }
-        function c(e, t) {
+        function i(e, t) {
             return {
                 entities: e.entities.concat(t.entities),
                 processes: e.processes.concat(t.processes),
                 arcs: e.arcs.concat(t.arcs)
             };
         }
-        function i(e, t, r) {
-            var i = s(), a = r ? n(e, r) : e, u = {
+        function a(e, t, r) {
+            var o = c(), a = n(e, r), u = {
                 id: a
             };
             return null != t.val && (u.value = t.val), t.json && (u.json = t.json), t.isEvent && (u.isEvent = t.isEvent), 
-            t.meta && (u.meta = t.meta), t.stream && (i = c(i, o(e, t.stream, r))), t.streams && (i = t.streams.map(function(t) {
-                return o(e, t, r);
+            t.meta && (u.meta = t.meta), t.stream && (o = i(o, s(e, t.stream, r))), t.streams && (o = t.streams.map(function(t) {
+                return s(e, t, r);
             }).map(function(e, t) {
                 return e.processes[0].id += t + 1, e.arcs.forEach(function(e) {
                     return e.process += t + 1;
                 }), e;
-            }).reduce(c, i)), i.entities.push(u), i;
+            }).reduce(i, o)), o.entities.push(u), o;
         }
-        function a(e, t) {
+        function u(e, t) {
             return Object.keys(e).map(function(r) {
-                return i(r, e[r], t);
-            }).reduce(c, s());
+                return a(r, e[r], t);
+            }).reduce(i, c());
         }
         Object.defineProperty(t, "__esModule", {
             value: !0
-        }), t.processProcessSpec = o, t.processEntitySpec = i, t.toGraph = a;
-        var u = "Stream", f = {
+        }), t.processProcessSpec = s, t.processEntitySpec = a, t.toGraph = u;
+        var f = "Stream", l = {
             H: "HOT",
             C: "COLD",
             A: "ACCUMULATOR"

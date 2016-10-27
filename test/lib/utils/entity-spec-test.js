@@ -137,26 +137,83 @@ describe('flow entitySpec', function () {
     })
 
 
-    it('takes an optional path parameter and resolves entities inside the same path', function () {
+    it('takes an optional path parameter and resolves entities within the path', function () {
 
       const p = ({e2, e3}) => e2 + e3
 
-      const spec = {
+      const spec1 = {
         with: {
-          e2: "H entity2",
-          e3: "C #entity3",
+          e2: "H .entity2",
         },
         do: p
       }
 
-      expect(processProcessSpec("entity1", spec, "some.namespace")).to.deep.equal({
+      const spec2 = {
+        with: {
+          e2: "H ..entity2",
+        },
+        do: p
+      }
+
+      const spec3 = {
+        with: {
+          e2: "H ...entity2",
+        },
+        do: p
+      }
+
+      const spec4 = {
+        with: {
+          e2: "H ....entity2",
+        },
+        do: p
+      }
+
+      expect(processProcessSpec("entity1", spec1, "some.namespace")).to.deep.equal({
         entities: [],
         processes: [{
           id: "some.namespace.entity1Stream",
           procedure: p,
           ports: {
-            e2: "HOT",
-            e3: "COLD"
+            e2: "HOT"
+          }
+        }],
+        arcs: [{
+          process: "some.namespace.entity1Stream",
+          entity: "some.namespace.entity1"
+        }, {
+          entity: "some.namespace.entity2",
+          process: "some.namespace.entity1Stream",
+          port: "e2"
+        }]
+      })
+
+      expect(processProcessSpec("entity1", spec2, "some.namespace")).to.deep.equal({
+        entities: [],
+        processes: [{
+          id: "some.namespace.entity1Stream",
+          procedure: p,
+          ports: {
+            e2: "HOT"
+          }
+        }],
+        arcs: [{
+          process: "some.namespace.entity1Stream",
+          entity: "some.namespace.entity1"
+        }, {
+          entity: "some.entity2",
+          process: "some.namespace.entity1Stream",
+          port: "e2"
+        }]
+      })
+
+      expect(processProcessSpec("entity1", spec3, "some.namespace")).to.deep.equal({
+        entities: [],
+        processes: [{
+          id: "some.namespace.entity1Stream",
+          procedure: p,
+          ports: {
+            e2: "HOT"
           }
         }],
         arcs: [{
@@ -166,12 +223,12 @@ describe('flow entitySpec', function () {
           entity: "entity2",
           process: "some.namespace.entity1Stream",
           port: "e2"
-        }, {
-          entity: "some.namespace.entity3",
-          process: "some.namespace.entity1Stream",
-          port: "e3"
         }]
       })
+
+      expect(processProcessSpec("entity1", spec4, "some.namespace")).to.deep.equal(
+        processProcessSpec("entity1", spec3, "some.namespace")
+      )
     })
 
 
@@ -180,7 +237,7 @@ describe('flow entitySpec', function () {
 
       const spec = {
         with: {
-          e1: "C #entity1",
+          e1: "C .entity1",
         },
         do: p
       }
@@ -425,7 +482,7 @@ describe('flow entitySpec', function () {
         entity2: {
           stream: {
             with: {
-              e1: "H #entity1"
+              e1: "H .entity1"
             },
             do: p
           }
