@@ -1,6 +1,6 @@
 {
   "name": "tvs-flow",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "trivialspace flow: a dataflow system for javascript",
   "main": "dist/tvs-flow.js",
   "esnext:main": "lib/index.js",

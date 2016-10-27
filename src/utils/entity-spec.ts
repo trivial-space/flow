@@ -17,8 +17,8 @@ export interface ProcessSyncSpec {
   do: ProcedureSync
   with?: {[portId: string]: string}
   id?: string
-  async?: boolean
-  autostart?: false
+  async?: false
+  autostart?: boolean
   meta?: Meta
 }
 

@@ -13,8 +13,8 @@ export interface ProcessSyncSpec {
         [portId: string]: string;
     };
     id?: string;
-    async?: boolean;
-    autostart?: false;
+    async?: false;
+    autostart?: boolean;
     meta?: Meta;
 }
 export interface ProcessAsyncSpec {
