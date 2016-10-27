@@ -1,6 +1,6 @@
 .DS_Store
 node_modules
-spec
+test
 benchmarks
 src
 /*.log

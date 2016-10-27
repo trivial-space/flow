@@ -24,13 +24,13 @@ module.exports = function (config) {
 
     // list of files / patterns to load in the browser
     files: [
-      'spec/test-main.js'
+      'test/main.js'
     ],
 
 
     preprocessors: {
       // add webpack as preprocessor
-      'spec/test-main.js': ['webpack', /*'coverage',*/ 'sourcemap'] // use this for source maps
+      'test/main.js': ['webpack', /*'coverage',*/ 'sourcemap'] // use this for source maps
     },
 
 
@@ -64,7 +64,7 @@ module.exports = function (config) {
 
     coverageReporter: {
       type : 'html',
-      dir : 'spec/coverage/'
+      dir : 'test/coverage/'
     },
 
     // web server port
