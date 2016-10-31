@@ -1,4 +1,14 @@
-import {EntityData, Graph, ProcessData, ProcedureSync, ProcedureAsync, Meta, Ports, PortType} from "../runtime-types"
+import {
+  EntityData,
+  Graph,
+  ProcessData,
+  ProcedureSync,
+  ProcedureAsync,
+  Meta,
+  Ports,
+  PortType,
+  PORT_TYPES
+} from "../runtime-types"
 
 
 // ===== types =====
@@ -44,9 +54,9 @@ export type Spec = { [id: string]: EntitySpec }
 const processNameSuffix = "Stream"
 
 const portTypeMap = {
-  H: "HOT",
-  C: "COLD",
-  A: "ACCUMULATOR"
+  H: PORT_TYPES.HOT,
+  C: PORT_TYPES.COLD,
+  A: PORT_TYPES.ACCUMULATOR
 }
 
 
