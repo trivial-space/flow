@@ -66,7 +66,7 @@ export function create(flow: Runtime) {
     type: PORT_TYPES.ACCUMULATOR
   } as PortSpec
 
-  function entity(value: any): EntityRef {
+  function entity(value?: any): EntityRef {
     var id: string
     var json: string
     var isEvent: boolean
@@ -112,7 +112,7 @@ export function create(flow: Runtime) {
       return ref
     }
 
-    ref.json = (newJson: any) => {
+    ref.json = (newJson: string) => {
       json = newJson
       updateEntity()
       return ref

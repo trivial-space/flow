@@ -38,7 +38,7 @@ export interface EntityFactory {
     (any?: any): EntityRef;
 }
 export declare function create(flow: Runtime): {
-    entity: (value: any) => EntityRef;
+    entity: (value?: any) => EntityRef;
     addToFlow: (es: {
         [id: string]: EntityRef;
     }, path?: string | undefined) => void;
