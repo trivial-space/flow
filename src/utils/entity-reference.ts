@@ -176,7 +176,7 @@ export function create(flow: Runtime) {
 
 
   function addToFlow(
-    es: {[id: string]: EntityRef},
+    es: any,
     path?: string
   ): void {
     for (let id in es) {

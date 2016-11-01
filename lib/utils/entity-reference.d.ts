@@ -40,8 +40,6 @@ export interface EntityFactory {
 }
 export declare function create(flow: Runtime): {
     entity: EntityFactory;
-    addToFlow: (es: {
-        [id: string]: EntityRef;
-    }, path?: string | undefined) => void;
+    addToFlow: (es: any, path?: string | undefined) => void;
     SELF: PortSpec;
 };
