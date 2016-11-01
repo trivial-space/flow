@@ -26,7 +26,7 @@ export interface EntityRef {
     id: (string) => EntityRef;
     value: (any) => EntityRef;
     json: (string) => EntityRef;
-    isEvent: (boolean) => EntityRef;
+    isEvent: (boolean?) => EntityRef;
     stream: (ProcessSpec) => EntityRef;
     HOT: PortSpec;
     COLD: PortSpec;
@@ -38,7 +38,7 @@ export interface EntityFactory {
     (any?: any): EntityRef;
 }
 export declare function create(flow: Runtime): {
-    entity: (value?: any) => EntityRef;
+    entity: EntityFactory;
     addToFlow: (es: {
         [id: string]: EntityRef;
     }, path?: string | undefined) => void;
