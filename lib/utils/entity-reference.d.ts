@@ -23,11 +23,11 @@ export interface ProcessAsyncSpec {
 }
 export declare type ProcessSpec = ProcessSyncSpec | ProcessAsyncSpec;
 export interface EntityRef {
-    id: (string) => EntityRef;
-    value: (any) => EntityRef;
-    json: (string) => EntityRef;
-    isEvent: (boolean?) => EntityRef;
-    stream: (ProcessSpec) => EntityRef;
+    id: (_id: string) => EntityRef;
+    value: (_value: any) => EntityRef;
+    json: (_json: string) => EntityRef;
+    isEvent: (_isEvent?: boolean) => EntityRef;
+    stream: (spec: ProcessSpec) => EntityRef;
     HOT: PortSpec;
     COLD: PortSpec;
     getId: () => string;

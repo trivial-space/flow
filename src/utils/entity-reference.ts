@@ -34,11 +34,11 @@ export type ProcessSpec = ProcessSyncSpec | ProcessAsyncSpec
 
 
 export interface EntityRef {
-  id: (string) => EntityRef
-  value: (any) => EntityRef
-  json: (string) => EntityRef
-  isEvent: (boolean?) => EntityRef
-  stream: (ProcessSpec) => EntityRef
+  id: (_id: string) => EntityRef
+  value: (_value: any) => EntityRef
+  json: (_json: string) => EntityRef
+  isEvent: (_isEvent?: boolean) => EntityRef
+  stream: (spec: ProcessSpec) => EntityRef
   HOT: PortSpec
   COLD: PortSpec
   getId: () => string
@@ -98,28 +98,28 @@ export function create(flow: Runtime) {
       id && cb(id)
     }
 
-    ref.id = (newId: string) => {
+    ref.id = (_id: string) => {
       id && flow.removeEntity(id)
-      id = newId
+      id = _id
       updateEntity()
       idCallbacks.forEach(cb => cb(id))
       return ref
     }
 
-    ref.value = (val: any) => {
-      value = val
+    ref.value = (_value: any) => {
+      value = _value
       updateEntity()
       return ref
     }
 
-    ref.json = (newJson: string) => {
-      json = newJson
+    ref.json = (_json: string) => {
+      json = _json
       updateEntity()
       return ref
     }
 
-    ref.isEvent = (event: boolean = true) => {
-      isEvent = event
+    ref.isEvent = (_isEvent: boolean = true) => {
+      isEvent = _isEvent
       updateEntity()
       return ref
     }
