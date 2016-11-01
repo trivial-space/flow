@@ -30,6 +30,7 @@ export interface EntityRef {
     stream: (spec: ProcessSpec) => EntityRef;
     HOT: PortSpec;
     COLD: PortSpec;
+    SELF: PortSpec;
     getId: () => string;
     onId: (cb: (string) => void) => void;
 }

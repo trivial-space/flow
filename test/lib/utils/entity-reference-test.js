@@ -19,16 +19,23 @@ describe('flow entity reference', function() {
   it('can be added to the flow', function() {
     const e1 = entity()
     const e2 = entity()
+    const id = sinon.stub()
 
     addToFlow({
       entity1: e1,
-      entity2: e2
+      entity2: e2,
+
+      foo: 'foo',
+      bar: 1234,
+      bazz: {id}
     })
 
     expect(sys.getGraph().entities).to.deep.equal({
       entity1: types.createEntity({id: "entity1"}),
       entity2: types.createEntity({id: "entity2"})
     })
+
+    expect(id).to.not.be.called
   })
 
 

@@ -41,6 +41,7 @@ export interface EntityRef {
   stream: (spec: ProcessSpec) => EntityRef
   HOT: PortSpec
   COLD: PortSpec
+  SELF: PortSpec
   getId: () => string
   onId: (cb: (string) => void) => void
 }
@@ -85,6 +86,7 @@ export function create(flow: Runtime) {
       entity: ref
     }
 
+    ref.SELF = SELF
 
     function updateEntity() {
       id && flow.addEntity({ id, value, json, isEvent })
@@ -178,9 +180,11 @@ export function create(flow: Runtime) {
     path?: string
   ): void {
     for (let id in es) {
-      const eid = mergePath(id, path)
       const e = es[id]
-      e.id(eid)
+      if (typeof e.id === "function" && e.HOT && e.COLD && e.SELF) {
+        const eid = mergePath(id, path)
+        e.id(eid)
+      }
     }
   }
 
