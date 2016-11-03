@@ -101,7 +101,7 @@ export function create(flow: Runtime) {
     }
 
     ref.id = (_id: string) => {
-      id && flow.removeEntity(id)
+      id && id != _id && flow.removeEntity(id)
       id = _id
       updateEntity()
       idCallbacks.forEach(cb => cb(id))

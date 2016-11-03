@@ -1,5 +1,4 @@
 import * as entitySpec from 'utils/entity-spec'
-import {expect} from 'chai'
 
 
 describe('flow entitySpec', function () {

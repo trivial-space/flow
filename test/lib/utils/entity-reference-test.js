@@ -1,5 +1,4 @@
 import {create} from 'utils/entity-reference'
-import {expect} from 'chai'
 import * as types from 'runtime-types'
 import * as runtime from 'runtime'
 
@@ -317,6 +316,34 @@ describe('flow entity reference', function() {
 
     sys.set('foo', 66)
     expect(sys.get('e')).to.equal(5)
+  })
+
+
+  it("only updates the flow entity if the id is different than the previous id", function() {
+    const p = sinon.spy(({e}) => e + 1)
+
+    const e = entity(12)
+
+    const e2 = entity()
+      .stream({
+        with: {e: e.HOT},
+        do: p
+      })
+
+    addToFlow({e, e2})
+
+    sys.flush()
+
+    expect(p).to.be.called
+    expect(sys.get('e2')).to.equal(13)
+
+    p.reset()
+
+    e.id('e')
+
+    sys.flush()
+
+    expect(p).not.to.be.called
   })
 
 })
