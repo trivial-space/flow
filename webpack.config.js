@@ -26,7 +26,7 @@ module.exports = {
       }
     }, {
       exclude: /node_modules/,
-      loader: 'ts-loader',
+      loader: 'babel-loader?presets[]=es2015!ts-loader',
       test: /\.ts$/
     }]
   },

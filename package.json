@@ -24,6 +24,9 @@
   },
   "homepage": "https://github.com/trivial-space/flow#readme",
   "devDependencies": {
+    "@types/chai": "^3.4.34",
+    "@types/mocha": "^2.2.32",
+    "@types/sinon": "^1.16.31",
     "babel": "^6.5.2",
     "babel-eslint": "^6.0.4",
     "babel-loader": "^6.2.4",

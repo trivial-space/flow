@@ -1,6 +1,8 @@
-import {create} from 'utils/entity-reference'
-import * as types from 'runtime-types'
-import * as runtime from 'runtime'
+/// <reference path="../../test.d.ts" />
+import {create} from '../../../src/utils/entity-reference'
+import {expect} from 'chai'
+import * as types from '../../../src/runtime-types'
+import * as runtime from '../../../src/runtime'
 
 
 describe('flow entity reference', function() {
@@ -34,7 +36,7 @@ describe('flow entity reference', function() {
       entity2: types.createEntity({id: "entity2"})
     })
 
-    expect(id).to.not.be.called
+    expect(id.called).to.not.be.true
   })
 
 

@@ -11,8 +11,7 @@
     "declaration": true,
     "removeComments": true,
     "preserveConstEnums": true,
-    "outDir": "lib",
-    "rootDir": "src"
+    "outDir": "lib"
   },
   "files": [
     "src/index.ts"

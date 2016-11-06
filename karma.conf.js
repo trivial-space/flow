@@ -6,7 +6,8 @@ var config = require('./webpack.config.js'),
       cache: true,
       debug: true,
       watch: true,
-      devtool: '#inline-source-map'
+      devtool: '#inline-source-map',
+      plugins: undefined
     })
 
 
@@ -24,13 +25,15 @@ module.exports = function (config) {
 
     // list of files / patterns to load in the browser
     files: [
-      'test/main.js'
+      'test/**/*test.js',
+      'test/**/*test.ts'
     ],
 
 
     preprocessors: {
       // add webpack as preprocessor
-      'test/main.js': ['webpack', /*'coverage',*/ 'sourcemap'] // use this for source maps
+      'test/**/*.js': ['webpack', /*'coverage',*/ 'sourcemap'], // use this for source maps
+      'test/**/*.ts': ['webpack', /*'coverage',*/ 'sourcemap'] // use this for source maps
     },
 
 
