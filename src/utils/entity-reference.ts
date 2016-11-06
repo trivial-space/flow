@@ -72,7 +72,7 @@ export function create(flow: Runtime) {
     var json: string
     var isEvent: boolean
 
-    var idCallbacks = []
+    var idCallbacks: ((id: string) => void)[] = []
 
     const ref = {} as EntityRef
 

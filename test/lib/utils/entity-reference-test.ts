@@ -1,5 +1,5 @@
 /// <reference path="../../test.d.ts" />
-import {create} from '../../../src/utils/entity-reference'
+import {create, EntityFactory} from '../../../src/utils/entity-reference'
 import {expect} from 'chai'
 import * as types from '../../../src/runtime-types'
 import * as runtime from '../../../src/runtime'
@@ -7,13 +7,13 @@ import * as runtime from '../../../src/runtime'
 
 describe('flow entity reference', function() {
 
-  var sys, entity, addToFlow;
+  var sys: types.Runtime, entity: EntityFactory, addToFlow;
 
   beforeEach(function() {
     sys = runtime.create()
     const generator = create(sys)
     entity = generator.entity
-    addToFlow = generator.addToFlow
+    addToFlow = generator.addToFlow 
   })
 
 
@@ -103,7 +103,7 @@ describe('flow entity reference', function() {
       .json('123')
 
     expect(sys.get('e1')).to.equal(123)
-    expect(sys.getGraph().entities.e1.json).to.equal('123')
+    expect(sys.getGraph().entities['e1'].json).to.equal('123')
   })
 
 
@@ -112,11 +112,11 @@ describe('flow entity reference', function() {
       .id('e1')
       .isEvent()
 
-    expect(sys.getGraph().entities.e1.isEvent).to.be.true
+    expect(sys.getGraph().entities['e1'].isEvent).to.be.true
 
     e1.isEvent(false)
 
-    expect(sys.getGraph().entities.e1.isEvent).to.be.false
+    expect(sys.getGraph().entities['e1'].isEvent).to.be.false
   })
 
 
@@ -336,7 +336,7 @@ describe('flow entity reference', function() {
 
     sys.flush()
 
-    expect(p).to.be.called
+    expect(p.called).to.be.true
     expect(sys.get('e2')).to.equal(13)
 
     p.reset()
@@ -345,7 +345,7 @@ describe('flow entity reference', function() {
 
     sys.flush()
 
-    expect(p).not.to.be.called
+    expect(p.called).not.to.be.true
   })
 
 })

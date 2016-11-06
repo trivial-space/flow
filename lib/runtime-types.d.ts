@@ -115,7 +115,7 @@ export interface Runtime {
     };
 }
 export declare function createEntity({id, value, json, isEvent, meta}: EntityData): Entity;
-export declare function createProcess({id, ports, procedure, code, autostart, async, meta}: ProcessData, context: any): Process;
+export declare function createProcess({id, ports, procedure, code, autostart, async, meta}: ProcessData, context?: any): Process;
 export declare function createArc({id, entity, process, port, meta}: ArcData): Arc;
 export declare const PORT_TYPES: {
     COLD: "COLD";

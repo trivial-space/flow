@@ -139,7 +139,7 @@ describe('Flow runtime', function() {
           },
           code: p.toString(),
           procedure: p,
-          autostart: undefined,
+          autostart: false,
           async: false,
           meta: {}
         }

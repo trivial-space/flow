@@ -167,10 +167,10 @@ export function createProcess ({
   ports = {},
   procedure,
   code,
-  autostart,
-  async,
+  autostart = false,
+  async = false,
   meta
-}: ProcessData, context): Process {
+}: ProcessData, context?): Process {
 
   // calculated values
   if (procedure == null && code != null) {
@@ -187,7 +187,7 @@ export function createProcess ({
     procedure,
     code,
     autostart,
-    async: !!async,
+    async,
     meta: Object.assign({}, meta)
   } as Process
 }
