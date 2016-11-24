@@ -1,6 +1,6 @@
 {
   "name": "tvs-flow",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "description": "trivialspace flow: a dataflow system for javascript",
   "main": "dist/tvs-flow.js",
   "esnext:main": "lib/index.js",
@@ -27,6 +27,7 @@
     "@types/chai": "^3.4.34",
     "@types/mocha": "^2.2.32",
     "@types/sinon": "^1.16.31",
+    "@types/sinon-chai": "^2.7.27",
     "babel": "^6.5.2",
     "babel-eslint": "^6.0.4",
     "babel-loader": "^6.2.4",
@@ -49,7 +50,7 @@
     "sinon": "^1.17.2",
     "sinon-chai": "^2.8.0",
     "ts-loader": "^0.8.2",
-    "typescript": "^2.0.3",
+    "typescript": "^2.1.1",
     "webpack": "^1.12.9"
   }
 }

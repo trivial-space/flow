@@ -1,4 +1,4 @@
-import {v4} from 'utils/uuid'
+import {v4} from '../../../src/utils/uuid'
 
 
 describe('UUID', function() {

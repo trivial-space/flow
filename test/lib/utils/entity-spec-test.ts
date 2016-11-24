@@ -1,4 +1,4 @@
-import * as entitySpec from 'utils/entity-spec'
+import * as entitySpec from '../../../src/utils/entity-spec'
 
 
 describe('flow entitySpec', function () {
@@ -49,7 +49,7 @@ describe('flow entitySpec', function () {
 
     it('takes other valid process props', function () {
       const p = () => 100
-      const spec = {
+      const spec: entitySpec.ProcessSpec = {
         do: p,
         autostart: true,
         async: true,

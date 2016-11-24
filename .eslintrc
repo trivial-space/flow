@@ -14,7 +14,8 @@
   },
   "globals": {
     "expect": true,
-    "sinon": true
+    "sinon": true,
+    "chai": true
   },
   "rules": {
     "no-unused-vars": 1,

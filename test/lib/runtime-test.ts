@@ -1,5 +1,6 @@
-import * as types from 'runtime-types'
-import * as runtime from 'runtime'
+/// <reference path="../test.d.ts" />
+import * as types from '../../src/runtime-types'
+import * as runtime from '../../src/runtime'
 
 
 describe('Flow runtime', function() {
@@ -209,8 +210,8 @@ describe('Flow runtime', function() {
     sys.set('bar', 1)
 
     expect(sys.get('foo')).to.equal(2)
-    expect(console.log.getCall(0).args[0]).to.match(/flush/)
-    expect(console.log.getCall(1).args[1]).to.match(/lala/)
+    expect((console.log as sinon.SinonSpy).getCall(0).args[0]).to.match(/flush/)
+    expect((console.log as sinon.SinonSpy).getCall(1).args[1]).to.match(/lala/)
   })
 
 
@@ -586,10 +587,9 @@ describe('Flow runtime', function() {
 
       sys.removeArc(a.id)
 
-      sys.addProcess({
-        ...p,
-        ...{ports: {val: sys.PORT_TYPES.ACCUMULATOR}}
-      })
+      sys.addProcess(Object.assign(
+        p, {ports: {val: sys.PORT_TYPES.ACCUMULATOR}}
+      ))
 
       sys.start('process')
 
@@ -763,10 +763,9 @@ describe('Flow runtime', function() {
 
       expect(sys.get('dest')).to.equal(30)
 
-      sys.addProcess({
-        ...p,
-        ports: {val: sys.PORT_TYPES.COLD}
-      })
+      sys.addProcess(Object.assign({},
+        p, {ports: {val: sys.PORT_TYPES.COLD}}
+      ))
 
       sys.set('src', 10)
       expect(sys.get('dest')).to.equal(30)
@@ -803,10 +802,10 @@ describe('Flow runtime', function() {
       sys.start('p')
       expect(sys.get('dest')).to.equal(20)
 
-      sys.addProcess({
-        ...sys.getGraph().processes.p,
-        ports: {foo: sys.PORT_TYPES.ACCUMULATOR},
-      })
+      sys.addProcess(Object.assign({},
+        sys.getGraph().processes.p,
+        {ports: {foo: sys.PORT_TYPES.ACCUMULATOR}},
+      ))
 
       expect(sys.getGraph().arcs).to.deep.equal({
         'p->dest': types.createArc({
@@ -819,10 +818,10 @@ describe('Flow runtime', function() {
 
       expect(sys.get('dest')).to.equal(40)
 
-      sys.addProcess({
-        ...sys.getGraph().processes.p,
-        ports: {foo: sys.PORT_TYPES.HOT},
-      })
+      sys.addProcess(Object.assign({},
+        sys.getGraph().processes.p,
+        {ports: {foo: sys.PORT_TYPES.HOT}}
+      ))
 
       sys.addArc({
         entity: 'src',
@@ -994,7 +993,7 @@ describe('Flow runtime', function() {
       sys.addProcess({
         id: 'foo',
         async: true,
-        procedure: (ports, send) => {
+        procedure: (_, send) => {
           send(42)
           return cleanup
         }
@@ -1064,7 +1063,7 @@ describe('Flow runtime', function() {
 
 
     it('autostarts processes when all ports connected', function() {
-      expect(sys.get('dest')).to.not.be.defined
+      expect(sys.get('dest')).to.be.undefined
 
       sys.addProcess({
         id: "foo",
@@ -1072,7 +1071,7 @@ describe('Flow runtime', function() {
         autostart: true
       })
 
-      expect(sys.get('dest')).to.not.be.defined
+      expect(sys.get('dest')).to.be.undefined
 
       sys.addArc({
         process: "foo",
@@ -1136,14 +1135,14 @@ describe('Flow runtime', function() {
         autostart: true
       })
 
-      expect(sys.get('dest')).to.not.be.defined
+      expect(sys.get('dest')).to.be.undefined
 
       sys.addArc({
         process: "foo",
         entity: "dest"
       })
 
-      expect(sys.get('dest')).to.not.be.defined
+      expect(sys.get('dest')).to.be.undefined
 
       sys.addProcess({
         id: "bar",
@@ -1166,7 +1165,7 @@ describe('Flow runtime', function() {
         entity: "src1"
       })
 
-      expect(sys.get('dest')).to.not.be.defined
+      expect(sys.get('dest')).to.be.undefined
     })
 
 
@@ -1174,7 +1173,7 @@ describe('Flow runtime', function() {
       let sys = runtime.create()
       sys.addProcess({
         id: "p2",
-        procedure: (ports) => ports.val + 10,
+        procedure: ({val}) => val + 10,
         ports: {val: sys.PORT_TYPES.HOT}
       })
       sys.addArc({

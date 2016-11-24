@@ -1,6 +1,4 @@
-/// <reference path="../../test.d.ts" />
 import {create, EntityFactory} from '../../../src/utils/entity-reference'
-import {expect} from 'chai'
 import * as types from '../../../src/runtime-types'
 import * as runtime from '../../../src/runtime'
 
@@ -13,7 +11,7 @@ describe('flow entity reference', function() {
     sys = runtime.create()
     const generator = create(sys)
     entity = generator.entity
-    addToFlow = generator.addToFlow 
+    addToFlow = generator.addToFlow
   })
 
 
@@ -36,7 +34,7 @@ describe('flow entity reference', function() {
       entity2: types.createEntity({id: "entity2"})
     })
 
-    expect(id.called).to.not.be.true
+    expect(id).to.not.be.called
   })
 
 
@@ -336,7 +334,7 @@ describe('flow entity reference', function() {
 
     sys.flush()
 
-    expect(p.called).to.be.true
+    expect(p).to.be.called
     expect(sys.get('e2')).to.equal(13)
 
     p.reset()
@@ -345,7 +343,7 @@ describe('flow entity reference', function() {
 
     sys.flush()
 
-    expect(p.called).not.to.be.true
+    expect(p).not.to.be.called
   })
 
 })
