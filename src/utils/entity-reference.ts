@@ -12,6 +12,7 @@ export interface PortSpec {
   entity: EntityRef
 }
 
+
 export interface ProcessSyncSpec {
   do: ProcedureSync
   with?: {[portId: string]: PortSpec}
