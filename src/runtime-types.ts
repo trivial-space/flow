@@ -25,7 +25,11 @@ export interface Entity {
 }
 
 
-export type PortType = "HOT" | "COLD" | "ACCUMULATOR"
+export type PortTypeHot = "HOT"
+export type PortTypeCold = "COLD"
+export type PortTypeAccumulator = "ACCUMULATOR"
+
+export type PortType = PortTypeHot | PortTypeCold | PortTypeAccumulator
 
 
 export type Ports = {[portId: string]: PortType}
@@ -136,9 +140,9 @@ export interface Runtime {
     stop: (processId: string) => void
     flush: () => void
     PORT_TYPES: {
-        COLD: "COLD"
-        HOT: "HOT"
-        ACCUMULATOR: "ACCUMULATOR"
+        readonly COLD: PortTypeCold
+        readonly HOT: PortTypeHot
+        readonly ACCUMULATOR: PortTypeAccumulator
     }
 }
 
@@ -228,7 +232,7 @@ export function createArc ({
 // ===== Porttypes =====
 
 export const PORT_TYPES = {
-  COLD: 'COLD' as 'COLD',
-  HOT: 'HOT' as 'HOT',
-  ACCUMULATOR: 'ACCUMULATOR' as 'ACCUMULATOR'
+  COLD: 'COLD' as PortTypeCold,
+  HOT: 'HOT' as PortTypeHot,
+  ACCUMULATOR: 'ACCUMULATOR' as PortTypeAccumulator
 }

@@ -2,55 +2,64 @@ import {
   PORT_TYPES,
   PortType,
   Runtime,
-  ProcedureSync,
-  ProcedureAsync
 } from '../runtime-types'
 
 
-export interface PortSpec {
+export interface PortSpec<T> {
   type: PortType,
-  entity: EntityRef
+  entity: EntityRef<T>
 }
 
 
-export interface ProcessSyncSpec {
-  do: ProcedureSync
-  with?: {[portId: string]: PortSpec}
+export type ProcedureSync<T> = (
+  ports: { [portId: string]: any }
+) => T | undefined
+
+
+export type ProcedureAsync<T> = (
+  ports: { [portId: string]: any },
+  send: (val?: T) => void
+) => any
+
+
+export interface ProcessSyncSpec<T> {
+  do: ProcedureSync<T>
+  with?: {[portId: string]: PortSpec<T>}
   id?: string
   async?: false
   autostart?: boolean
 }
 
 
-export interface ProcessAsyncSpec {
-  do: ProcedureAsync
-  with?: {[portId: string]: PortSpec}
+export interface ProcessAsyncSpec<T> {
+  do: ProcedureAsync<T>
+  with?: {[portId: string]: PortSpec<T>}
   id?: string
   async: true
   autostart?: boolean
 }
 
 
-export type ProcessSpec = ProcessSyncSpec | ProcessAsyncSpec
+export type ProcessSpec<T> = ProcessSyncSpec<T> | ProcessAsyncSpec<T>
 
 
-export interface EntityRef {
-  id: (_id: string) => EntityRef
-  value: (_value: any) => EntityRef
-  json: (_json: string) => EntityRef
-  isEvent: (_isEvent?: boolean) => EntityRef
-  stream: (spec: ProcessSpec) => EntityRef
-  HOT: PortSpec
-  COLD: PortSpec
-  SELF: PortSpec
+export interface EntityRef<T> {
+  id: (_id: string) => EntityRef<T>
+  value: (_value: T) => EntityRef<T>
+  json: (_json: string) => EntityRef<T>
+  isEvent: (_isEvent?: boolean) => EntityRef<T>
+  stream: (spec: ProcessSpec<T>) => EntityRef<T>
+  HOT: PortSpec<T>
+  COLD: PortSpec<T>
+  SELF: PortSpec<T>
   getId: () => string
   onId: (cb: (string) => void) => void
 }
 
 
 export interface EntityFactory {
-  SELF: PortSpec
-  (any?): EntityRef
+  SELF: PortSpec<any>
+  <T>(any?: T): EntityRef<T>
 }
 
 
@@ -66,16 +75,16 @@ export function create(flow: Runtime) {
 
   const SELF = {
     type: PORT_TYPES.ACCUMULATOR
-  } as PortSpec
+  } as PortSpec<any>
 
-  function entity(value?: any): EntityRef {
+  function entity<T>(value?: T): EntityRef<T> {
     var id: string
     var json: string
     var isEvent: boolean
 
     var idCallbacks: ((id: string) => void)[] = []
 
-    const ref = {} as EntityRef
+    const ref = {} as EntityRef<T>
 
     ref.HOT = {
       type: PORT_TYPES.HOT,
@@ -109,7 +118,7 @@ export function create(flow: Runtime) {
       return ref
     }
 
-    ref.value = (_value: any) => {
+    ref.value = (_value: T) => {
       value = _value
       updateEntity()
       return ref
@@ -127,7 +136,7 @@ export function create(flow: Runtime) {
       return ref
     }
 
-    ref.stream = (spec: ProcessSpec) => {
+    ref.stream = (spec: ProcessSpec<T>) => {
       ref.onId(id => {
         const procedure = spec.do
         const pid = spec.id || id + processNameSuffix
