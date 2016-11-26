@@ -19,6 +19,7 @@
   "filesGlob": [
     "test/**/*"
   ],
+  "exclude": ["node_modules"],
   "compileOnSave": false,
   "buildOnSave": false,
   "atom": {

@@ -59,7 +59,7 @@ export interface EntityRef<T> {
 
 export interface EntityFactory {
   SELF: PortSpec<any>
-  <T>(any?: T): EntityRef<T>
+  <T>(value?: T): EntityRef<T>
 }
 
 

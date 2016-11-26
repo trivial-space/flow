@@ -15,7 +15,10 @@ export interface Entity {
     isEvent?: boolean;
     meta: Meta;
 }
-export declare type PortType = "HOT" | "COLD" | "ACCUMULATOR";
+export declare type PortTypeHot = "HOT";
+export declare type PortTypeCold = "COLD";
+export declare type PortTypeAccumulator = "ACCUMULATOR";
+export declare type PortType = PortTypeHot | PortTypeCold | PortTypeAccumulator;
 export declare type Ports = {
     [portId: string]: PortType;
 };
@@ -109,9 +112,9 @@ export interface Runtime {
     stop: (processId: string) => void;
     flush: () => void;
     PORT_TYPES: {
-        COLD: "COLD";
-        HOT: "HOT";
-        ACCUMULATOR: "ACCUMULATOR";
+        readonly COLD: PortTypeCold;
+        readonly HOT: PortTypeHot;
+        readonly ACCUMULATOR: PortTypeAccumulator;
     };
 }
 export declare function createEntity({id, value, json, isEvent, meta}: EntityData): Entity;
