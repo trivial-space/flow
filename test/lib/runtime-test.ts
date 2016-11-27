@@ -1,6 +1,6 @@
 /// <reference path="../test.d.ts" />
-import * as types from '../../src/runtime-types'
-import * as runtime from '../../src/runtime'
+import * as types from '../../lib/runtime-types'
+import * as runtime from '../../lib/runtime'
 
 
 describe('Flow runtime', function() {

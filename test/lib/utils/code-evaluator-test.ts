@@ -1,4 +1,5 @@
-import {evaluate} from '../../../src/utils/code-evaluator'
+/// <reference path="../../test.d.ts" />
+import {evaluate} from '../../../lib/utils/code-evaluator'
 
 
 describe('Code evaluator', function() {

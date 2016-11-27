@@ -1,4 +1,5 @@
-import * as entitySpec from '../../../src/utils/entity-spec'
+/// <reference path="../../test.d.ts" />
+import * as entitySpec from '../../../lib/utils/entity-spec'
 
 
 describe('flow entitySpec', function () {

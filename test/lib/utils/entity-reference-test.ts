@@ -1,6 +1,7 @@
-import {create, EntityFactory} from '../../../src/utils/entity-reference'
-import * as types from '../../../src/runtime-types'
-import * as runtime from '../../../src/runtime'
+/// <reference path="../../test.d.ts" />
+import {create, EntityFactory} from '../../../lib/utils/entity-reference'
+import * as types from '../../../lib/runtime-types'
+import * as runtime from '../../../lib/runtime'
 
 
 describe('flow entity reference', function() {

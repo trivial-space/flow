@@ -10,16 +10,18 @@
     "noUnusedParameters": true,
     "declaration": true,
     "removeComments": true,
-    "preserveConstEnums": true,
+    "preserveConstEnums": true
   },
   "files": [
     "lib/index.ts"
   ],
   "filesGlob": [
-    "test/**/*"
+    "lib/*.ts",
+    "test/**/*",
+    "!node_modules/**"
   ],
   "exclude": ["node_modules"],
-  "compileOnSave": true,
+  "compileOnSave": false,
   "buildOnSave": false,
   "atom": {
     "rewriteTsconfig": false
