@@ -12,7 +12,7 @@ export declare type ProcedureAsync<T> = (ports: {
 export interface ProcessSyncSpec<T> {
     do: ProcedureSync<T>;
     with?: {
-        [portId: string]: PortSpec<T>;
+        [portId: string]: PortSpec<any>;
     };
     id?: string;
     async?: false;
@@ -21,7 +21,7 @@ export interface ProcessSyncSpec<T> {
 export interface ProcessAsyncSpec<T> {
     do: ProcedureAsync<T>;
     with?: {
-        [portId: string]: PortSpec<T>;
+        [portId: string]: PortSpec<any>;
     };
     id?: string;
     async: true;

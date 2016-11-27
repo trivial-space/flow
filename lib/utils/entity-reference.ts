@@ -24,7 +24,7 @@ export type ProcedureAsync<T> = (
 
 export interface ProcessSyncSpec<T> {
   do: ProcedureSync<T>
-  with?: {[portId: string]: PortSpec<T>}
+  with?: {[portId: string]: PortSpec<any>}
   id?: string
   async?: false
   autostart?: boolean
@@ -33,7 +33,7 @@ export interface ProcessSyncSpec<T> {
 
 export interface ProcessAsyncSpec<T> {
   do: ProcedureAsync<T>
-  with?: {[portId: string]: PortSpec<T>}
+  with?: {[portId: string]: PortSpec<any>}
   id?: string
   async: true
   autostart?: boolean
