@@ -19,7 +19,7 @@ export type ProcedureSync<T> = (
 export type ProcedureAsync<T> = (
   ports: { [portId: string]: any },
   send: (val?: T) => void
-) => any
+) => (() => void) | undefined
 
 
 export interface ProcessSyncSpec<T> {
