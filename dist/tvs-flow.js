@@ -117,7 +117,7 @@
                     i && (n.indexOf(i) < 0 || t.ports[i] === c.PORT_TYPES.ACCUMULATOR) && T(o);
                 }
                 for (var s in t.ports) t.ports[s] === c.PORT_TYPES.ACCUMULATOR && (r.acc = s);
-                for (var a in r.arcs) h(L[a]);
+                for (var o in r.arcs) b(L[o]);
                 return t;
             }
             function m(e) {
@@ -128,7 +128,7 @@
             }
             function P(e) {
                 var t = c.createArc(e);
-                L[t.id] = t, h(t);
+                L[t.id] = t, b(t);
                 var r = C(t.process), n = M[t.process];
                 return n && n.autostart === !0 && Object.keys(r.arcs).length === Object.keys(n.ports).length + 1 && g(r), 
                 t;
@@ -142,24 +142,23 @@
                 }
                 delete L[e];
             }
-            function h(e) {
+            function b(e) {
                 var t = e.process, r = e.entity, n = C(t), o = w(r), i = M[t];
                 o.arcs[e.id] = !0, i && (n.arcs[e.id] = !0, e.port ? (n.sources[e.port] = o, i.ports[e.port] == c.PORT_TYPES.HOT ? o.effects[t] = n : delete o.effects[t]) : (n.sink = function(e) {
                     o.val = e, E(o), q ? z = !0 : S();
                 }, n.out = o, n.acc ? (n.sources[n.acc] = o, o.reactions[t] = n) : delete o.reactions[t]));
             }
-            function b(e) {
+            function h(e) {
                 if (e.entities) for (var t in e.entities) d(e.entities[t]);
-                if (e.processes) for (var r in e.processes) O(e.processes[r]);
-                if (e.arcs) for (var n in e.arcs) P(e.arcs[n]);
+                if (e.processes) for (var t in e.processes) O(e.processes[t]);
+                if (e.arcs) for (var t in e.arcs) P(e.arcs[t]);
                 e.meta && s(e.meta);
             }
             function E(e, t) {
                 D[e.id] = t || !0;
             }
-            function j(e) {
-                var t = arguments.length > 1 && void 0 !== arguments[1] ? arguments[1] : 0, r = arguments[2];
-                if (N[e.id] = !0, e.cb && (I[e.id] = e), !r || !r.acc) {
+            function j(e, t, r) {
+                if (void 0 === t && (t = 0), N[e.id] = !0, e.cb && (I[e.id] = e), !r || !r.acc) {
                     var n = !1;
                     for (var o in e.reactions) n = !0, G[o] ? G[o].level < t && (G[o].level = t) : G[o] = {
                         level: t,
@@ -167,14 +166,14 @@
                     };
                     n && t++;
                 }
-                for (var i in e.effects) {
-                    var s = e.effects[i];
-                    if (s.async) J[i] = s; else {
-                        if (s.acc && s.out && null == s.out.val) continue;
-                        G[i] ? G[i].level < t && (G[i].level = t) : G[i] = {
+                for (var o in e.effects) {
+                    var i = e.effects[o];
+                    if (i.async) J[o] = i; else {
+                        if (i.acc && i.out && null == i.out.val) continue;
+                        G[o] ? G[o].level < t && (G[o].level = t) : G[o] = {
                             level: t,
-                            eP: s
-                        }, s.out && j(s.out, t + 1, s);
+                            eP: i
+                        }, i.out && j(i.out, t + 1, i);
                     }
                 }
             }
@@ -182,15 +181,15 @@
                 H && console.log("flushing graph with", D), N = {}, G = {}, J = {}, I = {};
                 for (var e in D) j(k.es[e], 0, D[e]);
                 D = {};
-                for (var t in G) {
-                    var r = G[t];
-                    F[r.level] ? F[r.level].push(r.eP) : F[r.level] = [ r.eP ];
+                for (var e in G) {
+                    var t = G[e];
+                    F[t.level] ? F[t.level].push(t.eP) : F[t.level] = [ t.eP ];
                 }
-                for (var n = 0; n < F.length; n++) for (var o = 0; o < F[n].length; o++) _(F[n][o], N);
+                for (var r = 0; r < F.length; r++) for (var n = 0; n < F[r].length; n++) _(F[r][n], N);
                 F.length = 0;
-                for (var i in I) I[i].cb(I[i].val);
+                for (var e in I) I[e].cb(I[e].val);
                 q = !0, z = !1;
-                for (var s in J) _(J[s], N);
+                for (var o in J) _(J[o], N);
                 q = !1, z && S();
             }
             function _(e, t) {
@@ -248,7 +247,7 @@
                 removeProcess: m,
                 addArc: P,
                 removeArc: T,
-                addGraph: b,
+                addGraph: h,
                 getGraph: e,
                 getState: t,
                 setMeta: s,
