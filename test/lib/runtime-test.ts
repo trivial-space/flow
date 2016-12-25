@@ -84,7 +84,7 @@ describe('Flow runtime', function() {
 
 
   it('can load and transfer a whole graph', function() {
-    let p = (ports) => ports.bar + 1
+    let p = ports => ports.bar + 1
 
     sys.addGraph({
       entities: [{

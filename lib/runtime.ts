@@ -1,5 +1,32 @@
 import * as types from './runtime-types'
 
+interface EngineEntity {
+  id: string
+  val?: any
+  event?: boolean
+  reactions: {[id: string]: EngineProcess}
+  effects: {[id: string]: EngineProcess}
+  arcs: {[id: string]: true}
+  cb?: (val?: any) => void
+}
+
+interface EngineProcess {
+  id: string
+  out?: EngineEntity
+  acc?: string
+  async?: boolean
+  sources: {[id: string]: EngineEntity}
+  values: {[id: string]: any}
+  sink: (val?: any) => void
+  stop?: () => void
+  arcs: {[id: string]: true}
+}
+
+interface Engine {
+  es: {[id: string]: EngineEntity}
+  ps: {[id: string]: EngineProcess}
+}
+
 
 export function create(): types.Runtime {
 
@@ -8,7 +35,7 @@ export function create(): types.Runtime {
       arcs = {},
       meta = {},
       context = null,
-      engine = {
+      engine: Engine = {
         es: {},
         ps: {},
       },
@@ -125,7 +152,7 @@ export function create(): types.Runtime {
     processes[p.id] = p
     let eP = engineP(p.id)
 
-    eP.acc = null
+    delete eP.acc
     eP.async = p.async
 
     // cleanup unused arcs
@@ -391,7 +418,7 @@ export function create(): types.Runtime {
   }
 
 
-  function execute(eP, activeEntities?) {
+  function execute(eP: EngineProcess, activeEntities?) {
     if(debug) {
       console.log("executing process", eP.id)
     }
@@ -413,7 +440,7 @@ export function create(): types.Runtime {
   }
 
 
-  function autostart(eP) {
+  function autostart(eP: EngineProcess) {
     if (eP.async) {
       setTimeout(function() {
         execute(eP)
@@ -450,22 +477,22 @@ export function create(): types.Runtime {
     }
     return engine.es[id] || (engine.es[id] = {
       id,
+      val: null,
       reactions: {},
       effects: {},
       arcs: {}
-    })
+    } as EngineEntity)
   }
 
 
   function engineP(id: string) {
     return engine.ps[id] || (engine.ps[id] = {
       id,
-      acc: null,
       sources: {},
       arcs: {},
       values: {},
       sink: () => {}
-    })
+    } as EngineProcess)
   }
 
 
