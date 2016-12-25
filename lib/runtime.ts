@@ -16,7 +16,7 @@ interface EngineProcess {
   acc?: string
   async?: boolean
   sources: {[id: string]: EngineEntity}
-  values: {[id: string]: any}
+  values: {[id: string]: any} | any[]
   sink: (val?: any) => void
   stop?: () => void
   arcs: {[id: string]: true}
@@ -153,6 +153,7 @@ export function create(): types.Runtime {
     let eP = engineP(p.id)
 
     delete eP.acc
+    eP.values = Array.isArray(p.ports) ? [] : {}
     eP.async = p.async
 
     // cleanup unused arcs
@@ -268,7 +269,7 @@ export function create(): types.Runtime {
           }
         }
         eP.out = eE
-        if (eP.acc) {
+        if (eP.acc != null) {
           eP.sources[eP.acc] = eE
           eE.reactions[pId] = eP
         } else {
@@ -327,7 +328,7 @@ export function create(): types.Runtime {
       callbacks[eE.id] = eE
     }
 
-    if (!pLast || !pLast.acc) {
+    if (!pLast || (pLast.acc == null)) {
       let inc = false
       for (let pId in eE.reactions) {
         inc = true
@@ -348,7 +349,7 @@ export function create(): types.Runtime {
         asyncSchedule[pId] = eP
       } else {
 
-        if (eP.acc && eP.out && eP.out.val == null) {
+        if (eP.acc != null && eP.out && eP.out.val == null) {
           continue
         }
 
@@ -477,7 +478,7 @@ export function create(): types.Runtime {
     }
     return engine.es[id] || (engine.es[id] = {
       id,
-      val: null,
+      val: undefined,
       reactions: {},
       effects: {},
       arcs: {}

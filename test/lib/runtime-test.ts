@@ -626,6 +626,8 @@ describe('Flow runtime', function() {
         }]
       })
 
+      sys.flush()
+
       expect(p).to.not.be.called
       expect(sys.get('dest')).to.be.undefined
 
@@ -870,6 +872,42 @@ describe('Flow runtime', function() {
       expect(sys.get('dest')).to.equal('src2_value-src1_value')
     })
 
+
+    it('can have array ports', function() {
+      sys.addGraph({
+        processes: [{
+          id: "p1",
+          ports: [
+            sys.PORT_TYPES.ACCUMULATOR,
+            sys.PORT_TYPES.HOT
+          ],
+          procedure: ([self, val]) => self + '-' + val
+        }, {
+          id: "p2",
+          ports: [sys.PORT_TYPES.HOT],
+          procedure: ([val]) => val
+        }],
+        arcs: [{
+          entity: "src1",
+          process: "p1",
+          port: "1"
+        }, {
+          entity: "src2",
+          process: "p2",
+          port: "0"
+        }, {
+          process: "p1",
+          entity: "dest"
+        }, {
+          process: "p2",
+          entity: "dest"
+        }]
+      })
+
+      sys.flush()
+
+      expect(sys.get('dest')).to.equal('src2_value-src1_value')
+    })
 
     it('has event entities that are only defined when set or changed', function() {
       sys.addEntity({
