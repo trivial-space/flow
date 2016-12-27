@@ -26,14 +26,12 @@ module.exports = function (config) {
     // list of files / patterns to load in the browser
     files: [
       'test/test.js',
-      'test/lib/**/*test.js',
       'test/lib/**/*test.ts'
     ],
 
 
     preprocessors: {
       // add webpack as preprocessor
-      'test/**/*.js': ['webpack', /*'coverage',*/ 'sourcemap'], // use this for source maps
       'test/**/*.ts': ['webpack', /*'coverage',*/ 'sourcemap'] // use this for source maps
     },
 

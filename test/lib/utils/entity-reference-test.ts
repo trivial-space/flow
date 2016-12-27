@@ -21,7 +21,7 @@ describe('flow entity reference', function() {
     val = generator.val
     json = generator.json
     stream = generator.stream
-    streamStart = generator.stream
+    streamStart = generator.streamStart
     asyncStream = generator.asyncStream
     asyncStreamStart = generator.asyncStreamStart
     addToFlow = generator.addToFlow
@@ -144,10 +144,11 @@ describe('flow entity reference', function() {
 
 
   it('can add a stream with all props', function() {
-    const p = (_, send) => send(100)
-    asyncStreamStart('createE', p).id('e')
-    streamStart('createF', p).id('f')
-    asyncStream('createG', p).id('g')
+    const p1 = (_, send) => send(100)
+    const p2 = () => 100
+    asyncStreamStart('createE', p1).id('e')
+    streamStart('createF', p2).id('f')
+    asyncStream('createG', p1).id('g')
 
     expect(sys.getGraph()).to.deep.equal({
       entities: {
@@ -158,22 +159,22 @@ describe('flow entity reference', function() {
       processes: {
         createE: types.createProcess({
           id: "createE",
-          procedure: p,
+          procedure: p1,
           async: true,
           autostart: true,
           ports: []
         }),
         createF: types.createProcess({
           id: "createF",
-          procedure: p,
+          procedure: p2,
           autostart: true,
           ports: []
         }),
         createG: types.createProcess({
           id: "createG",
-          procedure: p,
-          ports: [],
+          procedure: p1,
           async: true,
+          ports: []
         }),
       },
       arcs: {
