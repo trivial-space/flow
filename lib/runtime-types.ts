@@ -7,7 +7,7 @@ import {evaluate} from './utils/code-evaluator'
 export type Meta = {[m: string]: any}
 
 
-export interface EntityData {
+export type EntityData = {
   id?: string
   value?: any
   json?: string
@@ -16,7 +16,7 @@ export interface EntityData {
 }
 
 
-export interface Entity {
+export type Entity = {
   id: string
   value?: any
   json?: string
@@ -32,7 +32,7 @@ export type PortTypeAccumulator = "ACCUMULATOR"
 export type PortType = PortTypeHot | PortTypeCold | PortTypeAccumulator
 
 
-export type Ports = {[portId: string]: PortType}
+export type Ports = {[portId: string]: PortType} | PortType[]
 
 
 export type ProcedureSync = (
@@ -49,7 +49,7 @@ export type ProcedureAsync = (
 export type Procedure = ProcessSync | ProcedureAsync
 
 
-export interface ProcessData {
+export type ProcessData = {
   id?: string
   ports?: Ports
   procedure?: Procedure
@@ -60,7 +60,7 @@ export interface ProcessData {
 }
 
 
-export interface ProcessSync {
+export type ProcessSync = {
   id: string
   ports: Ports
   procedure: ProcedureSync
@@ -71,7 +71,7 @@ export interface ProcessSync {
 }
 
 
-export interface ProcessAsync {
+export type ProcessAsync = {
   id: string
   ports: Ports
   procedure: ProcedureAsync
@@ -85,25 +85,25 @@ export interface ProcessAsync {
 export type Process = ProcessSync | ProcessAsync
 
 
-export interface ArcData {
+export type ArcData = {
   id?: string
   entity: string
   process: string
-  port?: string
+  port?: string | number
   meta?: Meta
 }
 
 
-export interface Arc {
+export type Arc = {
   id: string
   entity: string
   process: string
-  port?: string
+  port?: string | number
   meta: Meta
 }
 
 
-export interface Graph {
+export type Graph = {
   entities: EntityData[]
   processes: ProcessData[]
   arcs: ArcData[],
@@ -111,7 +111,7 @@ export interface Graph {
 }
 
 
-export interface Runtime {
+export type Runtime = {
     addEntity: (spec: EntityData) => Entity
     removeEntity: (id: string) => void
     addProcess: (spec: ProcessData) => Process

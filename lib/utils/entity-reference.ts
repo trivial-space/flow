@@ -1,69 +1,76 @@
 import {
   PORT_TYPES,
   PortType,
+  Ports,
   Runtime,
 } from '../runtime-types'
 
 
-export interface PortSpec<T> {
+export type PortSpec<T> = {
   type: PortType,
   entity: EntityRef<T>
 }
 
 
+export type PortArgs = { [portId: string]: any } | any[]
+
+
 export type ProcedureSync<T> = (
-  ports: { [portId: string]: any }
+  ports: PortArgs
 ) => T | void
 
 
 export type ProcedureAsync<T> = (
-  ports: { [portId: string]: any },
+  ports: PortArgs,
   send: (val?: T) => void
 ) => (() => void) | void
 
-
-export interface ProcessSyncSpec<T> {
-  do: ProcedureSync<T>
-  with?: {[portId: string]: PortSpec<any>}
-  id?: string
-  async?: false
-  autostart?: boolean
-}
+export type Procedure<T> = ProcedureSync<T> | ProcedureAsync<T>
 
 
-export interface ProcessAsyncSpec<T> {
-  do: ProcedureAsync<T>
-  with?: {[portId: string]: PortSpec<any>}
-  id?: string
-  async: true
-  autostart?: boolean
-}
+export type ReactionFactory<T> = (
+  a1: string | PortSpec<any>[] | Procedure<T>,
+  a2?: PortSpec<any>[] | Procedure<T>,
+  a3?: Procedure<T>
+) => EntityRef<T>
 
 
-export type ProcessSpec<T> = ProcessSyncSpec<T> | ProcessAsyncSpec<T>
+export type StreamFactory = <T>(
+  a1: string | PortSpec<any>[] | Procedure<T>,
+  a2?: PortSpec<any>[] | Procedure<T>,
+  a3?: Procedure<T>
+) => EntityRef<T>
 
 
-export interface EntityRef<T> {
-  id: (_id: string) => EntityRef<T>
-  value: (_value: T) => EntityRef<T>
-  json: (_json: string) => EntityRef<T>
+export type ValueFactory = <T>(value?: T) => EntityRef<T>
+
+export type JsonValueFactory = <T>(json?: string) => EntityRef<T>
+
+
+export type EntityRef<T> = {
+  id: (_id: string, _ns?: string) => EntityRef<T>
   isEvent: (_isEvent?: boolean) => EntityRef<T>
-  stream: (spec: ProcessSpec<T>) => EntityRef<T>
+  react: ReactionFactory<T>
   HOT: PortSpec<T>
   COLD: PortSpec<T>
-  SELF: PortSpec<T>
-  getId: () => string
+  getId: () => string | undefined
   onId: (cb: (string) => void) => void
 }
 
 
-export interface EntityFactory {
-  SELF: PortSpec<any>
-  <T>(value?: T): EntityRef<T>
+export type EntitySpec<T> = {
+  id?: string
+  value?: T
+  json?: string
+  processId?: string
+  procedure?: Procedure<T>
+  dependencies?: PortSpec<any>[]
+  async?: boolean
+  autostart?: boolean
 }
 
-
-const processNameSuffix = "Stream"
+const streamNameSuffix = "Stream"
+const reactionNameSuffix = "Reaction"
 
 
 function mergePath(id: string, path?: string): string {
@@ -73,86 +80,79 @@ function mergePath(id: string, path?: string): string {
 
 export function create(flow: Runtime) {
 
-  const SELF = {
-    type: PORT_TYPES.ACCUMULATOR
-  } as PortSpec<any>
+  function createEntity<T>(spec: EntitySpec<T>): EntityRef<T> {
+    let isEvent: boolean | undefined
+    let id: string | undefined
+    let ns: string | undefined
+    let reactionCount = 0
 
-  function entity<T>(value?: T): EntityRef<T> {
-    var id: string
-    var json: string
-    var isEvent: boolean
+    const idCallbacks: ((id: string) => void)[] = []
 
-    var idCallbacks: ((id: string) => void)[] = []
+    const entity = {} as EntityRef<T>
 
-    const ref = {} as EntityRef<T>
-
-    ref.HOT = {
-      type: PORT_TYPES.HOT,
-      entity: ref
+    entity.HOT = {
+      entity,
+      type: PORT_TYPES.HOT
     }
 
-    ref.COLD = {
-      type: PORT_TYPES.COLD,
-      entity: ref
+    entity.COLD = {
+      entity,
+      type: PORT_TYPES.COLD
     }
-
-    ref.SELF = SELF
 
     function updateEntity() {
-      id && flow.addEntity({ id, value, json, isEvent })
+      id && flow.addEntity({
+        id,
+        isEvent,
+        value: spec.value,
+        json: spec.json
+      })
     }
 
 
-    ref.getId = () => id
+    entity.getId = () => id
 
-    ref.onId = (cb) => {
+    entity.onId = (cb) => {
       idCallbacks.push(cb)
       id && cb(id)
     }
 
-    ref.id = (_id: string) => {
-      id && id != _id && flow.removeEntity(id)
-      id = _id
+    entity.id = (_id: string, _ns?: string) => {
+      let tempId = mergePath(_id, _ns)
+      if (id === tempId) return entity
+      id && flow.removeEntity(id)
+      ns = _ns
+      id = tempId
       updateEntity()
-      idCallbacks.forEach(cb => cb(id))
-      return ref
+      idCallbacks.forEach(cb => cb(tempId))
+      return entity
     }
 
-    ref.value = (_value: T) => {
-      value = _value
-      updateEntity()
-      return ref
-    }
-
-    ref.json = (_json: string) => {
-      json = _json
-      updateEntity()
-      return ref
-    }
-
-    ref.isEvent = (_isEvent: boolean = true) => {
+    entity.isEvent = (_isEvent: boolean = true) => {
       isEvent = _isEvent
       updateEntity()
-      return ref
+      return entity
     }
 
-    ref.stream = (spec: ProcessSpec<T>) => {
-      ref.onId(id => {
-        const procedure = spec.do
-        const pid = spec.id || id + processNameSuffix
-        let ports
 
-        if (spec.with) {
-          ports = {}
-          for (let portId in spec.with) {
-            const port = spec.with[portId]
+    function registerStream(spec: EntitySpec<T>, suffix) {
+
+      entity.onId(id => {
+        const pid = spec.processId ? mergePath(spec.processId, ns) : id + suffix
+
+        const deps = spec.dependencies
+        let ports: Ports = []
+
+        if (deps) {
+          for (let portId in deps) {
+            const port = deps[portId]
             ports[portId] = port.type
           }
         }
 
         flow.addProcess({
           id: pid,
-          procedure,
+          procedure: spec.procedure,
           ports,
           async: spec.async,
           autostart: spec.autostart
@@ -160,10 +160,10 @@ export function create(flow: Runtime) {
 
         flow.addArc({ process: pid, entity: id })
 
-        if (spec.with) {
-          for (let portId in spec.with) {
-            const dep = spec.with[portId]
-            if (dep.type !== SELF.type) {
+        if (deps) {
+          for (let portId in deps) {
+            const dep = deps[portId]
+            if (dep.type !== PORT_TYPES.ACCUMULATOR) {
               dep.entity.onId(id => {
                 flow.addArc({
                   entity: id,
@@ -175,14 +175,119 @@ export function create(flow: Runtime) {
           }
         }
       })
-      return ref
     }
 
-    return ref
+    if (spec.procedure) {
+      registerStream(spec, streamNameSuffix)
+    }
+
+    entity.react = (
+      a1: string | PortSpec<any>[] | Procedure<T>,
+      a2?: PortSpec<any>[] | Procedure<T>,
+      a3?: Procedure<T>
+    ) => {
+
+      const spec = getStreamSpec<T>(a1, a2, a3)
+      const deps = spec.dependencies
+      spec.dependencies = [{entity, type: PORT_TYPES.ACCUMULATOR} as PortSpec<any>]
+
+      if (deps && deps.length) {
+        spec.dependencies = spec.dependencies.concat(deps)
+      }
+
+      registerStream(spec, reactionNameSuffix + reactionCount++)
+      return entity
+    }
+
+    return entity
   }
 
 
-  (entity as EntityFactory).SELF = SELF
+  function val<T>(value?: T): EntityRef<T> {
+    return createEntity({ value })
+  }
+
+
+  function json<T>(json: string): EntityRef<T> {
+    return createEntity({ json })
+  }
+
+
+  function getStreamSpec<T>(
+    a1: string | PortSpec<any>[] | Procedure<T>,
+    a2?: PortSpec<any>[] | Procedure<T>,
+    a3?: Procedure<T>
+  ): EntitySpec<T> {
+
+    if (typeof a1 === "function") {
+      return ({
+        procedure: a1
+      })
+
+    } else if (Array.isArray(a1) && typeof a2 === "function") {
+      return ({
+        dependencies: a1,
+        procedure: a2
+      })
+
+    } else if (typeof a1 === "string" && typeof a2 === "function") {
+      return ({
+        processId: a1,
+        procedure: a2
+      })
+
+    } else if (typeof a1 === "string" && Array.isArray(a2) && typeof a3 === "function") {
+      return ({
+        processId: a1,
+        dependencies: a2,
+        procedure: a3
+      })
+    } else {
+      throw TypeError('Wrong stream arguments')
+    }
+  }
+
+  function stream<T>(
+    a1: string | PortSpec<any>[] | Procedure<T>,
+    a2?: PortSpec<any>[] | Procedure<T>,
+    a3?: Procedure<T>
+  ): EntityRef<T> {
+      return createEntity<T>(getStreamSpec<T>(a1, a2, a3))
+  }
+
+  function asyncStream<T>(
+    a1: string | PortSpec<any>[] | Procedure<T>,
+    a2?: PortSpec<any>[] | Procedure<T>,
+    a3?: Procedure<T>
+  ): EntityRef<T> {
+      return createEntity<T>({
+        ...getStreamSpec<T>(a1, a2, a3),
+        async: true
+      })
+  }
+
+  function streamStart<T>(
+    a1: string | PortSpec<any>[] | Procedure<T>,
+    a2?: PortSpec<any>[] | Procedure<T>,
+    a3?: Procedure<T>
+  ): EntityRef<T> {
+      return createEntity<T>({
+        ...getStreamSpec<T>(a1, a2, a3),
+        autostart: true
+      })
+  }
+
+  function asyncStreamStart<T>(
+    a1: string | PortSpec<any>[] | Procedure<T>,
+    a2?: PortSpec<any>[] | Procedure<T>,
+    a3?: Procedure<T>
+  ): EntityRef<T> {
+      return createEntity<T>({
+        ...getStreamSpec<T>(a1, a2, a3),
+        async: true,
+        autostart: true
+      })
+  }
 
 
   function addToFlow(
@@ -191,17 +296,20 @@ export function create(flow: Runtime) {
   ): void {
     for (let id in es) {
       const e = es[id]
-      if (typeof e.id === "function" && e.HOT && e.COLD && e.SELF) {
-        const eid = mergePath(id, path)
-        e.id(eid)
+      if (typeof e.id === "function" && e.HOT && e.COLD) {
+        e.id(id, path)
       }
     }
   }
 
 
   return {
-    entity: entity as EntityFactory,
-    addToFlow,
-    SELF
+    val,
+    json,
+    stream,
+    streamStart,
+    asyncStream,
+    asyncStreamStart,
+    addToFlow
   }
 }

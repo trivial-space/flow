@@ -1,51 +1,43 @@
 import { PortType, Runtime } from '../runtime-types';
-export interface PortSpec<T> {
+export declare type PortSpec<T> = {
     type: PortType;
     entity: EntityRef<T>;
-}
-export declare type ProcedureSync<T> = (ports: {
+};
+export declare type PortArgs = {
     [portId: string]: any;
-}) => T | void;
-export declare type ProcedureAsync<T> = (ports: {
-    [portId: string]: any;
-}, send: (val?: T) => void) => (() => void) | void;
-export interface ProcessSyncSpec<T> {
-    do: ProcedureSync<T>;
-    with?: {
-        [portId: string]: PortSpec<any>;
-    };
-    id?: string;
-    async?: false;
-    autostart?: boolean;
-}
-export interface ProcessAsyncSpec<T> {
-    do: ProcedureAsync<T>;
-    with?: {
-        [portId: string]: PortSpec<any>;
-    };
-    id?: string;
-    async: true;
-    autostart?: boolean;
-}
-export declare type ProcessSpec<T> = ProcessSyncSpec<T> | ProcessAsyncSpec<T>;
-export interface EntityRef<T> {
-    id: (_id: string) => EntityRef<T>;
-    value: (_value: T) => EntityRef<T>;
-    json: (_json: string) => EntityRef<T>;
+} | any[];
+export declare type ProcedureSync<T> = (ports: PortArgs) => T | void;
+export declare type ProcedureAsync<T> = (ports: PortArgs, send: (val?: T) => void) => (() => void) | void;
+export declare type Procedure<T> = ProcedureSync<T> | ProcedureAsync<T>;
+export declare type ReactionFactory<T> = (a1: string | PortSpec<any>[] | Procedure<T>, a2?: PortSpec<any>[] | Procedure<T>, a3?: Procedure<T>) => EntityRef<T>;
+export declare type StreamFactory = <T>(a1: string | PortSpec<any>[] | Procedure<T>, a2?: PortSpec<any>[] | Procedure<T>, a3?: Procedure<T>) => EntityRef<T>;
+export declare type ValueFactory = <T>(value?: T) => EntityRef<T>;
+export declare type JsonValueFactory = <T>(json?: string) => EntityRef<T>;
+export declare type EntityRef<T> = {
+    id: (_id: string, _ns?: string) => EntityRef<T>;
     isEvent: (_isEvent?: boolean) => EntityRef<T>;
-    stream: (spec: ProcessSpec<T>) => EntityRef<T>;
+    react: ReactionFactory<T>;
     HOT: PortSpec<T>;
     COLD: PortSpec<T>;
-    SELF: PortSpec<T>;
-    getId: () => string;
+    getId: () => string | undefined;
     onId: (cb: (string) => void) => void;
-}
-export interface EntityFactory {
-    SELF: PortSpec<any>;
-    <T>(value?: T): EntityRef<T>;
-}
+};
+export declare type EntitySpec<T> = {
+    id?: string;
+    value?: T;
+    json?: string;
+    processId?: string;
+    procedure?: Procedure<T>;
+    dependencies?: PortSpec<any>[];
+    async?: boolean;
+    autostart?: boolean;
+};
 export declare function create(flow: Runtime): {
-    entity: EntityFactory;
+    val: <T>(value?: T | undefined) => EntityRef<T>;
+    json: <T>(json: string) => EntityRef<T>;
+    stream: <T>(a1: string | PortSpec<any>[] | ProcedureSync<T> | ProcedureAsync<T>, a2?: PortSpec<any>[] | ProcedureSync<T> | ProcedureAsync<T> | undefined, a3?: ProcedureSync<T> | ProcedureAsync<T> | undefined) => EntityRef<T>;
+    streamStart: <T>(a1: string | PortSpec<any>[] | ProcedureSync<T> | ProcedureAsync<T>, a2?: PortSpec<any>[] | ProcedureSync<T> | ProcedureAsync<T> | undefined, a3?: ProcedureSync<T> | ProcedureAsync<T> | undefined) => EntityRef<T>;
+    asyncStream: <T>(a1: string | PortSpec<any>[] | ProcedureSync<T> | ProcedureAsync<T>, a2?: PortSpec<any>[] | ProcedureSync<T> | ProcedureAsync<T> | undefined, a3?: ProcedureSync<T> | ProcedureAsync<T> | undefined) => EntityRef<T>;
+    asyncStreamStart: <T>(a1: string | PortSpec<any>[] | ProcedureSync<T> | ProcedureAsync<T>, a2?: PortSpec<any>[] | ProcedureSync<T> | ProcedureAsync<T> | undefined, a3?: ProcedureSync<T> | ProcedureAsync<T> | undefined) => EntityRef<T>;
     addToFlow: (es: any, path?: string | undefined) => void;
-    SELF: PortSpec<any>;
 };

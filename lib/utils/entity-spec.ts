@@ -13,7 +13,7 @@ import {
 
 // ===== types =====
 
-export interface EntitySpec {
+export type EntitySpec = {
   val?: any
   stream?: ProcessSpec
   streams?: ProcessSpec[]
@@ -23,7 +23,7 @@ export interface EntitySpec {
 }
 
 
-export interface ProcessSyncSpec {
+export type ProcessSyncSpec = {
   do: ProcedureSync
   with?: {[portId: string]: string}
   id?: string
@@ -33,7 +33,7 @@ export interface ProcessSyncSpec {
 }
 
 
-export interface ProcessAsyncSpec {
+export type ProcessAsyncSpec = {
   do: ProcedureAsync
   with?: {[portId: string]: string}
   id?: string
