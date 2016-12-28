@@ -5,7 +5,7 @@ import * as runtime from '../../lib/runtime'
 
 describe('Flow runtime', function() {
 
-  var sys;
+  var sys: types.Runtime;
 
   beforeEach(function() {
     sys = runtime.create()
@@ -84,7 +84,7 @@ describe('Flow runtime', function() {
 
 
   it('can load and transfer a whole graph', function() {
-    let p = ports => ports.bar + 1
+    let p = bar => bar + 1
 
     sys.addGraph({
       entities: [{
@@ -95,13 +95,13 @@ describe('Flow runtime', function() {
       }],
       processes: [{
         id: "lala",
-        ports: {bar: sys.PORT_TYPES.HOT},
+        ports: [sys.PORT_TYPES.HOT],
         procedure: p
       }],
       arcs: [{
         entity: 'bar',
         process: 'lala',
-        port: 'bar'
+        port: 0
       }, {
         entity: 'foo',
         process: 'lala'
@@ -135,9 +135,7 @@ describe('Flow runtime', function() {
       processes: {
         lala: {
           id: "lala",
-          ports: {
-            bar: sys.PORT_TYPES.HOT
-          },
+          ports: [sys.PORT_TYPES.HOT],
           code: p.toString(),
           procedure: p,
           autostart: false,
@@ -146,11 +144,11 @@ describe('Flow runtime', function() {
         }
       },
       arcs: {
-        "bar->lala::bar": {
-          id: "bar->lala::bar",
+        "bar->lala::0": {
+          id: "bar->lala::0",
           entity: "bar",
           process: "lala",
-          port: "bar",
+          port: 0,
           meta: {}
         },
         "lala->foo": {
@@ -192,13 +190,13 @@ describe('Flow runtime', function() {
       }],
       processes: [{
         id: "lala",
-        ports: {bar: sys.PORT_TYPES.HOT},
-        procedure: (ports) => ports.bar + 1
+        ports: [sys.PORT_TYPES.HOT],
+        procedure: bar => bar + 1
       }],
       arcs: [{
         entity: 'bar',
         process: 'lala',
-        port: 'bar'
+        port: 0
       }, {
         process: 'lala',
         entity: 'foo'
@@ -227,7 +225,7 @@ describe('Flow runtime', function() {
     it('can be created by set', function() {
       sys.set('foo', 33)
 
-      expect(sys.getGraph().entities.foo).to.exist
+      expect(sys.getGraph().entities['foo']).to.exist
     })
 
 
@@ -283,7 +281,7 @@ describe('Flow runtime', function() {
       sys.addEntity({id: 'foo', value: true})
 
       expect(sys.get('foo')).to.be.false
-      expect(sys.getGraph().entities.foo.value).to.be.true
+      expect(sys.getGraph().entities['foo'].value).to.be.true
     })
 
 
@@ -291,13 +289,13 @@ describe('Flow runtime', function() {
       sys.addEntity({id: 'foo'})
       sys.addArc({id: 'bar', entity: 'foo', process: 'baz'})
 
-      expect(sys.getGraph().entities.foo).to.exist
-      expect(sys.getGraph().arcs.bar).to.exist
+      expect(sys.getGraph().entities['foo']).to.exist
+      expect(sys.getGraph().arcs['bar']).to.exist
 
       sys.removeEntity('foo')
 
-      expect(sys.getGraph().entities.foo).not.to.exist
-      expect(sys.getGraph().arcs.bar).not.to.exist
+      expect(sys.getGraph().entities['foo']).not.to.exist
+      expect(sys.getGraph().arcs['bar']).not.to.exist
     })
 
 
@@ -332,11 +330,11 @@ describe('Flow runtime', function() {
     it('can be removed', function() {
       sys.addArc({id: 'foo', process: 'bar', entity: 'baz'})
 
-      expect(sys.getGraph().arcs.foo).to.exist
+      expect(sys.getGraph().arcs['foo']).to.exist
 
       sys.removeArc('foo')
 
-      expect(sys.getGraph().arcs.foo).not.to.exist
+      expect(sys.getGraph().arcs['foo']).not.to.exist
     })
   })
 
@@ -355,13 +353,16 @@ describe('Flow runtime', function() {
 
     it('can evaluate code into a procedure', function() {
       const spec = {
-        code: 'function(input, out) {out("fufu");}'
-      }, out = sinon.stub()
+        code: 'function(send) {send("fufu");}',
+      }
+      const send = sinon.stub()
+
       let process = sys.addProcess(spec)
       expect(process.procedure).to.be.a('function')
 
-      process.procedure(null, out)
-      expect(out).to.be.calledWith('fufu')
+      const p: any = process.procedure
+      p(send)
+      expect(send).to.be.calledWith('fufu')
     })
 
 
@@ -372,9 +373,9 @@ describe('Flow runtime', function() {
 
       sys.removeProcess('foo')
 
-      expect(sys.getGraph().processes.foo).not.to.exist
-      expect(sys.getGraph().arcs.bar).not.to.exist
-      expect(sys.getGraph().arcs.baz).to.exist
+      expect(sys.getGraph().processes['foo']).not.to.exist
+      expect(sys.getGraph().arcs['bar']).not.to.exist
+      expect(sys.getGraph().arcs['baz']).to.exist
     })
   })
 
@@ -424,20 +425,18 @@ describe('Flow runtime', function() {
 
 
     it('have processes that react on hot entity ports', function() {
-      let procedure = sinon.spy((input) => input.val + 1)
+      let procedure = sinon.spy(val => val + 1)
 
       sys.addProcess({
         id: 'process',
-        ports: {
-          'val': sys.PORT_TYPES.HOT
-        },
+        ports: [sys.PORT_TYPES.HOT],
         procedure
       })
 
       sys.addArc({
         entity: 'src1',
         process: 'process',
-        port: 'val'
+        port: 0
       })
 
       sys.addArc({
@@ -448,20 +447,16 @@ describe('Flow runtime', function() {
       sys.set('src1', 2)
 
       expect(sys.get('dest')).to.equal(3)
-      expect(procedure.args[0][0]).to.deep.equal({
-        'val': 2
-      })
+      expect(procedure.args[0][0]).to.deep.equal(2)
     })
 
 
     it('gets the accumulator', function() {
-      let procedure = sinon.spy((input) => input.val + 1)
+      let procedure = sinon.spy(val => val + 1)
 
       sys.addProcess({
         id: 'process',
-        ports: {
-          'val': sys.PORT_TYPES.ACCUMULATOR
-        },
+        ports: [sys.PORT_TYPES.ACCUMULATOR],
         procedure
       })
 
@@ -483,13 +478,13 @@ describe('Flow runtime', function() {
 
 
     it('runs all connected accumulator processes when entity is reset', function() {
-      const procedure = sinon.spy((input) => input.val + input.self)
-      const procedureEnd = sinon.spy((input) => input.val + 1000)
+      const procedure = sinon.spy((self, val) => val + self)
+      const procedureEnd = sinon.spy(val => val + 1000)
       const callback = sinon.stub()
-      const ports = {
-        val: sys.PORT_TYPES.HOT,
-        self: sys.PORT_TYPES.ACCUMULATOR
-      }
+      const ports = [
+        sys.PORT_TYPES.ACCUMULATOR,
+        sys.PORT_TYPES.HOT,
+      ]
       sys.set('src1', 5)
       sys.set('src2', 7)
       sys.addGraph({
@@ -505,16 +500,16 @@ describe('Flow runtime', function() {
         }, {
           id: "baz",
           procedure: procedureEnd,
-          ports: {val: sys.PORT_TYPES.HOT}
+          ports: [sys.PORT_TYPES.HOT]
         }],
         arcs: [{
           entity: 'src1',
           process: 'foo',
-          port: 'val'
+          port: 1
         }, {
           entity: 'src2',
           process: 'bar',
-          port: 'val'
+          port: 1
         }, {
           process: 'bar',
           entity: 'state',
@@ -524,7 +519,7 @@ describe('Flow runtime', function() {
         }, {
           entity: 'state',
           process: 'baz',
-          port: 'val'
+          port: 0
         }, {
           process: 'baz',
           entity: 'dest',
@@ -559,12 +554,10 @@ describe('Flow runtime', function() {
 
 
     it('reacts on changes of port type to accumulator', function() {
-      const procedure = sinon.spy((input) => input.val + 1)
+      const procedure = sinon.spy(val => val + 1)
       const p = {
         id: 'process',
-        ports: {
-          val: sys.PORT_TYPES.HOT
-        },
+        ports: [sys.PORT_TYPES.HOT],
         procedure
       }
 
@@ -578,7 +571,7 @@ describe('Flow runtime', function() {
       let a = sys.addArc({
         process: 'process',
         entity: 'src1',
-        port: 'val'
+        port: 0
       })
 
       sys.set('src1', 1)
@@ -587,9 +580,10 @@ describe('Flow runtime', function() {
 
       sys.removeArc(a.id)
 
-      sys.addProcess(Object.assign(
-        p, {ports: {val: sys.PORT_TYPES.ACCUMULATOR}}
-      ))
+      sys.addProcess({
+        ...p,
+        ports: [sys.PORT_TYPES.ACCUMULATOR]
+      })
 
       sys.start('process')
 
@@ -598,16 +592,16 @@ describe('Flow runtime', function() {
 
 
     it('doesnt activate accumulator processes and doesnt propagate unless accumulator entity is defined', function() {
-      const p = sinon.spy(ports => ports.acc + ports.v)
+      const p = sinon.spy((v, acc) => acc + v)
       sys.addGraph({
         processes: [{
           id: 'p1',
-          ports: {v: sys.PORT_TYPES.HOT, acc: sys.PORT_TYPES.ACCUMULATOR},
+          ports: [sys.PORT_TYPES.HOT, sys.PORT_TYPES.ACCUMULATOR],
           procedure: p
         }, {
           id: 'p2',
-          ports: {v: sys.PORT_TYPES.HOT},
-          procedure: ports => ports.v + ports.v
+          ports: [sys.PORT_TYPES.HOT],
+          procedure: v => v + v
         }],
         arcs: [{
           process: 'p1',
@@ -615,14 +609,14 @@ describe('Flow runtime', function() {
         }, {
           entity: 'src1',
           process: 'p1',
-          port: 'v'
+          port: 0
         }, {
           process: 'p2',
           entity: 'dest'
         }, {
           entity: 'start',
           process: 'p2',
-          port: 'v'
+          port: 0
         }]
       })
 
@@ -633,33 +627,33 @@ describe('Flow runtime', function() {
 
       sys.set('start', 22)
 
-      expect(p).to.be.calledWith({acc: 44, v: 'src1_value'})
+      expect(p).to.be.calledWith('src1_value', 44)
       expect(sys.get('dest')).to.equal('44src1_value')
     })
 
 
     it('have processes that dont react on cold entity ports', function() {
-      let procedure = sinon.spy((input) => input.val1 + input.val2)
+      let procedure = sinon.spy((val1, val2) => val1 + val2)
 
       sys.addProcess({
         id: 'process',
-        ports: {
-          'val1': sys.PORT_TYPES.HOT,
-          'val2': sys.PORT_TYPES.COLD
-        },
+        ports: [
+          sys.PORT_TYPES.HOT,
+          sys.PORT_TYPES.COLD
+        ],
         procedure
       })
 
       sys.addArc({
         entity: 'src_2',
         process: 'process',
-        port: 'val2'
+        port: 1
       })
 
       sys.addArc({
         entity: 'src_1',
         process: 'process',
-        port: 'val1'
+        port: 0
       })
 
       sys.addArc({
@@ -675,9 +669,7 @@ describe('Flow runtime', function() {
       sys.set('src_1', 3)
 
       expect(sys.get('dest')).to.equal(5)
-      expect(procedure.args[0][0]).to.deep.equal({
-        'val1': 3, 'val2': 2
-      })
+      expect(procedure.args[0]).to.deep.equal([3, 2])
     })
 
 
@@ -686,10 +678,8 @@ describe('Flow runtime', function() {
 
       sys.addProcess({
         id: 'fooProcess',
-        procedure: input => input.val + 1,
-        ports: {
-          val: sys.PORT_TYPES.ACCUMULATOR
-        }
+        procedure: val => val + 1,
+        ports: [sys.PORT_TYPES.ACCUMULATOR]
       })
 
       let arc = sys.addArc({
@@ -709,20 +699,18 @@ describe('Flow runtime', function() {
 
 
     it('stops on removed arc2', function() {
-      let procedure = sinon.spy((input) => input.val + 1)
+      let procedure = sinon.spy(val => val + 1)
 
       sys.addProcess({
         id: 'process',
-        ports: {
-          'val': sys.PORT_TYPES.HOT
-        },
+        ports: [sys.PORT_TYPES.HOT],
         procedure
       })
 
       let arc = sys.addArc({
         entity: 'src1',
         process: 'process',
-        port: 'val'
+        port: 0
       })
 
       sys.addArc({
@@ -745,8 +733,8 @@ describe('Flow runtime', function() {
     it('adopts properly to different port changes', function() {
       const p = {
         id: "p",
-        procedure: (srcs) => srcs.val + 10,
-        ports: {val: sys.PORT_TYPES.HOT}
+        procedure: val => val + 10,
+        ports: [sys.PORT_TYPES.HOT]
       }
 
       sys.addGraph({
@@ -754,7 +742,7 @@ describe('Flow runtime', function() {
         arcs: [{
           entity: 'src',
           process: 'p',
-          port: 'val'
+          port: 0
         }, {
           process: 'p',
           entity: 'dest'
@@ -765,9 +753,10 @@ describe('Flow runtime', function() {
 
       expect(sys.get('dest')).to.equal(30)
 
-      sys.addProcess(Object.assign({},
-        p, {ports: {val: sys.PORT_TYPES.COLD}}
-      ))
+      sys.addProcess({
+        ...p,
+        ports: [sys.PORT_TYPES.COLD]
+      })
 
       sys.set('src', 10)
       expect(sys.get('dest')).to.equal(30)
@@ -783,8 +772,8 @@ describe('Flow runtime', function() {
 
       sys.addProcess({
         id: 'p',
-        ports: {foo: sys.PORT_TYPES.COLD},
-        procedure: (srcs) => srcs.foo + 20
+        ports: [],
+        procedure: (foo = 0) => foo + 20
       })
 
       expect(sys.getGraph().arcs).to.deep.equal({
@@ -797,17 +786,17 @@ describe('Flow runtime', function() {
       sys.addArc({
         entity: 'src',
         process: 'p',
-        port: 'foo'
+        port: 0
       })
 
-      sys.set('src', 0)
+      sys.set('src', 2000)
       sys.start('p')
       expect(sys.get('dest')).to.equal(20)
 
-      sys.addProcess(Object.assign({},
-        sys.getGraph().processes.p,
-        {ports: {foo: sys.PORT_TYPES.ACCUMULATOR}},
-      ))
+      sys.addProcess({
+        ...sys.getGraph().processes['p'],
+        ports: [sys.PORT_TYPES.ACCUMULATOR],
+      })
 
       expect(sys.getGraph().arcs).to.deep.equal({
         'p->dest': types.createArc({
@@ -820,15 +809,15 @@ describe('Flow runtime', function() {
 
       expect(sys.get('dest')).to.equal(40)
 
-      sys.addProcess(Object.assign({},
-        sys.getGraph().processes.p,
-        {ports: {foo: sys.PORT_TYPES.HOT}}
-      ))
+      sys.addProcess({
+        ...sys.getGraph().processes['p'],
+        ports: [sys.PORT_TYPES.HOT]
+      })
 
       sys.addArc({
         entity: 'src',
         process: 'p',
-        port: 'foo'
+        port: 0
       })
 
       sys.set('src', 10)
@@ -840,61 +829,24 @@ describe('Flow runtime', function() {
       sys.addGraph({
         processes: [{
           id: "p1",
-          ports: {
-            self: sys.PORT_TYPES.ACCUMULATOR,
-            val: sys.PORT_TYPES.HOT
-          },
-          procedure: (ports) => ports.self + '-' + ports.val
-        }, {
-          id: "p2",
-          ports: { val: sys.PORT_TYPES.HOT },
-          procedure: (ports) => ports.val
-        }],
-        arcs: [{
-          entity: "src1",
-          process: "p1",
-          port: "val"
-        }, {
-          entity: "src2",
-          process: "p2",
-          port: "val"
-        }, {
-          process: "p1",
-          entity: "dest"
-        }, {
-          process: "p2",
-          entity: "dest"
-        }]
-      })
-
-      sys.flush()
-
-      expect(sys.get('dest')).to.equal('src2_value-src1_value')
-    })
-
-
-    it('can have array ports', function() {
-      sys.addGraph({
-        processes: [{
-          id: "p1",
           ports: [
             sys.PORT_TYPES.ACCUMULATOR,
             sys.PORT_TYPES.HOT
           ],
-          procedure: ([self, val]) => self + '-' + val
+          procedure: (self, val) => self + '-' + val
         }, {
           id: "p2",
           ports: [sys.PORT_TYPES.HOT],
-          procedure: ([val]) => val
+          procedure: val => val
         }],
         arcs: [{
           entity: "src1",
           process: "p1",
-          port: "1"
+          port: 1
         }, {
           entity: "src2",
           process: "p2",
-          port: "0"
+          port: 0
         }, {
           process: "p1",
           entity: "dest"
@@ -908,6 +860,7 @@ describe('Flow runtime', function() {
 
       expect(sys.get('dest')).to.equal('src2_value-src1_value')
     })
+
 
     it('has event entities that are only defined when set or changed', function() {
       sys.addEntity({
@@ -916,25 +869,26 @@ describe('Flow runtime', function() {
       })
 
       let p = sinon.stub()
+
       sys.addProcess({
         id: "p",
-        ports: {e: sys.PORT_TYPES.HOT},
+        ports: [sys.PORT_TYPES.HOT],
         procedure: p
       })
 
       sys.addArc({
         entity: "event",
         process: "p",
-        port: 'e'
+        port: 0
       })
 
       sys.set('event', 30)
-      expect(p).to.be.calledWith({e: 30})
+      expect(p).to.be.calledWith(30)
 
       p.reset()
       sys.start('p')
 
-      expect(p).to.be.calledWith({e: undefined})
+      expect(p).to.be.calledWith(undefined)
 
       expect(sys.get('event')).to.equal(30)
     })
@@ -997,11 +951,9 @@ describe('Flow runtime', function() {
 
       sys.addProcess({
         id: 'fooProcess',
-        procedure: (input, out) => out(input.val + 1),
+        procedure: (out, val) => out(val + 1),
         async: true,
-        ports: {
-          val: sys.PORT_TYPES.HOT
-        }
+        ports: [sys.PORT_TYPES.HOT]
       })
 
       let arc = sys.addArc({
@@ -1011,7 +963,7 @@ describe('Flow runtime', function() {
       sys.addArc({
         entity: 'src1',
         process: 'fooProcess',
-        port: 'val'
+        port: 0
       })
 
       sys.set('src1', 1)
@@ -1031,7 +983,7 @@ describe('Flow runtime', function() {
       sys.addProcess({
         id: 'foo',
         async: true,
-        procedure: (_, send) => {
+        procedure: send => {
           send(42)
           return cleanup
         }
@@ -1056,8 +1008,8 @@ describe('Flow runtime', function() {
         }, {
           id: "p2",
           async: true,
-          ports: { val: sys.PORT_TYPES.HOT },
-          procedure: (ports, send) => send(ports.val)
+          ports: [sys.PORT_TYPES.HOT],
+          procedure: (send, val) => send(val)
         }],
         arcs: [{
           process: "p1",
@@ -1065,7 +1017,7 @@ describe('Flow runtime', function() {
         }, {
           entity: "src1",
           process: "p2",
-          port: "val"
+          port: 0
         }, {
           process: "p2",
           entity: "dest"
@@ -1121,21 +1073,19 @@ describe('Flow runtime', function() {
 
 
     it('autostarts only if all ports are connected', function() {
-      const procedure = sinon.spy((ports) => ports.val)
+      const procedure = sinon.spy(val => val)
 
       sys.addProcess({
         id: "foo",
         procedure,
-        ports: {
-          val: sys.PORT_TYPES.HOT
-        },
+        ports: [sys.PORT_TYPES.HOT],
         autostart: true
       })
 
       let a = sys.addArc({
         entity: "src1",
         process: "foo",
-        port: "val"
+        port: 0
       })
 
       expect(procedure).to.not.be.called
@@ -1157,7 +1107,7 @@ describe('Flow runtime', function() {
       sys.addArc({
         entity: "src2",
         process: "foo",
-        port: "val"
+        port: 0
       })
 
       expect(procedure).to.be.called
@@ -1168,7 +1118,7 @@ describe('Flow runtime', function() {
     it('doesnt autostart processes with accumulator port', function() {
       sys.addProcess({
         id: "foo",
-        ports: {foo: sys.PORT_TYPES.ACCUMULATOR},
+        ports: [sys.PORT_TYPES.ACCUMULATOR],
         procedure: () => 42,
         autostart: true
       })
@@ -1184,11 +1134,11 @@ describe('Flow runtime', function() {
 
       sys.addProcess({
         id: "bar",
-        ports: {
-          bar: sys.PORT_TYPES.ACCUMULATOR,
-          foo: sys.PORT_TYPES.HOT
-        },
-        procedure: (ports) => ports.foo,
+        ports: [
+          sys.PORT_TYPES.ACCUMULATOR,
+          sys.PORT_TYPES.HOT
+        ],
+        procedure: (_, foo) => foo,
         autostart: true
       })
 
@@ -1199,7 +1149,7 @@ describe('Flow runtime', function() {
 
       sys.addArc({
         process: "bar",
-        port: "foo",
+        port: 1,
         entity: "src1"
       })
 
@@ -1211,13 +1161,13 @@ describe('Flow runtime', function() {
       let sys = runtime.create()
       sys.addProcess({
         id: "p2",
-        procedure: ({val}) => val + 10,
-        ports: {val: sys.PORT_TYPES.HOT}
+        procedure: val => val + 10,
+        ports: [sys.PORT_TYPES.HOT]
       })
       sys.addArc({
         entity: "dest",
         process: "p2",
-        port: 'val'
+        port: 0
       })
       sys.addArc({
         process: "p2",
@@ -1226,7 +1176,7 @@ describe('Flow runtime', function() {
 
       sys.addProcess({
         id: "p_auto",
-        procedure: (_, send) => send(42),
+        procedure: send => send(42),
         async: true,
         autostart: true
       })
@@ -1268,11 +1218,11 @@ describe('Flow runtime', function() {
 
       sys.addProcess({
         id: "p_acc",
-        ports: {
-          foo: sys.PORT_TYPES.HOT,
-          self: sys.PORT_TYPES.ACCUMULATOR
-        },
-        procedure: (ports) => ports.self + ports.foo
+        ports: [
+          sys.PORT_TYPES.HOT,
+          sys.PORT_TYPES.ACCUMULATOR
+        ],
+        procedure: (foo, self) => self + foo
       })
 
       sys.addArc({
@@ -1282,7 +1232,7 @@ describe('Flow runtime', function() {
       sys.addArc({
         entity: "foo",
         process: "p_acc",
-        port: "foo"
+        port: 0
       })
 
       expect(sys.get('dest')).to.equal(20)
@@ -1298,9 +1248,7 @@ describe('Flow runtime', function() {
       const process = {
         id: "foo",
         procedure,
-        ports: {
-          bar: sys.PORT_TYPES.HOT
-        },
+        ports: [sys.PORT_TYPES.HOT],
         autostart: true
       }
 
@@ -1314,7 +1262,7 @@ describe('Flow runtime', function() {
       sys.addArc({
         entity: 'src1',
         process: 'foo',
-        port: 'bar'
+        port: 0
       })
 
       expect(procedure).to.be.called
@@ -1331,11 +1279,11 @@ describe('Flow runtime', function() {
   describe("execution order", function() {
 
     it('propagates level by level', function() {
-      let p1 = sinon.spy((ports) => ports.val)
-      let p2 = sinon.spy((ports) => ports.val)
-      let p3 = sinon.spy((ports) => ports.val)
-      let p4 = sinon.spy((ports) => ports.val)
-      let ports = {val: sys.PORT_TYPES.HOT}
+      let p1 = sinon.spy(val => val)
+      let p2 = sinon.spy(val => val)
+      let p3 = sinon.spy(val => val)
+      let p4 = sinon.spy(val => val)
+      let ports = [sys.PORT_TYPES.HOT]
 
       sys.addGraph({
         entities: [{ id: "src" }, { id: "e1" }, { id: "e2" }],
@@ -1359,11 +1307,11 @@ describe('Flow runtime', function() {
         arcs: [{
           entity: "src",
           process: "p1",
-          port: "val"
+          port: 0
         }, {
           entity: "src",
           process: "p2",
-          port: "val"
+          port: 0
         }, {
           process: "p1",
           entity: "e1",
@@ -1373,11 +1321,11 @@ describe('Flow runtime', function() {
         }, {
           entity: "e1",
           process: "p3",
-          port: "val"
+          port: 0
         }, {
           entity: "e2",
           process: "p4",
-          port: "val"
+          port: 0
         }]
       })
 
@@ -1422,15 +1370,13 @@ describe('Flow runtime', function() {
       sys.addEntity({id: 'foo'})
       sys.addProcess({
         id: 'p1',
-        ports: {
-          'in': sys.PORT_TYPES.HOT
-        },
-        procedure: (ports) => ports.in + 20
+        ports: [sys.PORT_TYPES.HOT],
+        procedure: val => val + 20
       })
       sys.addArc({
         entity: 'foo',
         process: 'p1',
-        port: 'in'
+        port: 0
       })
       sys.addArc({
         process: 'p1',
@@ -1480,10 +1426,10 @@ describe('Flow runtime', function() {
           }
         }, {
           id: "p2",
-          ports: {val: sys.PORT_TYPES.HOT},
-          procedure: function (ports) {
+          ports: [sys.PORT_TYPES.HOT],
+          procedure: function (val) {
             expect(this).to.deep.equal(context)
-            return '' + ports.val + this.lala
+            return '' + val + this.lala
           }
         }],
         arcs: [{
@@ -1492,7 +1438,7 @@ describe('Flow runtime', function() {
         }, {
           entity: 'foo',
           process: 'p2',
-          port: 'val'
+          port: 0
         }, {
           process: 'p2',
           entity: 'bar',

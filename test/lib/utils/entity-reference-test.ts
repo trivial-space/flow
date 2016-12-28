@@ -144,7 +144,7 @@ describe('flow entity reference', function() {
 
 
   it('can add a stream with all props', function() {
-    const p1 = (_, send) => send(100)
+    const p1 = (send) => send(100)
     const p2 = () => 100
     asyncStreamStart('createE', p1).id('e')
     streamStart('createF', p2).id('f')
@@ -197,7 +197,7 @@ describe('flow entity reference', function() {
 
 
   it('can add a stream depending on other entities', function() {
-    const p = ([self, foo, bar]) => bar + foo + self
+    const p = (self, foo, bar) => bar + foo + self
 
     const foo = val(2).id('foo')
     const bar = val(3).id('bar')
@@ -251,7 +251,7 @@ describe('flow entity reference', function() {
 
 
   it('changes updates flow on changed id', function() {
-    const p = ([foo]) => foo + 2
+    const p = foo => foo + 2
 
     const foo = val(20)
 
@@ -326,7 +326,7 @@ describe('flow entity reference', function() {
 
 
   it("only updates the flow entity if the id is different than the previous id", function() {
-    const p = sinon.spy(([e]) => e + 1)
+    const p = sinon.spy(e => e + 1)
 
     const e = val(12)
 

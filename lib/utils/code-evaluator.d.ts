@@ -1,2 +1,1 @@
-import { Procedure } from '../runtime-types';
-export declare function evaluate(code: string, context?: any): Procedure;
+export declare function evaluate(code: string, context?: any): any;

@@ -3,11 +3,8 @@ export declare type PortSpec<T> = {
     type: PortType;
     entity: EntityRef<T>;
 };
-export declare type PortArgs = {
-    [portId: string]: any;
-} | any[];
-export declare type ProcedureSync<T> = (ports: PortArgs) => T | void;
-export declare type ProcedureAsync<T> = (ports: PortArgs, send: (val?: T) => void) => (() => void) | void;
+export declare type ProcedureSync<T> = (...args: any[]) => T | void;
+export declare type ProcedureAsync<T> = (send: (val?: T) => void, ...args: any[]) => (() => void) | void;
 export declare type Procedure<T> = ProcedureSync<T> | ProcedureAsync<T>;
 export declare type ReactionFactory<T> = (a1: string | PortSpec<any>[] | Procedure<T>, a2?: PortSpec<any>[] | Procedure<T>, a3?: Procedure<T>) => EntityRef<T>;
 export declare type StreamFactory = <T>(a1: string | PortSpec<any>[] | Procedure<T>, a2?: PortSpec<any>[] | Procedure<T>, a3?: Procedure<T>) => EntityRef<T>;

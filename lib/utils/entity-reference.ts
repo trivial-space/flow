@@ -1,8 +1,8 @@
 import {
   PORT_TYPES,
   PortType,
-  Ports,
   Runtime,
+  ProcessData
 } from '../runtime-types'
 
 
@@ -12,17 +12,14 @@ export type PortSpec<T> = {
 }
 
 
-export type PortArgs = { [portId: string]: any } | any[]
-
-
 export type ProcedureSync<T> = (
-  ports: PortArgs
+  ...args: any[]
 ) => T | void
 
 
 export type ProcedureAsync<T> = (
-  ports: PortArgs,
-  send: (val?: T) => void
+  send: (val?: T) => void,
+  ...args: any[]
 ) => (() => void) | void
 
 export type Procedure<T> = ProcedureSync<T> | ProcedureAsync<T>
@@ -141,7 +138,7 @@ export function create(flow: Runtime) {
         const pid = spec.processId ? mergePath(spec.processId, ns) : id + suffix
 
         const deps = spec.dependencies
-        let ports: Ports = []
+        let ports: PortType[] = []
 
         if (deps) {
           for (let portId in deps) {
@@ -156,7 +153,7 @@ export function create(flow: Runtime) {
           ports,
           async: spec.async,
           autostart: spec.autostart
-        })
+        } as ProcessData)
 
         flow.addArc({ process: pid, entity: id })
 

@@ -32,37 +32,47 @@ export type PortTypeAccumulator = "ACCUMULATOR"
 export type PortType = PortTypeHot | PortTypeCold | PortTypeAccumulator
 
 
-export type Ports = {[portId: string]: PortType} | PortType[]
-
-
 export type ProcedureSync = (
-  ports: { [portId: string]: any }
+  ...args: any[]
 ) => any
 
 
 export type ProcedureAsync = (
-  ports: { [portId: string]: any },
-  send: (val?: any) => void
+  send: (val?: any) => void,
+  ...args: any[]
 ) => any
 
 
 export type Procedure = ProcessSync | ProcedureAsync
 
 
-export type ProcessData = {
+export type ProcessDataSync = {
   id?: string
-  ports?: Ports
-  procedure?: Procedure
+  ports?: PortType[]
+  procedure?: ProcedureSync
   code?: string
   autostart?: boolean
-  async?: boolean
+  async?: false
   meta?: Meta
 }
 
 
+export type ProcessDataAsync = {
+  id?: string
+  ports?: PortType[]
+  procedure?: ProcedureAsync
+  code?: string
+  autostart?: boolean
+  async: true
+  meta?: Meta
+}
+
+export type ProcessData = ProcessDataSync | ProcessDataAsync
+
+
 export type ProcessSync = {
   id: string
-  ports: Ports
+  ports: PortType[]
   procedure: ProcedureSync
   code: string
   autostart?: boolean
@@ -73,7 +83,7 @@ export type ProcessSync = {
 
 export type ProcessAsync = {
   id: string
-  ports: Ports
+  ports: PortType[]
   procedure: ProcedureAsync
   code: string
   autostart?: boolean
@@ -89,7 +99,7 @@ export type ArcData = {
   id?: string
   entity: string
   process: string
-  port?: string | number
+  port?: number | string
   meta?: Meta
 }
 
@@ -98,18 +108,24 @@ export type Arc = {
   id: string
   entity: string
   process: string
-  port?: string | number
+  port?: number | string
   meta: Meta
 }
 
 
 export type Graph = {
-  entities: EntityData[]
-  processes: ProcessData[]
-  arcs: ArcData[],
+  entities: {[id: string]: EntityData},
+  processes: {[id: string]: ProcessData},
+  arcs: {[id: string]: ArcData},
   meta?: Meta
 }
 
+export type GraphData = {
+  entities?: EntityData[] | {[id: string]: EntityData},
+  processes?: ProcessData[] | {[id: string]: ProcessData},
+  arcs?: ArcData[] | {[id: string]: ArcData},
+  meta?: Meta
+}
 
 export type Runtime = {
     addEntity: (spec: EntityData) => Entity
@@ -118,13 +134,8 @@ export type Runtime = {
     removeProcess: (id: string) => void
     addArc: (spec: ArcData) => Arc
     removeArc: (id: string) => void
-    addGraph: (graphSpec: Graph) => void
-    getGraph: () => {
-        entities: {[id: string]: Entity}
-        processes: {[id: string]: Process}
-        arcs: {[id: string]: Arc}
-        meta: {}
-    }
+    addGraph: (graphSpec: GraphData) => void
+    getGraph: () => Graph
     getState: () => {}
     setMeta: (newMeta: any) => void
     getMeta: () => Meta
@@ -168,7 +179,7 @@ export function createEntity ({
 
 export function createProcess ({
   id = v4(),
-  ports = {},
+  ports = [],
   procedure,
   code,
   autostart = false,

@@ -19,28 +19,31 @@ export declare type PortTypeHot = "HOT";
 export declare type PortTypeCold = "COLD";
 export declare type PortTypeAccumulator = "ACCUMULATOR";
 export declare type PortType = PortTypeHot | PortTypeCold | PortTypeAccumulator;
-export declare type Ports = {
-    [portId: string]: PortType;
-} | PortType[];
-export declare type ProcedureSync = (ports: {
-    [portId: string]: any;
-}) => any;
-export declare type ProcedureAsync = (ports: {
-    [portId: string]: any;
-}, send: (val?: any) => void) => any;
+export declare type ProcedureSync = (...args: any[]) => any;
+export declare type ProcedureAsync = (send: (val?: any) => void, ...args: any[]) => any;
 export declare type Procedure = ProcessSync | ProcedureAsync;
-export declare type ProcessData = {
+export declare type ProcessDataSync = {
     id?: string;
-    ports?: Ports;
-    procedure?: Procedure;
+    ports?: PortType[];
+    procedure?: ProcedureSync;
     code?: string;
     autostart?: boolean;
-    async?: boolean;
+    async?: false;
     meta?: Meta;
 };
+export declare type ProcessDataAsync = {
+    id?: string;
+    ports?: PortType[];
+    procedure?: ProcedureAsync;
+    code?: string;
+    autostart?: boolean;
+    async: true;
+    meta?: Meta;
+};
+export declare type ProcessData = ProcessDataSync | ProcessDataAsync;
 export declare type ProcessSync = {
     id: string;
-    ports: Ports;
+    ports: PortType[];
     procedure: ProcedureSync;
     code: string;
     autostart?: boolean;
@@ -49,7 +52,7 @@ export declare type ProcessSync = {
 };
 export declare type ProcessAsync = {
     id: string;
-    ports: Ports;
+    ports: PortType[];
     procedure: ProcedureAsync;
     code: string;
     autostart?: boolean;
@@ -61,20 +64,38 @@ export declare type ArcData = {
     id?: string;
     entity: string;
     process: string;
-    port?: string | number;
+    port?: number | string;
     meta?: Meta;
 };
 export declare type Arc = {
     id: string;
     entity: string;
     process: string;
-    port?: string | number;
+    port?: number | string;
     meta: Meta;
 };
 export declare type Graph = {
-    entities: EntityData[];
-    processes: ProcessData[];
-    arcs: ArcData[];
+    entities: {
+        [id: string]: EntityData;
+    };
+    processes: {
+        [id: string]: ProcessData;
+    };
+    arcs: {
+        [id: string]: ArcData;
+    };
+    meta?: Meta;
+};
+export declare type GraphData = {
+    entities?: EntityData[] | {
+        [id: string]: EntityData;
+    };
+    processes?: ProcessData[] | {
+        [id: string]: ProcessData;
+    };
+    arcs?: ArcData[] | {
+        [id: string]: ArcData;
+    };
     meta?: Meta;
 };
 export declare type Runtime = {
@@ -84,19 +105,8 @@ export declare type Runtime = {
     removeProcess: (id: string) => void;
     addArc: (spec: ArcData) => Arc;
     removeArc: (id: string) => void;
-    addGraph: (graphSpec: Graph) => void;
-    getGraph: () => {
-        entities: {
-            [id: string]: Entity;
-        };
-        processes: {
-            [id: string]: Process;
-        };
-        arcs: {
-            [id: string]: Arc;
-        };
-        meta: {};
-    };
+    addGraph: (graphSpec: GraphData) => void;
+    getGraph: () => Graph;
     getState: () => {};
     setMeta: (newMeta: any) => void;
     getMeta: () => Meta;

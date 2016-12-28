@@ -15,8 +15,8 @@ type EngineProcess = {
   out?: EngineEntity
   acc?: string
   async?: boolean
-  sources: {[id: string]: EngineEntity}
-  values: {[id: string]: any} | any[]
+  sources: EngineEntity[]
+  values: any[]
   sink: (val?: any) => void
   stop?: () => void
   arcs: {[id: string]: true}
@@ -153,19 +153,19 @@ export function create(): types.Runtime {
     let eP = engineP(p.id)
 
     delete eP.acc
-    eP.values = Array.isArray(p.ports) ? [] : {}
+    eP.values = []
+    eP.sources = []
     eP.async = p.async
 
     // cleanup unused arcs
-    const portNames = Object.keys(p.ports)
-    for(let aId in eP.arcs) {
+    Object.keys(eP.arcs).forEach(aId => {
       let port = arcs[aId].port
-      if (port &&
-        (portNames.indexOf(port) < 0 ||
-          p.ports[port] === types.PORT_TYPES.ACCUMULATOR)) {
+      if (port != null &&
+          (!p.ports[port] ||
+            p.ports[port] === types.PORT_TYPES.ACCUMULATOR)) {
         removeArc(aId)
       }
-    }
+    })
 
     // set accumulator if present
     for (let portId in p.ports) {
@@ -221,7 +221,7 @@ export function create(): types.Runtime {
       delete eP.arcs[id]
       delete eE.arcs[id]
 
-      if (arc.port) {
+      if (arc.port != null) {
         delete eE.effects[arc.process]
         delete eP.sources[arc.port]
         delete eP.values[arc.port]
@@ -249,12 +249,13 @@ export function create(): types.Runtime {
       eP.arcs[arc.id] = true
 
       // from entity to process
-      if (arc.port) {
-        eP.sources[arc.port] = eE
-        if (p.ports[arc.port] == types.PORT_TYPES.HOT) {
-          eE.effects[pId] = eP
-        } else {
-          delete eE.effects[pId]
+      if (arc.port != null) {
+        delete eE.effects[pId]
+        if (p.ports && p.ports[arc.port] != null) {
+          eP.sources[arc.port] = eE
+          if (p.ports[arc.port] == types.PORT_TYPES.HOT) {
+            eE.effects[pId] = eP
+          }
         }
 
       // from process to entity
@@ -423,9 +424,9 @@ export function create(): types.Runtime {
     if(debug) {
       console.log("executing process", eP.id)
     }
-    for (let portId in eP.sources) {
+    for (let portId = 0; portId < eP.sources.length; portId++) {
       let src = eP.sources[portId]
-      if (src.event && !(activeEntities && activeEntities[src.id])) {
+      if (src && src.event && !(activeEntities && activeEntities[src.id])) {
         eP.values[portId] = undefined
       } else {
         eP.values[portId] = src.val
@@ -433,9 +434,10 @@ export function create(): types.Runtime {
     }
     if (eP.async) {
       eP.stop && eP.stop()
-      eP.stop = processes[eP.id].procedure.call(context, eP.values, eP.sink)
+      // TODO check for optimization to avoid array generation and concat call...
+      eP.stop = processes[eP.id].procedure.apply(context, [eP.sink].concat(eP.values))
     } else {
-      let val = processes[eP.id].procedure.call(context, eP.values)
+      let val = processes[eP.id].procedure.apply(context, eP.values)
       if (eP.out) eP.out.val = val
     }
   }
@@ -489,9 +491,7 @@ export function create(): types.Runtime {
   function engineP(id: string) {
     return engine.ps[id] || (engine.ps[id] = {
       id,
-      sources: {},
       arcs: {},
-      values: {},
       sink: () => {}
     } as EngineProcess)
   }

@@ -32,7 +32,7 @@ module.exports = {
   },
 
   resolve: {
-    extensions: ['', '.js', '.json', '.ts'],
+    extensions: ['', '.ts', '.js', '.json'],
     root: [
       path.resolve(__dirname, "./lib")
     ]
