@@ -66,6 +66,16 @@ export type EntitySpec<T> = {
   autostart?: boolean
 }
 
+export type EntityFactory = {
+  val: ValueFactory,
+  json: JsonValueFactory,
+  stream: StreamFactory,
+  asyncStream: StreamFactory,
+  streamStart: StreamFactory,
+  asyncStreamStart: StreamFactory,
+  addToFlow: (entities: {[id: string]: EntityRef<any>}, ns?: string) => void
+}
+
 const streamNameSuffix = "Stream"
 const reactionNameSuffix = "Reaction"
 
@@ -75,7 +85,7 @@ function mergePath(id: string, path?: string): string {
 }
 
 
-export function create(flow: Runtime) {
+export function create(flow: Runtime): EntityFactory {
 
   function createEntity<T>(spec: EntitySpec<T>): EntityRef<T> {
     let isEvent: boolean | undefined
@@ -244,6 +254,7 @@ export function create(flow: Runtime) {
     }
   }
 
+
   function stream<T>(
     a1: string | PortSpec<any>[] | Procedure<T>,
     a2?: PortSpec<any>[] | Procedure<T>,
@@ -251,6 +262,7 @@ export function create(flow: Runtime) {
   ): EntityRef<T> {
       return createEntity<T>(getStreamSpec<T>(a1, a2, a3))
   }
+
 
   function asyncStream<T>(
     a1: string | PortSpec<any>[] | Procedure<T>,
@@ -263,6 +275,7 @@ export function create(flow: Runtime) {
       })
   }
 
+
   function streamStart<T>(
     a1: string | PortSpec<any>[] | Procedure<T>,
     a2?: PortSpec<any>[] | Procedure<T>,
@@ -273,6 +286,7 @@ export function create(flow: Runtime) {
         autostart: true
       })
   }
+
 
   function asyncStreamStart<T>(
     a1: string | PortSpec<any>[] | Procedure<T>,
