@@ -1,58 +1,54 @@
 const runtime = require('../dist/tvs-flow')
 
 
-const spec = {
-  e1: {
-    val: 0,
-    stream: {
-      with: {
-        self: 'a',
-        tick: 'h tick' },
-      do: p => p.self + 1 } },
+function setupFlow(flow) {
 
-  e2: {
-    val: 0,
-    stream: {
-      async: true,
-      with: {e1: 'h e1'},
-      do: (p, send) => {
-        if (p.e1 % 2 === 0) send(p.e1)
-      } } },
+  const {val, json, asyncStream, addToFlow} = runtime.utils.entityRef.create(flow)
 
-  e3: {
-    val: 0,
-    stream: {
-      async: true,
-      with: {e1: 'h e1'},
-      do: (p, send) => {
-        if (p.e1 % 4 === 0) send(p.e1)
-      } } },
+  const tick = val()
 
-  e4: {
-    json: '[]',
-    stream: {
-      with: {
-        e4: 'a',
-        e2: 'h e2',
-        e3: 'h e3'},
-      do: p => {
-        p.e4.push([p.e2, p.e3])
-        return p.e4
-      } } } }
+  const e1 = val(0)
+    .react(
+      [tick.HOT],
+      self => self + 1
+    )
 
+  const e2 = asyncStream(
+    [e1.HOT],
+    (send, e1) => {
+      if (e1 % 2 === 0) send(e1)
+    }
+  )
 
-const {toGraph} = runtime.utils.entitySpec
+  const e3 = asyncStream(
+    [e1.HOT],
+    (send, e1) => {
+      if (e1 % 4 === 0) send(e1)
+    }
+  )
+
+  const e4 = json('[]')
+    .react(
+      [e2.HOT, e3.HOT],
+      (self, e2, e3) => {
+        self.push([e2, e3])
+        return self
+      }
+    )
+
+  addToFlow({tick, e1, e2, e3, e4})
+}
 
 
 function run(iterations = 100000) {
   const flow = runtime.create()
-  flow.addGraph(toGraph(spec))
+  setupFlow(flow)
   // flow.setDebug(true)
 
   const start = Date.now()
 
   for (let i = 0; i < iterations; i++) {
-    // console.log('e4', flow.get('e4'))
+    //console.log('e4', flow.get('e4'))
     flow.set('tick')
   }
 

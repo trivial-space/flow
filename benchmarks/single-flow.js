@@ -1,43 +1,45 @@
 const runtime = require('../dist/tvs-flow')
 
 
-const spec = {
-  e1: {
-    val: 0,
-    stream: {
-      with: {
-        self: 'A',
-        tick: 'H tick' },
-      do: ports => ports.self++ } },
+function setupFlow(flow) {
 
-  e2: {
-    stream: {
-      with: {e1: 'h e1'},
-      do: p => p.e1 * 10 } },
+  const {val, stream, addToFlow} = runtime.utils.entityRef.create(flow)
 
-  e3: {
-    val: [],
-    stream: {
-      with: {
-        e3: 'a',
-        e2: 'h e2'},
-      do: p => {
-        p.e3.push(p.e2)
-        return p.e3
-      } } },
+  const tick = val()
 
-  e4: {
-    stream: {
-      with: {e3: 'h e3'},
-      do: p => p.e3.length } } }
+  const e1 = val(0)
+    .react(
+      [tick.HOT],
+      self => self + 1
+    )
 
+  const e2 = stream(
+    [e1.HOT],
+    e1 => e1 * 10 + 4
+  )
 
-const {toGraph} = runtime.utils.entitySpec
+  const e3 = val([])
+    .react(
+      [e2.HOT],
+      (self, e2) => {
+        self.push(e2)
+        return self
+      }
+    )
+
+  const e4 = stream(
+    [e3.HOT],
+    e3 => e3.length
+  )
+
+  addToFlow({tick, e1, e2, e3, e4})
+}
+
 
 
 function run(iterations = 100000) {
   const flow = runtime.create()
-  flow.addGraph(toGraph(spec))
+  setupFlow(flow)
 
   const start = Date.now()
 
