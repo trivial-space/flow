@@ -1,5 +1,5 @@
 /// <reference path="../../test.d.ts" />
-import {create, ValueFactory, JsonValueFactory, StreamFactory} from '../../../lib/utils/entity-reference'
+import {create, ValueFactory, JsonValueFactory, StreamFactory, AsyncStreamFactory} from '../../../lib/utils/entity-reference'
 import * as types from '../../../lib/runtime-types'
 import * as runtime from '../../../lib/runtime'
 
@@ -10,9 +10,9 @@ describe('flow entity reference', function() {
       val: ValueFactory,
       json: JsonValueFactory,
       stream: StreamFactory,
-      asyncStream: StreamFactory,
+      asyncStream: AsyncStreamFactory,
       streamStart: StreamFactory,
-      asyncStreamStart: StreamFactory,
+      asyncStreamStart: AsyncStreamFactory,
       addToFlow
 
   beforeEach(function() {

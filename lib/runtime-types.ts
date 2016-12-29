@@ -7,7 +7,7 @@ import {evaluate} from './utils/code-evaluator'
 export type Meta = {[m: string]: any}
 
 
-export type EntityData = {
+export interface EntityData {
   id?: string
   value?: any
   json?: string
@@ -16,7 +16,7 @@ export type EntityData = {
 }
 
 
-export type Entity = {
+export interface Entity {
   id: string
   value?: any
   json?: string
@@ -46,7 +46,7 @@ export type ProcedureAsync = (
 export type Procedure = ProcessSync | ProcedureAsync
 
 
-export type ProcessDataSync = {
+export interface ProcessDataSync {
   id?: string
   ports?: PortType[]
   procedure?: ProcedureSync
@@ -57,7 +57,7 @@ export type ProcessDataSync = {
 }
 
 
-export type ProcessDataAsync = {
+export interface ProcessDataAsync {
   id?: string
   ports?: PortType[]
   procedure?: ProcedureAsync
@@ -70,7 +70,7 @@ export type ProcessDataAsync = {
 export type ProcessData = ProcessDataSync | ProcessDataAsync
 
 
-export type ProcessSync = {
+export interface ProcessSync {
   id: string
   ports: PortType[]
   procedure: ProcedureSync
@@ -81,7 +81,7 @@ export type ProcessSync = {
 }
 
 
-export type ProcessAsync = {
+export interface ProcessAsync {
   id: string
   ports: PortType[]
   procedure: ProcedureAsync
@@ -95,7 +95,7 @@ export type ProcessAsync = {
 export type Process = ProcessSync | ProcessAsync
 
 
-export type ArcData = {
+export interface ArcData {
   id?: string
   entity: string
   process: string
@@ -104,7 +104,7 @@ export type ArcData = {
 }
 
 
-export type Arc = {
+export interface Arc {
   id: string
   entity: string
   process: string
@@ -113,21 +113,21 @@ export type Arc = {
 }
 
 
-export type Graph = {
+export interface Graph {
   entities: {[id: string]: EntityData},
   processes: {[id: string]: ProcessData},
   arcs: {[id: string]: ArcData},
   meta?: Meta
 }
 
-export type GraphData = {
+export interface GraphData {
   entities?: EntityData[] | {[id: string]: EntityData},
   processes?: ProcessData[] | {[id: string]: ProcessData},
   arcs?: ArcData[] | {[id: string]: ArcData},
   meta?: Meta
 }
 
-export type Runtime = {
+export interface Runtime {
     addEntity: (spec: EntityData) => Entity
     removeEntity: (id: string) => void
     addProcess: (spec: ProcessData) => Process

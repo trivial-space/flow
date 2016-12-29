@@ -1,6 +1,6 @@
 import * as types from './runtime-types'
 
-type EngineEntity = {
+interface EngineEntity {
   id: string
   val?: any
   event?: boolean
@@ -10,7 +10,7 @@ type EngineEntity = {
   cb?: (val?: any) => void
 }
 
-type EngineProcess = {
+interface EngineProcess {
   id: string
   out?: EngineEntity
   acc?: string
@@ -22,7 +22,7 @@ type EngineProcess = {
   arcs: {[id: string]: true}
 }
 
-type Engine = {
+interface Engine {
   es: {[id: string]: EngineEntity}
   ps: {[id: string]: EngineProcess}
 }

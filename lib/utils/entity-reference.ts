@@ -6,13 +6,19 @@ import {
 } from '../runtime-types'
 
 
-export type PortSpec<T> = {
+export interface PortSpec<T> {
   type: PortType,
   entity: EntityRef<T>
 }
 
 
 export type ProcedureSync<T> = (
+  ...args: any[]
+) => T | void
+
+
+export type ProcedureReact<T> = (
+  self?: T,
   ...args: any[]
 ) => T | void
 
@@ -26,9 +32,9 @@ export type Procedure<T> = ProcedureSync<T> | ProcedureAsync<T>
 
 
 export type ReactionFactory<T> = (
-  a1: string | PortSpec<any>[] | Procedure<T>,
-  a2?: PortSpec<any>[] | Procedure<T>,
-  a3?: Procedure<T>
+  a1: string | PortSpec<any>[] | ProcedureReact<T>,
+  a2?: PortSpec<any>[] | ProcedureReact<T>,
+  a3?: ProcedureReact<T>
 ) => EntityRef<T>
 
 
@@ -50,7 +56,7 @@ export type ValueFactory = <T>(value?: T) => EntityRef<T>
 export type JsonValueFactory = <T>(json?: string) => EntityRef<T>
 
 
-export type EntityRef<T> = {
+export interface EntityRef<T> {
   id: (_id: string, _ns?: string) => EntityRef<T>
   val: (value: T) => EntityRef<T>
   json: (json: string) => EntityRef<T>
@@ -63,7 +69,7 @@ export type EntityRef<T> = {
 }
 
 
-export type EntitySpec<T> = {
+export interface EntitySpec<T> {
   id?: string
   value?: T
   json?: string
