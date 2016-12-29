@@ -52,6 +52,8 @@ export type JsonValueFactory = <T>(json?: string) => EntityRef<T>
 
 export type EntityRef<T> = {
   id: (_id: string, _ns?: string) => EntityRef<T>
+  val: (value: T) => EntityRef<T>
+  json: (json: string) => EntityRef<T>
   isEvent: (_isEvent?: boolean) => EntityRef<T>
   react: ReactionFactory<T>
   HOT: PortSpec<T>
@@ -94,6 +96,8 @@ function mergePath(id: string, path?: string): string {
 export function create(flow: Runtime): EntityFactory {
 
   function createEntity<T>(spec: EntitySpec<T>): EntityRef<T> {
+    let value = spec.value
+    let json = spec.json
     let isEvent: boolean | undefined
     let id: string | undefined
     let ns: string | undefined
@@ -114,12 +118,7 @@ export function create(flow: Runtime): EntityFactory {
     }
 
     function updateEntity() {
-      id && flow.addEntity({
-        id,
-        isEvent,
-        value: spec.value,
-        json: spec.json
-      })
+      id && flow.addEntity({id, isEvent, value, json})
     }
 
 
@@ -138,6 +137,18 @@ export function create(flow: Runtime): EntityFactory {
       id = tempId
       updateEntity()
       idCallbacks.forEach(cb => cb(tempId))
+      return entity
+    }
+
+    entity.val = (_value: T) => {
+      value = _value
+      updateEntity()
+      return entity
+    }
+
+    entity.json = (_json: string) => {
+      json = _json
+      updateEntity()
       return entity
     }
 

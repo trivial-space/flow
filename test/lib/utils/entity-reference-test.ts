@@ -96,11 +96,33 @@ describe('flow entity reference', function() {
   })
 
 
+  it('can change their value', function() {
+    const e1 = val("foo")
+    const e2 = val(1234)
+
+    e1.val('bar')
+    e2.val(4567)
+
+    addToFlow({ e1, e2 })
+
+    expect(sys.get('e1')).to.equal('bar')
+    expect(sys.get('e2')).to.equal(4567)
+  })
+
+
   it('can set its json', function() {
     json('123').id('e1')
 
     expect(sys.get('e1')).to.equal(123)
     expect(sys.getGraph().entities['e1'].json).to.equal('123')
+  })
+
+
+  it('can change its json', function() {
+    json('123').json('234').id('e1')
+
+    expect(sys.get('e1')).to.equal(234)
+    expect(sys.getGraph().entities['e1'].json).to.equal('234')
   })
 
 
