@@ -33,9 +33,15 @@ export type ReactionFactory<T> = (
 
 
 export type StreamFactory = <T>(
-  a1: string | PortSpec<any>[] | Procedure<T>,
-  a2?: PortSpec<any>[] | Procedure<T>,
-  a3?: Procedure<T>
+  a1: string | PortSpec<any>[] | ProcedureSync<T>,
+  a2?: PortSpec<any>[] | ProcedureSync<T>,
+  a3?: ProcedureSync<T>
+) => EntityRef<T>
+
+export type AsyncStreamFactory = <T>(
+  a1: string | PortSpec<any>[] | ProcedureAsync<T>,
+  a2?: PortSpec<any>[] | ProcedureAsync<T>,
+  a3?: ProcedureAsync<T>
 ) => EntityRef<T>
 
 
@@ -70,9 +76,9 @@ export type EntityFactory = {
   val: ValueFactory,
   json: JsonValueFactory,
   stream: StreamFactory,
-  asyncStream: StreamFactory,
+  asyncStream: AsyncStreamFactory,
   streamStart: StreamFactory,
-  asyncStreamStart: StreamFactory,
+  asyncStreamStart: AsyncStreamFactory,
   addToFlow: (entities: {[id: string]: EntityRef<any>}, ns?: string) => void
 }
 
