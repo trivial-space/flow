@@ -18,7 +18,7 @@ export type ProcedureSync<T> = (
 
 
 export type ProcedureReact<T> = (
-  self?: T,
+  self: T,
   ...args: any[]
 ) => T | void
 

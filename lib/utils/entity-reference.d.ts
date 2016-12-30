@@ -4,7 +4,7 @@ export interface PortSpec<T> {
     entity: EntityRef<T>;
 }
 export declare type ProcedureSync<T> = (...args: any[]) => T | void;
-export declare type ProcedureReact<T> = (self?: T, ...args: any[]) => T | void;
+export declare type ProcedureReact<T> = (self: T, ...args: any[]) => T | void;
 export declare type ProcedureAsync<T> = (send: (val?: T) => void, ...args: any[]) => (() => void) | void;
 export declare type Procedure<T> = ProcedureSync<T> | ProcedureAsync<T>;
 export declare type ReactionFactory<T> = (a1: string | PortSpec<any>[] | ProcedureReact<T>, a2?: PortSpec<any>[] | ProcedureReact<T>, a3?: ProcedureReact<T>) => EntityRef<T>;
