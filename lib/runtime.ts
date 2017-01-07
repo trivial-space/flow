@@ -323,7 +323,8 @@ export function create(): types.Runtime {
 
   function getSchedule(eE, level = 0, pLast) {
 
-    activeEntities[eE.id] = true
+    activeEntities[eE.id] =
+      (activeEntities[eE.id] && activeEntities[eE.id] + 1) || 1
 
     if (eE.cb) {
       callbacks[eE.id] = eE
@@ -333,6 +334,7 @@ export function create(): types.Runtime {
       let inc = false
       for (let pId in eE.reactions) {
         inc = true
+        activeEntities[eE.id]++
         if (!syncSchedule[pId]) {
           syncSchedule[pId] = { level, eP: eE.reactions[pId] }
         } else if (syncSchedule[pId].level < level) {
@@ -349,10 +351,6 @@ export function create(): types.Runtime {
       if (eP.async) {
         asyncSchedule[pId] = eP
       } else {
-
-        if (eP.acc != null && eP.out && eP.out.val == null) {
-          continue
-        }
 
         if (!syncSchedule[pId]) {
           syncSchedule[pId] = { level, eP }
@@ -389,7 +387,7 @@ export function create(): types.Runtime {
     for (let eId in syncSchedule) {
       let step = syncSchedule[eId]
       if (order[step.level]) {
-        order[step.level].push(step.eP)
+        order[step.level][order[step.level].length] = step.eP
       } else {
         order[step.level] = [step.eP]
       }
@@ -420,25 +418,38 @@ export function create(): types.Runtime {
   }
 
 
-  function execute(eP: EngineProcess, activeEntities?) {
+  function execute(eP: EngineProcess, activeEntities?: {[id: string]: number}) {
     if(debug) {
       console.log("executing process", eP.id)
     }
+    let activeSum = activeEntities ? 0 : 1
     for (let portId = 0; portId < eP.sources.length; portId++) {
       let src = eP.sources[portId]
-      if (src && src.event && !(activeEntities && activeEntities[src.id])) {
-        eP.values[portId] = undefined
+      if (src.val == null ||
+        (src.event && !(activeEntities && activeEntities[src.id]))) {
+        activeSum = 0
+        break
       } else {
         eP.values[portId] = src.val
+        if (activeEntities && activeEntities[src.id]) {
+          activeSum += activeEntities[src.id]
+        }
       }
     }
-    if (eP.async) {
-      eP.stop && eP.stop()
-      // TODO check for optimization to avoid array generation and concat call...
-      eP.stop = processes[eP.id].procedure.apply(context, [eP.sink].concat(eP.values))
-    } else {
-      let val = processes[eP.id].procedure.apply(context, eP.values)
-      if (eP.out) eP.out.val = val
+    if (activeSum) {
+      if (eP.async) {
+        eP.stop && eP.stop()
+        // TODO check for optimization to avoid array generation and concat call...
+        eP.stop = processes[eP.id].procedure.apply(context, [eP.sink].concat(eP.values))
+      } else {
+        let val = processes[eP.id].procedure.apply(context, eP.values)
+        if (eP.out) eP.out.val = val
+      }
+    } else if (eP.out && activeEntities && activeEntities[eP.out.id]) {
+      activeEntities[eP.out.id]--
+      if (eP.acc == null) {
+        activeEntities[eP.out.id] -= Object.keys(eP.out.reactions).length
+      }
     }
   }
 

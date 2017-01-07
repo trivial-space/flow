@@ -888,9 +888,114 @@ describe('Flow runtime', function() {
       p.reset()
       sys.start('p')
 
-      expect(p).to.be.calledWith(undefined)
+      expect(p).not.to.be.called
 
       expect(sys.get('event')).to.equal(30)
+    })
+
+
+    it('runs processes only if all entities on connected ports have defined values', function() {
+      const p1 = sinon.spy((v1, v2, v3) => v1 + v2 + v3)
+      const p2 = sinon.spy((self, foo) => self + foo)
+      const p3 = sinon.stub()
+      sys.addGraph({
+        processes: [{
+          id: 'p1',
+          ports: [
+            sys.PORT_TYPES.HOT,
+            sys.PORT_TYPES.HOT,
+            sys.PORT_TYPES.COLD
+          ],
+          procedure: p1
+        }, {
+          id: 'p2',
+          ports: [
+            sys.PORT_TYPES.ACCUMULATOR,
+            sys.PORT_TYPES.HOT
+          ],
+          procedure: p2
+        }, {
+          id: 'p3',
+          ports: [
+            sys.PORT_TYPES.HOT
+          ],
+          procedure: p3
+        }],
+        arcs: [{
+          process: 'p1',
+          entity: 'dest'
+        }, {
+          entity: 'e1',
+          process: 'p1',
+          port: 0
+        }, {
+          entity: 'e2',
+          process: 'p1',
+          port: 1
+        }, {
+          entity: 'e3',
+          process: 'p1',
+          port: 2
+        }, {
+          process: 'p2',
+          entity: 'dest'
+        }, {
+          entity: 'e4',
+          process: 'p2',
+          port: 1
+        }, {
+          entity: 'dest',
+          process: 'p3',
+          port: 0
+        }]
+      })
+
+      sys.set('e1', 10)
+      expect(p1).not.to.be.called
+      expect(p2).not.to.be.called
+      expect(p3).not.to.be.called
+
+      sys.set('e3', 30)
+      expect(p1).not.to.be.called
+      expect(p2).not.to.be.called
+      expect(p3).not.to.be.called
+
+      sys.set('e2', 20)
+      expect(p1).to.be.called
+      expect(p2).not.to.be.called
+      expect(p3).to.be.calledWith(60)
+      expect(sys.get('dest')).to.equal(60)
+
+
+      sys.set('e4', 10)
+      expect(sys.get('dest')).to.equal(70)
+      expect(p2).to.be.called
+      expect(p3).to.be.calledWith(70)
+
+      p1.reset()
+      p2.reset()
+      p3.reset()
+
+      sys.set('e1', undefined)
+      expect(p1).not.to.be.called
+      expect(p2).not.to.be.called
+      expect(p3).not.to.be.called
+
+      sys.set('e4', 30)
+      expect(sys.get('dest')).to.equal(100)
+      expect(p1).not.to.be.called
+      expect(p2).to.be.called
+      expect(p3).to.be.calledWith(100)
+
+      p1.reset()
+      p2.reset()
+      p3.reset()
+
+      sys.set('e1', 10)
+      expect(p1).to.be.called
+      expect(p2).to.be.called
+      expect(p3).to.be.calledWith(90)
+      expect(sys.get('dest')).to.equal(90)
     })
   })
 
