@@ -93,7 +93,7 @@ export function create(): types.Runtime {
   function set (id: string, value: any) {
     let eE = engineE(id)
     eE.val = value
-    touchEntity(eE)
+    activateEntity(eE)
     flush()
   }
 
@@ -126,12 +126,12 @@ export function create(): types.Runtime {
 
     if (e.value != null && eE.val == null) {
       eE.val = e.value
-      touchEntity(eE)
+      activateEntity(eE)
     }
 
     if (e.json != null && eE.val == null) {
       eE.val = JSON.parse(e.json)
-      touchEntity(eE)
+      activateEntity(eE)
     }
     return e
   }
@@ -262,11 +262,10 @@ export function create(): types.Runtime {
       } else {
         eP.sink = value => {
           eE.val = value
-          touchEntity(eE)
+          if (value != null)
+          activatedEntities[eE.id] = true
           if (!blockFlush) {
             flush()
-          } else {
-            continueFlush = true
           }
         }
         eP.out = eE
@@ -306,149 +305,95 @@ export function create(): types.Runtime {
   // ===== flow execution =====
 
   var touchedEntities = {}
+  var activatedEntities = {}
 
 
-  function touchEntity(eE, eP?) {
-    touchedEntities[eE.id] = eP || true
+  function activateEntity(eE, updateState = true) {
+    activatedEntities[eE.id] = updateState
   }
 
-  let order: any[][] = [],
-      callbacks = {},
-      syncSchedule = {},
-      asyncSchedule = {},
-      activeEntities = {},
-      blockFlush = false,
-      continueFlush = false
 
-
-  function getSchedule(eE, level = 0, pLast) {
-
-    activeEntities[eE.id] =
-      (activeEntities[eE.id] && activeEntities[eE.id] + 1) || 1
-
-    if (eE.cb) {
-      callbacks[eE.id] = eE
-    }
-
-    if (!pLast || (pLast.acc == null)) {
-      let inc = false
-      for (let pId in eE.reactions) {
-        inc = true
-        activeEntities[eE.id]++
-        if (!syncSchedule[pId]) {
-          syncSchedule[pId] = { level, eP: eE.reactions[pId] }
-        } else if (syncSchedule[pId].level < level) {
-          syncSchedule[pId].level = level
-        }
-      }
-
-      if (inc) level++
-    }
-
-    for (let pId in eE.effects) {
-      let eP = eE.effects[pId]
-
-      if (eP.async) {
-        asyncSchedule[pId] = eP
-      } else {
-
-        if (!syncSchedule[pId]) {
-          syncSchedule[pId] = { level, eP }
-        } else if (syncSchedule[pId].level < level) {
-          syncSchedule[pId].level = level
-        }
-
-        if (eP.out) {
-          getSchedule(eP.out, level + 1, eP)
-        }
-      }
-    }
-  }
-
+  let blockFlush = false
 
   function flush() {
     if(debug) {
-      console.log("flushing graph with", touchedEntities)
+      console.log("flushing graph with", activatedEntities)
     }
 
-    activeEntities = {}
-    syncSchedule = {}
-    asyncSchedule = {}
-    callbacks = {}
+    let activeEIds = Object.keys(activatedEntities)
 
-    // schedule
-    for (let eId in touchedEntities) {
-      getSchedule(engine.es[eId], 0, touchedEntities[eId])
-    }
+    // still stuff to do
+    if (activeEIds.length) {
 
-    touchedEntities = {}
-
-    // sync calls
-    for (let eId in syncSchedule) {
-      let step = syncSchedule[eId]
-      if (order[step.level]) {
-        order[step.level][order[step.level].length] = step.eP
-      } else {
-        order[step.level] = [step.eP]
+      // update reactive state
+      for (let eId in activatedEntities) {
+        let eE = engine.es[eId]
+        if (activatedEntities[eId]) {
+          for (let p in eE.reactions) {
+            execute(eE.reactions[p])
+          }
+        }
       }
-    }
 
-    for (let i = 0; i < order.length; i++) {
-      for (let j = 0; j < order[i].length; j++) {
-        execute(order[i][j], activeEntities)
+      activatedEntities = {}
+
+      blockFlush = true
+      for (let eId in activatedEntities) {
+        let eE = engine.es[eId]
+        touchedEntities[eId] = true
+        for (let p in eE.effects) {
+          execute(eE.effects[p])
+        }
       }
+      blockFlush = false
+
+      flush()
+
+    // cleanup
+    } else {
+
+      // callbacks
+      for (let eId in touchedEntities) {
+        let eE = engine.es[eId]
+        if (eE.cb && eE.val != null) {
+          eE.cb(eE.val)
+        }
+      }
+
+      touchedEntities = {}
     }
-
-    order.length = 0
-
-    // callbacks
-    for (let eId in callbacks) {
-      callbacks[eId].cb(callbacks[eId].val)
-    }
-
-    // async calls
-    blockFlush = true
-    continueFlush = false
-    for (let pId in asyncSchedule) {
-      execute(asyncSchedule[pId], activeEntities)
-    }
-    blockFlush = false
-
-    continueFlush && flush()
   }
 
 
-  function execute(eP: EngineProcess, activeEntities?: {[id: string]: number}) {
+  function execute(eP: EngineProcess) {
     if(debug) {
       console.log("executing process", eP.id)
     }
-    let activeSum = activeEntities ? 0 : 1
+
+    let complete = true
     for (let portId = 0; portId < eP.sources.length; portId++) {
       let src = eP.sources[portId]
-      if (src.val == null ||
-        (src.event && !(activeEntities && activeEntities[src.id]))) {
-        activeSum = 0
+      if (src.val == null) {
+        complete = false
         break
       } else {
         eP.values[portId] = src.val
-        if (activeEntities && activeEntities[src.id]) {
-          activeSum += activeEntities[src.id]
-        }
       }
     }
-    if (activeSum) {
+
+    if (complete) {
       if (eP.async) {
         eP.stop && eP.stop()
         // TODO check for optimization to avoid array generation and concat call...
         eP.stop = processes[eP.id].procedure.apply(context, [eP.sink].concat(eP.values))
       } else {
         let val = processes[eP.id].procedure.apply(context, eP.values)
-        if (eP.out) eP.out.val = val
-      }
-    } else if (eP.out && activeEntities && activeEntities[eP.out.id]) {
-      activeEntities[eP.out.id]--
-      if (eP.acc == null) {
-        activeEntities[eP.out.id] -= Object.keys(eP.out.reactions).length
+        if (eP.out) {
+          eP.out.val = val
+          if (val != null) {
+            activatedEntities[eP.out.id] = eP.acc != null
+          }
+        }
       }
     }
   }
@@ -461,7 +406,7 @@ export function create(): types.Runtime {
       }, 10)
     } else {
       execute(eP)
-      touchEntity(eP.out)
+      activateEntity(eP.out)
     }
   }
 
@@ -470,7 +415,7 @@ export function create(): types.Runtime {
     let eP = engineP(processId)
     execute(eP)
     if (eP.out && !eP.async) {
-      touchEntity(eP.out, eP)
+      activateEntity(eP.out, eP.acc == null)
       flush()
     }
   }
