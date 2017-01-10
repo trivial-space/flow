@@ -10,7 +10,8 @@ function setupFlow(flow) {
   const e1 = val(0)
     .react(
       [tick.HOT],
-      self => self + 1
+      (self, tick) =>
+        self + tick
     )
 
   const e2 = stream(
@@ -29,7 +30,8 @@ function setupFlow(flow) {
 
   const e4 = stream(
     [e3.HOT],
-    e3 => e3.length
+    e3 =>
+      e3.length
   )
 
   addToFlow({tick, e1, e2, e3, e4})
@@ -50,6 +52,9 @@ function run(iterations = 100000) {
   const time = Date.now() - start
   console.log('iterations', iterations)
   console.log('time', time)
+  // console.log('result e1', flow.get('e1'))
+  // console.log('result e2', flow.get('e2'))
+  // console.log('result e3', flow.get('e3'))
   console.log('result e4', flow.get('e4'))
   console.log('==============')
   return time
