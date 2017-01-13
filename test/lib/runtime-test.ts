@@ -103,8 +103,8 @@ describe('Flow runtime', function() {
         process: 'lala',
         port: 0
       }, {
-        entity: 'foo',
-        process: 'lala'
+        process: 'lala',
+        entity: 'foo'
       }],
       meta: {
         foo: "bar"
@@ -398,6 +398,47 @@ describe('Flow runtime', function() {
       sys.addEntity(src1)
       sys.addEntity(src2)
       sys.addEntity(dest)
+    })
+
+
+    it('does not reset state on initial values', function() {
+      sys.addEntity({
+        id: 'dest',
+        value: 20
+      })
+      sys.addEntity({
+        id: 'foo',
+        value: 10
+      })
+
+      sys.addProcess({
+        id: "p_acc",
+        ports: [
+          sys.PORT_TYPES.HOT,
+          sys.PORT_TYPES.ACCUMULATOR
+        ],
+        procedure: (foo, self) => self + foo
+      })
+
+      sys.addArc({
+        process: "p_acc",
+        entity: "dest"
+      })
+      sys.addArc({
+        entity: "foo",
+        process: "p_acc",
+        port: 0
+      })
+
+      expect(sys.get('dest')).to.equal(20)
+
+      sys.flush()
+
+      expect(sys.get('dest')).to.equal(30)
+
+      sys.set('foo', 11)
+
+      expect(sys.get('dest')).to.equal(41)
     })
 
 
@@ -961,15 +1002,21 @@ describe('Flow runtime', function() {
       expect(p3).not.to.be.called
 
       sys.set('e2', 20)
-      expect(p1).to.be.called
+      expect(p1).to.be.calledOnce
       expect(p2).not.to.be.called
+      expect(p3).to.be.calledOnce
       expect(p3).to.be.calledWith(60)
       expect(sys.get('dest')).to.equal(60)
 
+      p1.reset()
+      p2.reset()
+      p3.reset()
 
       sys.set('e4', 10)
       expect(sys.get('dest')).to.equal(70)
-      expect(p2).to.be.called
+      expect(p1).not.to.be.called
+      expect(p2).to.be.calledOnce
+      expect(p3).to.be.calledOnce
       expect(p3).to.be.calledWith(70)
 
       p1.reset()
@@ -984,7 +1031,8 @@ describe('Flow runtime', function() {
       sys.set('e4', 30)
       expect(sys.get('dest')).to.equal(100)
       expect(p1).not.to.be.called
-      expect(p2).to.be.called
+      expect(p2).to.be.calledOnce
+      expect(p3).to.be.calledOnce
       expect(p3).to.be.calledWith(100)
 
       p1.reset()
@@ -992,8 +1040,9 @@ describe('Flow runtime', function() {
       p3.reset()
 
       sys.set('e1', 10)
-      expect(p1).to.be.called
-      expect(p2).to.be.called
+      expect(p1).to.be.calledOnce
+      expect(p2).to.be.calledOnce
+      expect(p3).to.be.calledOnce
       expect(p3).to.be.calledWith(90)
       expect(sys.get('dest')).to.equal(90)
     })
@@ -1342,9 +1391,13 @@ describe('Flow runtime', function() {
 
       expect(sys.get('dest')).to.equal(20)
 
+      sys.flush()
+
+      expect(sys.get('dest')).to.equal(30)
+
       sys.set('foo', 11)
 
-      expect(sys.get('dest')).to.equal(31)
+      expect(sys.get('dest')).to.equal(41)
     })
 
 

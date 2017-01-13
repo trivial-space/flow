@@ -93,7 +93,7 @@ export function create(): types.Runtime {
   function set (id: string, value: any) {
     let eE = engineE(id)
     eE.val = value
-    activateEntity(eE)
+    activatedEntities[id] = true
     flush()
   }
 
@@ -126,12 +126,12 @@ export function create(): types.Runtime {
 
     if (e.value != null && eE.val == null) {
       eE.val = e.value
-      activateEntity(eE)
+      activatedEntities[e.id] = false
     }
 
     if (e.json != null && eE.val == null) {
       eE.val = JSON.parse(e.json)
-      activateEntity(eE)
+      activatedEntities[e.id] = false
     }
     return e
   }
@@ -307,12 +307,6 @@ export function create(): types.Runtime {
   var touchedEntities = {}
   var activatedEntities = {}
 
-
-  function activateEntity(eE, updateState = true) {
-    activatedEntities[eE.id] = updateState
-  }
-
-
   let blockFlush = false
 
   function flush() {
@@ -327,8 +321,8 @@ export function create(): types.Runtime {
 
       // update reactive state
       for (let eId in activatedEntities) {
-        let eE = engine.es[eId]
         if (activatedEntities[eId]) {
+          let eE = engine.es[eId]
           for (let p in eE.reactions) {
             execute(eE.reactions[p])
           }
@@ -338,7 +332,8 @@ export function create(): types.Runtime {
       activatedEntities = {}
 
       blockFlush = true
-      for (let eId in activatedEntities) {
+      for (let i = 0; i < activeEIds.length; i++) {
+        let eId = activeEIds[i]
         let eE = engine.es[eId]
         touchedEntities[eId] = true
         for (let p in eE.effects) {
@@ -391,7 +386,7 @@ export function create(): types.Runtime {
         if (eP.out) {
           eP.out.val = val
           if (val != null) {
-            activatedEntities[eP.out.id] = eP.acc != null
+            activatedEntities[eP.out.id] = eP.acc == null
           }
         }
       }
@@ -406,7 +401,7 @@ export function create(): types.Runtime {
       }, 10)
     } else {
       execute(eP)
-      activateEntity(eP.out)
+      eP.out && (activatedEntities[eP.out.id] = false)
     }
   }
 
@@ -414,8 +409,7 @@ export function create(): types.Runtime {
   function start(processId: string) {
     let eP = engineP(processId)
     execute(eP)
-    if (eP.out && !eP.async) {
-      activateEntity(eP.out, eP.acc == null)
+    if (!eP.async) {
       flush()
     }
   }
