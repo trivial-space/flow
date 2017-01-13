@@ -903,7 +903,7 @@ describe('Flow runtime', function() {
     })
 
 
-    it('has event entities that are only defined when set or changed', function() {
+    xit('has event entities that are only defined when set or changed', function() {
       sys.addEntity({
         id: "event",
         isEvent: true

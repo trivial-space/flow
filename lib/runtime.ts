@@ -316,16 +316,15 @@ export function create(): types.Runtime {
 
   // ===== flow execution =====
 
-  let touchedEntities = {}
+  let callbacksWaiting = {}
   let activatedEntities = {}
-  let calledProcesses = {}
 
   let blockFlush = false
   let processGraph = false
 
   function flush() {
     if(debug) {
-      console.log("flushing graph with", activatedEntities)
+      console.log("flushing graph recursively with", activatedEntities)
     }
 
     let activeEIds = Object.keys(activatedEntities)
@@ -333,30 +332,28 @@ export function create(): types.Runtime {
     // still stuff to do
     if (processGraph) {
 
-      calledProcesses = {}
-
       // update reactive state
       for (let i = 0; i < activeEIds.length; i++) {
         let eId = activeEIds[i]
         if (activatedEntities[eId]) {
           let eE = engine.es[eId]
           for (let p in eE.reactions) {
-            if(!calledProcesses[p]) {
-              execute(eE.reactions[p])
-              calledProcesses[p] = true
-            }
+            execute(eE.reactions[p])
           }
         }
       }
 
+      let calledProcesses = {}
       activatedEntities = {}
       processGraph = false
 
-      //blockFlush = true
+      blockFlush = true
       for (let i = 0; i < activeEIds.length; i++) {
         let eId = activeEIds[i]
         let eE = engine.es[eId]
-        touchedEntities[eId] = true
+        if (eE.cb) {
+          callbacksWaiting[eId] = eE
+        }
         for (let p in eE.effects) {
           if(!calledProcesses[p]) {
             execute(eE.effects[p])
@@ -364,7 +361,7 @@ export function create(): types.Runtime {
           }
         }
       }
-      //blockFlush = false
+      blockFlush = false
 
       if (processGraph) {
         flush()
@@ -373,14 +370,16 @@ export function create(): types.Runtime {
       } else {
 
         // callbacks
-        for (let eId in touchedEntities) {
-          let eE = engine.es[eId]
-          if (eE.cb && eE.val != null) {
-            eE.cb(eE.val)
-          }
+        for (let eId in callbacksWaiting) {
+          let eE = callbacksWaiting[eId];
+          eE.cb(eE.val)
         }
 
-        touchedEntities = {}
+        callbacksWaiting = {}
+
+        if(debug) {
+          console.log("flush finished")
+        }
       }
     }
   }
