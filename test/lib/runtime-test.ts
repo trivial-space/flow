@@ -1046,6 +1046,54 @@ describe('Flow runtime', function() {
       expect(p3).to.be.calledWith(90)
       expect(sys.get('dest')).to.equal(90)
     })
+
+
+    it('can be canceled by returning undefined from process', function() {
+      const acc = sinon.spy((self, val) => [...self, val])
+      const filter = sinon.spy(v => (v % 2) === 0 ? v : null)
+
+      sys.addGraph({
+        entities: [{
+          id: 'dest',
+          value: []
+        }],
+        processes: [{
+          id: 'acc',
+          ports: [sys.PORT_TYPES.ACCUMULATOR, sys.PORT_TYPES.HOT],
+          procedure: acc
+        }, {
+          id: 'filter',
+          ports: [sys.PORT_TYPES.HOT],
+          procedure: filter
+        }],
+        arcs: [{
+          entity: 'src',
+          process: 'filter',
+          port: 0
+        }, {
+          process: 'filter',
+          entity: 'result'
+        }, {
+          entity: 'result',
+          process: 'acc',
+          port: 1
+        }, {
+          process: 'acc',
+          entity: 'dest'
+        }]
+      })
+
+      sys.set('src', 1)
+      sys.set('src', 2)
+      sys.set('src', 3)
+      sys.set('src', 4)
+      sys.set('src', 5)
+      sys.set('src', 6)
+
+      expect(sys.get('dest')).to.deep.equal([2, 4, 6])
+      expect(filter.callCount).to.equal(6)
+      expect(acc.callCount).to.equal(3)
+    })
   })
 
 
@@ -1101,11 +1149,15 @@ describe('Flow runtime', function() {
 
 
     it('stops propagation on removed arc', function() {
+      const cancel = sinon.stub()
       sys.set('dest', 1)
 
       sys.addProcess({
         id: 'fooProcess',
-        procedure: (out, val) => out(val + 1),
+        procedure: (out, val) => {
+          out(val + 1)
+          return cancel
+        },
         async: true,
         ports: [sys.PORT_TYPES.HOT]
       })
@@ -1124,7 +1176,11 @@ describe('Flow runtime', function() {
 
       expect(sys.get('dest')).to.equal(2)
 
+      expect(cancel).to.not.be.called
+
       sys.removeArc(arc.id)
+
+      expect(cancel).to.be.called
 
       sys.set('src1', 4)
 
@@ -1181,6 +1237,70 @@ describe('Flow runtime', function() {
       sys.flush()
 
       expect(sys.get('dest')).to.equal(42)
+    })
+
+
+    it('entities that are updated by async processes at the same time propagate only once', function() {
+      const p = sinon.spy((self, val1, val2) => [...self, [val1, val2]])
+      sys.addGraph({
+        entities: [{
+          id: 'dest',
+          value: []
+        }, {
+          id: 'src',
+          value: 'source'
+        }],
+        processes: [{
+          id: "p1",
+          async: true,
+          ports: [sys.PORT_TYPES.HOT],
+          procedure: (out, val) => out(val + 10)
+        }, {
+          id: "p2",
+          async: true,
+          ports: [sys.PORT_TYPES.HOT],
+          procedure: (out, val) => out(val + 20)
+        }, {
+          id: "p3",
+          ports: [
+            sys.PORT_TYPES.ACCUMULATOR,
+            sys.PORT_TYPES.HOT,
+            sys.PORT_TYPES.HOT
+          ],
+          procedure: p
+        }],
+        arcs: [{
+          entity: "src",
+          process: "p1",
+          port: 0
+        }, {
+          entity: "src",
+          process: "p2",
+          port: 0
+        }, {
+          process: "p2",
+          entity: "e2",
+        }, {
+          process: "p1",
+          entity: "e1",
+        }, {
+          entity: "e1",
+          process: "p3",
+          port: 1
+        }, {
+          entity: "e2",
+          process: "p3",
+          port: 2
+        }, {
+          process: "p3",
+          entity: "dest"
+        }]
+      })
+
+      sys.flush()
+
+      expect(p).to.be.calledOnce
+      expect(sys.get('dest')).to.deep.equal([['source10', 'source20']])
     })
   })
 

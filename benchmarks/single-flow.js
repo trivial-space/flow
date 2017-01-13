@@ -46,7 +46,7 @@ function run(iterations = 100000) {
   const start = Date.now()
 
   for (let i = 0; i < iterations; i++) {
-    flow.set('tick')
+    flow.set('tick', 1)
   }
 
   const time = Date.now() - start

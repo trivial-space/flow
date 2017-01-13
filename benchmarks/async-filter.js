@@ -10,7 +10,7 @@ function setupFlow(flow) {
   const e1 = val(0)
     .react(
       [tick.HOT],
-      self => self + 1
+      (self, tick) => self + tick
     )
 
   const e2 = asyncStream(
@@ -49,7 +49,7 @@ function run(iterations = 100000) {
 
   for (let i = 0; i < iterations; i++) {
     //console.log('e4', flow.get('e4'))
-    flow.set('tick')
+    flow.set('tick', 1)
   }
 
   const time = Date.now() - start

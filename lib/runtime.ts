@@ -94,6 +94,7 @@ export function create(): types.Runtime {
     let eE = engineE(id)
     eE.val = value
     activatedEntities[id] = true
+    processGraph = true
     flush()
   }
 
@@ -127,11 +128,13 @@ export function create(): types.Runtime {
     if (e.value != null && eE.val == null) {
       eE.val = e.value
       activatedEntities[e.id] = false
+      processGraph = true
     }
 
     if (e.json != null && eE.val == null) {
       eE.val = JSON.parse(e.json)
       activatedEntities[e.id] = false
+      processGraph = true
     }
     return e
   }
@@ -185,7 +188,10 @@ export function create(): types.Runtime {
 
   function removeProcess(id: string) {
     let eP = engineP(id)
-    eP.stop && eP.stop()
+    if (eP.stop) {
+      eP.stop()
+      delete eP.stop
+    }
     for (let aId in eP.arcs) {
       removeArc(aId)
     }
@@ -226,6 +232,10 @@ export function create(): types.Runtime {
         delete eP.sources[arc.port]
         delete eP.values[arc.port]
       } else {
+        if (eP.stop) {
+          eP.stop()
+          delete eP.stop
+        }
         eP.sink = function() {}
         delete eP.out
         delete eE.reactions[arc.process]
@@ -262,8 +272,10 @@ export function create(): types.Runtime {
       } else {
         eP.sink = value => {
           eE.val = value
-          if (value != null)
-          activatedEntities[eE.id] = true
+          if (value != null) {
+            activatedEntities[eE.id] = true
+            processGraph = true
+          }
           if (!blockFlush) {
             flush()
           }
@@ -304,10 +316,12 @@ export function create(): types.Runtime {
 
   // ===== flow execution =====
 
-  var touchedEntities = {}
-  var activatedEntities = {}
+  let touchedEntities = {}
+  let activatedEntities = {}
+  let calledProcesses = {}
 
   let blockFlush = false
+  let processGraph = false
 
   function flush() {
     if(debug) {
@@ -317,45 +331,57 @@ export function create(): types.Runtime {
     let activeEIds = Object.keys(activatedEntities)
 
     // still stuff to do
-    if (activeEIds.length) {
+    if (processGraph) {
+
+      calledProcesses = {}
 
       // update reactive state
-      for (let eId in activatedEntities) {
+      for (let i = 0; i < activeEIds.length; i++) {
+        let eId = activeEIds[i]
         if (activatedEntities[eId]) {
           let eE = engine.es[eId]
           for (let p in eE.reactions) {
-            execute(eE.reactions[p])
+            if(!calledProcesses[p]) {
+              execute(eE.reactions[p])
+              calledProcesses[p] = true
+            }
           }
         }
       }
 
       activatedEntities = {}
+      processGraph = false
 
-      blockFlush = true
+      //blockFlush = true
       for (let i = 0; i < activeEIds.length; i++) {
         let eId = activeEIds[i]
         let eE = engine.es[eId]
         touchedEntities[eId] = true
         for (let p in eE.effects) {
-          execute(eE.effects[p])
+          if(!calledProcesses[p]) {
+            execute(eE.effects[p])
+            calledProcesses[p] = true
+          }
         }
       }
-      blockFlush = false
+      //blockFlush = false
 
-      flush()
+      if (processGraph) {
+        flush()
 
-    // cleanup
-    } else {
+      // cleanup
+      } else {
 
-      // callbacks
-      for (let eId in touchedEntities) {
-        let eE = engine.es[eId]
-        if (eE.cb && eE.val != null) {
-          eE.cb(eE.val)
+        // callbacks
+        for (let eId in touchedEntities) {
+          let eE = engine.es[eId]
+          if (eE.cb && eE.val != null) {
+            eE.cb(eE.val)
+          }
         }
-      }
 
-      touchedEntities = {}
+        touchedEntities = {}
+      }
     }
   }
 
@@ -387,6 +413,7 @@ export function create(): types.Runtime {
           eP.out.val = val
           if (val != null) {
             activatedEntities[eP.out.id] = eP.acc == null
+            processGraph = true
           }
         }
       }
@@ -401,7 +428,10 @@ export function create(): types.Runtime {
       }, 10)
     } else {
       execute(eP)
-      eP.out && (activatedEntities[eP.out.id] = false)
+      if (eP.out) {
+        activatedEntities[eP.out.id] = false
+        processGraph = true
+      }
     }
   }
 
@@ -417,8 +447,10 @@ export function create(): types.Runtime {
 
   function stop(processId: string) {
     let eP = engineP(processId)
-    eP.stop && eP.stop()
-    delete eP.stop
+    if (eP.stop) {
+      eP.stop()
+      delete eP.stop
+    }
   }
 
 
