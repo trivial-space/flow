@@ -386,10 +386,6 @@ export function create(): types.Runtime {
 
 
   function execute(eP: EngineProcess) {
-    if(debug) {
-      console.log("executing process", eP.id)
-    }
-
     let complete = true
     for (let portId = 0; portId < eP.sources.length; portId++) {
       let src = eP.sources[portId]
@@ -402,6 +398,10 @@ export function create(): types.Runtime {
     }
 
     if (complete) {
+      if(debug) {
+        console.log("running process", eP.id)
+      }
+
       if (eP.async) {
         eP.stop && eP.stop()
         // TODO check for optimization to avoid array generation and concat call...
