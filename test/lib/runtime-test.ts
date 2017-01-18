@@ -121,14 +121,12 @@ describe('Flow runtime', function() {
           id: "foo",
           value: undefined,
           json: undefined,
-          isEvent: undefined,
           meta: {}
         },
         bar: {
           id: "bar",
           value: 22,
           json: undefined,
-          isEvent: undefined,
           meta: {}
         }
       },
@@ -900,38 +898,6 @@ describe('Flow runtime', function() {
       sys.flush()
 
       expect(sys.get('dest')).to.equal('src2_value-src1_value')
-    })
-
-
-    xit('has event entities that are only defined when set or changed', function() {
-      sys.addEntity({
-        id: "event",
-        isEvent: true
-      })
-
-      let p = sinon.stub()
-
-      sys.addProcess({
-        id: "p",
-        ports: [sys.PORT_TYPES.HOT],
-        procedure: p
-      })
-
-      sys.addArc({
-        entity: "event",
-        process: "p",
-        port: 0
-      })
-
-      sys.set('event', 30)
-      expect(p).to.be.calledWith(30)
-
-      p.reset()
-      sys.start('p')
-
-      expect(p).not.to.be.called
-
-      expect(sys.get('event')).to.equal(30)
     })
 
 

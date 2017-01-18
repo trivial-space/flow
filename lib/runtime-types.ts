@@ -11,7 +11,6 @@ export interface EntityData {
   id?: string
   value?: any
   json?: string
-  isEvent?: boolean
   meta?: Meta
 }
 
@@ -20,7 +19,6 @@ export interface Entity {
   id: string
   value?: any
   json?: string
-  isEvent?: boolean
   meta: Meta
 }
 
@@ -164,14 +162,12 @@ export function createEntity ({
   id = v4(),
   value,
   json,
-  isEvent,
   meta
 }: EntityData): Entity {
   return {
     id,
     value,
     json,
-    isEvent,
     meta: Object.assign({}, meta)
   }
 }

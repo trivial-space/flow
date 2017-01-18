@@ -126,19 +126,6 @@ describe('flow entity reference', function() {
   })
 
 
-  it('can set and unset its event property', function() {
-    const e1 = val()
-      .id('e1')
-      .isEvent()
-
-    expect(sys.getGraph().entities['e1'].isEvent).to.be.true
-
-    e1.isEvent(false)
-
-    expect(sys.getGraph().entities['e1'].isEvent).to.be.false
-  })
-
-
   it('can add a stream', function() {
     const p = () => 100
     stream(p).id('e')

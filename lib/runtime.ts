@@ -3,7 +3,6 @@ import * as types from './runtime-types'
 interface EngineEntity {
   id: string
   val?: any
-  event?: boolean
   reactions: {[id: string]: EngineProcess}
   effects: {[id: string]: EngineProcess}
   arcs: {[id: string]: true}
@@ -123,7 +122,6 @@ export function create(): types.Runtime {
     entities[e.id] = e
 
     let eE = engineE(e.id)
-    eE.event = e.isEvent
 
     if (e.value != null && eE.val == null) {
       eE.val = e.value

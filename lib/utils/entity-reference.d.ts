@@ -16,7 +16,6 @@ export interface EntityRef<T> {
     id: (_id: string, _ns?: string) => EntityRef<T>;
     val: (value: T) => EntityRef<T>;
     json: (json: string) => EntityRef<T>;
-    isEvent: (_isEvent?: boolean) => EntityRef<T>;
     react: ReactionFactory<T>;
     HOT: PortSpec<T>;
     COLD: PortSpec<T>;

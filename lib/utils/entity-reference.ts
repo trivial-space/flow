@@ -60,7 +60,6 @@ export interface EntityRef<T> {
   id: (_id: string, _ns?: string) => EntityRef<T>
   val: (value: T) => EntityRef<T>
   json: (json: string) => EntityRef<T>
-  isEvent: (_isEvent?: boolean) => EntityRef<T>
   react: ReactionFactory<T>
   HOT: PortSpec<T>
   COLD: PortSpec<T>
@@ -104,7 +103,6 @@ export function create(flow: Runtime): EntityFactory {
   function createEntity<T>(spec: EntitySpec<T>): EntityRef<T> {
     let value = spec.value
     let json = spec.json
-    let isEvent: boolean | undefined
     let id: string | undefined
     let ns: string | undefined
     let reactionCount = 0
@@ -124,7 +122,7 @@ export function create(flow: Runtime): EntityFactory {
     }
 
     function updateEntity() {
-      id && flow.addEntity({id, isEvent, value, json})
+      id && flow.addEntity({id, value, json})
     }
 
 
@@ -154,12 +152,6 @@ export function create(flow: Runtime): EntityFactory {
 
     entity.json = (_json: string) => {
       json = _json
-      updateEntity()
-      return entity
-    }
-
-    entity.isEvent = (_isEvent: boolean = true) => {
-      isEvent = _isEvent
       updateEntity()
       return entity
     }
