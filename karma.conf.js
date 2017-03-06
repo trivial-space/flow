@@ -1,14 +1,4 @@
-// Karma configuration
-var config = require('./webpack.config.js'),
-
-    // add custom option to webpack config
-    webpack = Object.assign({}, config, {
-      cache: true,
-      debug: true,
-      watch: true,
-      devtool: '#inline-source-map',
-      plugins: undefined
-    })
+const {resolve} = require('path')
 
 
 module.exports = function (config) {
@@ -37,7 +27,27 @@ module.exports = function (config) {
     },
 
 
-    webpack: webpack,
+    webpack: {
+
+      module: {
+        rules: [{
+          exclude: /node_modules/,
+          use: 'ts-loader',
+          test: /\.ts$/
+        }]
+      },
+
+      resolve: {
+        extensions: ['.ts', '.js', '.json'],
+        modules: [
+          'node_modules',
+          resolve(__dirname, "lib")
+        ]
+      },
+
+      devtool: 'inline-source-map',
+    },
+
 
 
     webpackMiddleware: {

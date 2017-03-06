@@ -1,7 +1,7 @@
 /// <reference path="../../test.d.ts" />
-import {create, ValueFactory, JsonValueFactory, StreamFactory, AsyncStreamFactory} from '../../../lib/utils/entity-reference'
-import * as types from '../../../lib/runtime-types'
-import * as runtime from '../../../lib/runtime'
+import {create, ValueFactory, JsonValueFactory, StreamFactory, AsyncStreamFactory} from 'utils/entity-reference'
+import * as types from 'runtime-types'
+import * as runtime from 'runtime'
 
 
 describe('flow entity reference', function() {
@@ -114,7 +114,6 @@ describe('flow entity reference', function() {
     json('123').id('e1')
 
     expect(sys.get('e1')).to.equal(123)
-    expect(sys.getGraph().entities['e1'].json).to.equal('123')
   })
 
 
@@ -122,7 +121,6 @@ describe('flow entity reference', function() {
     json('123').json('234').id('e1')
 
     expect(sys.get('e1')).to.equal(234)
-    expect(sys.getGraph().entities['e1'].json).to.equal('234')
   })
 
 

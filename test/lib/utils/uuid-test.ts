@@ -1,5 +1,5 @@
 /// <reference path="../../test.d.ts" />
-import {v4} from '../../../lib/utils/uuid'
+import {v4} from 'utils/uuid'
 
 
 describe('UUID', function() {

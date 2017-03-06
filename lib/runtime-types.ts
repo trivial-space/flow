@@ -18,7 +18,6 @@ export interface EntityData {
 export interface Entity {
   id: string
   value?: any
-  json?: string
   meta: Meta
 }
 
@@ -72,7 +71,6 @@ export interface ProcessSync {
   id: string
   ports: PortType[]
   procedure: ProcedureSync
-  code: string
   autostart?: boolean
   async: false
   meta: Meta
@@ -83,7 +81,6 @@ export interface ProcessAsync {
   id: string
   ports: PortType[]
   procedure: ProcedureAsync
-  code: string
   autostart?: boolean
   async: true
   meta: Meta
@@ -164,10 +161,14 @@ export function createEntity ({
   json,
   meta
 }: EntityData): Entity {
+
+  if (value == null && json) {
+    value = JSON.parse(json)
+  }
+
   return {
     id,
     value,
-    json,
     meta: {...meta}
   }
 }
@@ -187,8 +188,7 @@ export function createProcess ({
   if (procedure == null && code != null) {
     procedure = evaluate(code, context)
   }
-  if (code == null && procedure) code = procedure.toString()
-  if (code == null || procedure == null) {
+  if (procedure == null) {
     throw TypeError('Process must have procedure or code set')
   }
 
@@ -196,7 +196,6 @@ export function createProcess ({
     id,
     ports,
     procedure,
-    code,
     autostart,
     async,
     meta: {...meta}

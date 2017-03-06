@@ -1,6 +1,6 @@
 /// <reference path="../test.d.ts" />
-import * as types from '../../lib/runtime-types'
-import * as runtime from '../../lib/runtime'
+import * as types from 'runtime-types'
+import * as runtime from 'runtime'
 
 
 describe('Flow runtime', function() {
@@ -120,13 +120,11 @@ describe('Flow runtime', function() {
         foo: {
           id: "foo",
           value: undefined,
-          json: undefined,
           meta: {}
         },
         bar: {
           id: "bar",
           value: 22,
-          json: undefined,
           meta: {}
         }
       },
@@ -134,7 +132,6 @@ describe('Flow runtime', function() {
         lala: {
           id: "lala",
           ports: [sys.PORT_TYPES.HOT],
-          code: p.toString(),
           procedure: p,
           autostart: false,
           async: false,
@@ -343,7 +340,7 @@ describe('Flow runtime', function() {
       const spec = { code: '"kuku"' }
       let process = sys.addProcess(spec)
       expect(process.id).to.be.a('string')
-      expect(process.code).to.equal(spec.code)
+      expect(process.procedure).to.equal(eval(spec.code))
 
       expect(sys.getGraph().processes[process.id]).to.exist
     })

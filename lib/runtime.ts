@@ -129,11 +129,6 @@ export function create(): types.Runtime {
       processGraph = true
     }
 
-    if (e.json != null && eE.val == null) {
-      eE.val = JSON.parse(e.json)
-      activatedEntities[e.id] = false
-      processGraph = true
-    }
     return e
   }
 

@@ -1,14 +1,13 @@
 {
   "name": "tvs-flow",
-  "ts-loader": "^0.8.2",
   "version": "0.9.0",
   "description": "trivialspace flow: a dataflow system for javascript",
   "main": "dist/tvs-flow.js",
-  "esnext:main": "lib/index.js",
-  "jsnext:main": "lib/index.js",
-  "typings": "lib/index.d.ts",
+  "typings": "dist/lib/index.d.ts",
+  "types": "dist/lib/index.d.ts",
   "scripts": {
-    "test": "karma start"
+    "test": "karma start",
+    "build": "webpack"
   },
   "repository": {
     "type": "git",
