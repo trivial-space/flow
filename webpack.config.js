@@ -1,9 +1,10 @@
-var path = require('path'),
-    webpack = require('webpack')
+const path = require('path')
+const webpack = require('webpack')
+
 
 module.exports = {
 
-  entry: path.resolve(__dirname, "./lib/index.js"),
+  entry: path.resolve(__dirname, "./lib/index.ts"),
 
   output: {
     path: path.resolve(__dirname, "./dist"),
