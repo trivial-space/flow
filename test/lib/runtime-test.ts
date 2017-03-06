@@ -1,4 +1,3 @@
-/// <reference path="../test.d.ts" />
 import * as types from 'runtime-types'
 import * as runtime from 'runtime'
 

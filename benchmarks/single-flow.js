@@ -10,8 +10,7 @@ function setupFlow(flow) {
   const e1 = val(0)
     .react(
       [tick.HOT],
-      (self, tick) =>
-        self + tick
+      (self, tick) => self + tick
     )
 
   const e2 = stream(
@@ -30,8 +29,7 @@ function setupFlow(flow) {
 
   const e4 = stream(
     [e3.HOT],
-    e3 =>
-      e3.length
+    e3 => e3.length
   )
 
   addToFlow({tick, e1, e2, e3, e4})

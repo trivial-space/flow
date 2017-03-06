@@ -1,50 +1,39 @@
-/// <reference path="../../test.d.ts" />
-import {create, ValueFactory, JsonValueFactory, StreamFactory, AsyncStreamFactory} from 'utils/entity-reference'
-import * as types from 'runtime-types'
-import * as runtime from 'runtime'
+import {
+  resolveEntities,
+  val,
+  stream,
+  asyncStreamStart,
+  streamStart,
+  asyncStream,
+  getGraphFromEntities
+} from 'utils/entity-reference'
+import { createEntity, createProcess, createArc, PORT_TYPES } from "runtime-types";
 
 
 describe('flow entity reference', function() {
 
-  var sys: types.Runtime,
-      val: ValueFactory,
-      json: JsonValueFactory,
-      stream: StreamFactory,
-      asyncStream: AsyncStreamFactory,
-      streamStart: StreamFactory,
-      asyncStreamStart: AsyncStreamFactory,
-      addToFlow
-
-  beforeEach(function() {
-    sys = runtime.create()
-    const generator = create(sys)
-    val = generator.val
-    json = generator.json
-    stream = generator.stream
-    streamStart = generator.streamStart
-    asyncStream = generator.asyncStream
-    asyncStreamStart = generator.asyncStreamStart
-    addToFlow = generator.addToFlow
-  })
-
-
-  it('can be added to the flow', function() {
+  it('can be transformed to flow graph', function() {
     const e1 = val()
     const e2 = val()
     const id = sinon.stub()
 
-    addToFlow({
+    const graph = getGraphFromEntities(resolveEntities({
       entity1: e1,
       entity2: e2,
 
       foo: 'foo',
       bar: 1234,
       bazz: {id}
-    })
+    }))
 
-    expect(sys.getGraph().entities).to.deep.equal({
-      entity1: types.createEntity({id: "entity1"}),
-      entity2: types.createEntity({id: "entity2"})
+    expect(graph).to.deep.equal({
+      entities: {
+        entity1: createEntity({ id: "entity1" }),
+        entity2: createEntity({ id: "entity2" })
+      },
+      processes: {},
+      arcs: {},
+      meta: {}
     })
 
     expect(id).to.not.be.called
@@ -55,33 +44,40 @@ describe('flow entity reference', function() {
     const e1 = val()
     const e2 = val()
 
-    addToFlow({
+    const graph = getGraphFromEntities(resolveEntities({
       entity1: e1,
       entity2: e2
-    }, 'foo.bar')
+    }, 'foo.bar'))
 
-    expect(sys.getGraph().entities).to.deep.equal({
-      "foo.bar.entity1": types.createEntity({id: "foo.bar.entity1"}),
-      "foo.bar.entity2": types.createEntity({id: "foo.bar.entity2"})
+    expect(graph.entities).to.deep.equal({
+      "foo.bar.entity1": createEntity({id: "foo.bar.entity1"}),
+      "foo.bar.entity2": createEntity({id: "foo.bar.entity2"})
     })
   })
 
 
   it('can be added to the flow with prefix by id function', function() {
-    val().id('entity1', 'foo.bar')
-    val().id('entity2', 'foo.bar')
+    const e1 = val().id('entity1', 'foo.bar')
+    const e2 = val().id('entity2', 'foo.bar')
 
-    expect(sys.getGraph().entities).to.deep.equal({
-      "foo.bar.entity1": types.createEntity({id: "foo.bar.entity1"}),
-      "foo.bar.entity2": types.createEntity({id: "foo.bar.entity2"})
+    expect(getGraphFromEntities([e1, e2]).entities).to.deep.equal({
+      "foo.bar.entity1": createEntity({id: "foo.bar.entity1"}),
+      "foo.bar.entity2": createEntity({id: "foo.bar.entity2"})
     })
   })
 
 
-  it('can get its id', function() {
+  it('can get its graph', function() {
     const e = val().id('foo')
 
-    expect(e.getId()).to.equal('foo')
+    expect(e.getGraph()).to.deep.equal({
+      entities: {
+        foo: createEntity({id: 'foo'})
+      },
+      processes: {},
+      arcs: {},
+      meta: {}
+    })
   })
 
 
@@ -89,10 +85,12 @@ describe('flow entity reference', function() {
     const e1 = val("foo")
     const e2 = val(1234)
 
-    addToFlow({ e1, e2 })
+    const g = getGraphFromEntities(resolveEntities({ e1, e2 }))
 
-    expect(sys.get('e1')).to.equal('foo')
-    expect(sys.get('e2')).to.equal(1234)
+    expect(g.entities).to.deep.equal({
+      e1: createEntity({id: "e1", value: 'foo'}),
+      e2: createEntity({id: "e2", value: 1234})
+    })
   })
 
 
@@ -103,44 +101,32 @@ describe('flow entity reference', function() {
     e1.val('bar')
     e2.val(4567)
 
-    addToFlow({ e1, e2 })
+    const g = getGraphFromEntities(resolveEntities({ e1, e2 }))
 
-    expect(sys.get('e1')).to.equal('bar')
-    expect(sys.get('e2')).to.equal(4567)
-  })
-
-
-  it('can set its json', function() {
-    json('123').id('e1')
-
-    expect(sys.get('e1')).to.equal(123)
-  })
-
-
-  it('can change its json', function() {
-    json('123').json('234').id('e1')
-
-    expect(sys.get('e1')).to.equal(234)
+    expect(g.entities).to.deep.equal({
+      e1: createEntity({id: "e1", value: 'bar'}),
+      e2: createEntity({id: "e2", value: 4567})
+    })
   })
 
 
   it('can add a stream', function() {
     const p = () => 100
-    stream(p).id('e')
+    const s = stream(p).id('e')
 
-    expect(sys.getGraph()).to.deep.equal({
+    expect(s.getGraph()).to.deep.equal({
       entities: {
-        e: types.createEntity({id: 'e'})
+        e: createEntity({id: 'e'})
       },
       processes: {
-        eStream: types.createProcess({
+        eStream: createProcess({
           id: "eStream",
           ports: [],
           procedure: p,
         }),
       },
       arcs: {
-        'eStream->e': types.createArc({
+        'eStream->e': createArc({
           process: "eStream",
           entity: "e"
         })
@@ -153,47 +139,45 @@ describe('flow entity reference', function() {
   it('can add a stream with all props', function() {
     const p1 = (send) => send(100)
     const p2 = () => 100
-    asyncStreamStart('createE', p1).id('e')
-    streamStart('createF', p2).id('f')
-    asyncStream('createG', p1).id('g')
 
-    expect(sys.getGraph()).to.deep.equal({
+    const s1 = asyncStreamStart('createE', p1).id('e')
+    const s2 = streamStart('createF', p2).id('f')
+    const s3 = asyncStream('createG', p1).id('g')
+
+    expect(getGraphFromEntities([s1, s2, s3])).to.deep.equal({
       entities: {
-        e: types.createEntity({id: 'e'}),
-        f: types.createEntity({id: 'f'}),
-        g: types.createEntity({id: 'g'})
+        e: createEntity({id: 'e'}),
+        f: createEntity({id: 'f'}),
+        g: createEntity({id: 'g'})
       },
       processes: {
-        createE: types.createProcess({
+        createE: createProcess({
           id: "createE",
           procedure: p1,
           async: true,
-          autostart: true,
-          ports: []
+          autostart: true
         }),
-        createF: types.createProcess({
+        createF: createProcess({
           id: "createF",
           procedure: p2,
-          autostart: true,
-          ports: []
+          autostart: true
         }),
-        createG: types.createProcess({
+        createG: createProcess({
           id: "createG",
           procedure: p1,
-          async: true,
-          ports: []
+          async: true
         }),
       },
       arcs: {
-        'createE->e': types.createArc({
+        'createE->e': createArc({
           process: "createE",
           entity: "e"
         }),
-        'createF->f': types.createArc({
+        'createF->f': createArc({
           process: "createF",
           entity: "f"
         }),
-        'createG->g': types.createArc({
+        'createG->g': createArc({
           process: "createG",
           entity: "g"
         })
@@ -209,40 +193,40 @@ describe('flow entity reference', function() {
     const foo = val(2).id('foo')
     const bar = val(3).id('bar')
 
-    val(4).id('e')
+    const e = val(4).id('e')
       .react([
         foo.HOT,
         bar.COLD,
       ], p )
 
-    expect(sys.getGraph()).to.deep.equal({
+    expect(getGraphFromEntities([e, foo, bar])).to.deep.equal({
       entities: {
-        e: types.createEntity({id: 'e', value: 4}),
-        foo: types.createEntity({id: 'foo', value: 2}),
-        bar: types.createEntity({id: 'bar', value: 3})
+        e: createEntity({id: 'e', value: 4}),
+        foo: createEntity({id: 'foo', value: 2}),
+        bar: createEntity({id: 'bar', value: 3})
       },
       processes: {
-        eReaction0: types.createProcess({
+        eReaction0: createProcess({
           id: "eReaction0",
           ports: [
-            sys.PORT_TYPES.ACCUMULATOR,
-            sys.PORT_TYPES.HOT,
-            sys.PORT_TYPES.COLD
+            PORT_TYPES.ACCUMULATOR,
+            PORT_TYPES.HOT,
+            PORT_TYPES.COLD
           ],
           procedure: p,
         })
       },
       arcs: {
-        'eReaction0->e': types.createArc({
+        'eReaction0->e': createArc({
           process: "eReaction0",
           entity: "e"
         }),
-        'foo->eReaction0::1': types.createArc({
+        'foo->eReaction0::1': createArc({
           process: "eReaction0",
           entity: "foo",
           port: "1"
         }),
-        'bar->eReaction0::2': types.createArc({
+        'bar->eReaction0::2': createArc({
           process: "eReaction0",
           entity: "bar",
           port: "2"
@@ -250,10 +234,6 @@ describe('flow entity reference', function() {
       },
       meta: {}
     })
-
-    sys.flush()
-
-    expect(sys.get('e')).to.equal(9)
   })
 
 
@@ -264,26 +244,26 @@ describe('flow entity reference', function() {
 
     const e = stream([foo.HOT],p)
 
-    addToFlow({foo, e})
+    resolveEntities({foo, e})
 
-    expect(sys.getGraph()).to.deep.equal({
+    expect(getGraphFromEntities([foo, e])).to.deep.equal({
       entities: {
-        e: types.createEntity({id: 'e'}),
-        foo: types.createEntity({id: 'foo', value: 20})
+        e: createEntity({id: 'e'}),
+        foo: createEntity({id: 'foo', value: 20})
       },
       processes: {
-        eStream: types.createProcess({
+        eStream: createProcess({
           id: "eStream",
-          ports: [sys.PORT_TYPES.HOT],
+          ports: [PORT_TYPES.HOT],
           procedure: p,
         })
       },
       arcs: {
-        'eStream->e': types.createArc({
+        'eStream->e': createArc({
           process: "eStream",
           entity: "e"
         }),
-        'foo->eStream::0': types.createArc({
+        'foo->eStream::0': createArc({
           process: "eStream",
           entity: "foo",
           port: "0"
@@ -292,30 +272,27 @@ describe('flow entity reference', function() {
       meta: {}
     })
 
-    sys.flush()
-
-    expect(sys.get('e')).to.equal(22)
 
     foo.id('bar')
 
-    expect(sys.getGraph()).to.deep.equal({
+    expect(getGraphFromEntities([e, foo])).to.deep.equal({
       entities: {
-        e: types.createEntity({id: 'e'}),
-        bar: types.createEntity({id: 'bar', value: 20})
+        e: createEntity({id: 'e'}),
+        bar: createEntity({id: 'bar', value: 20})
       },
       processes: {
-        eStream: types.createProcess({
+        eStream: createProcess({
           id: "eStream",
-          ports: [sys.PORT_TYPES.HOT] ,
+          ports: [PORT_TYPES.HOT] ,
           procedure: p,
         })
       },
       arcs: {
-        'eStream->e': types.createArc({
+        'eStream->e': createArc({
           process: "eStream",
           entity: "e"
         }),
-        'bar->eStream::0': types.createArc({
+        'bar->eStream::0': createArc({
           process: "eStream",
           entity: "bar",
           port: "0"
@@ -324,11 +301,6 @@ describe('flow entity reference', function() {
       meta: {}
     })
 
-    sys.set('bar', 3)
-    expect(sys.get('e')).to.equal(5)
-
-    sys.set('foo', 66)
-    expect(sys.get('e')).to.equal(5)
   })
 
 
@@ -339,7 +311,7 @@ describe('flow entity reference', function() {
 
     const e2 = stream([e.HOT], p)
 
-    addToFlow({e, e2})
+    resolveEntities({e, e2})
 
     sys.flush()
 

@@ -1,4 +1,3 @@
-/// <reference path="../../test.d.ts" />
 import {v4} from 'utils/uuid'
 
 

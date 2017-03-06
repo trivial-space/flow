@@ -1,4 +1,3 @@
-/// <reference path="../../test.d.ts" />
 import {evaluate} from 'utils/code-evaluator'
 
 

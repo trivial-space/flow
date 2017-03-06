@@ -1,8 +1,12 @@
+import * as graphs from './graph-utils'
 import {
   PORT_TYPES,
   PortType,
-  Runtime,
-  ProcessData
+  ProcessData,
+  Graph,
+  createEntity,
+  createProcess,
+  createArc
 } from '../runtime-types'
 
 
@@ -38,32 +42,13 @@ export type ReactionFactory<T> = (
 ) => EntityRef<T>
 
 
-export type StreamFactory = <T>(
-  a1: string | PortSpec<any>[] | ProcedureSync<T>,
-  a2?: PortSpec<any>[] | ProcedureSync<T>,
-  a3?: ProcedureSync<T>
-) => EntityRef<T>
-
-export type AsyncStreamFactory = <T>(
-  a1: string | PortSpec<any>[] | ProcedureAsync<T>,
-  a2?: PortSpec<any>[] | ProcedureAsync<T>,
-  a3?: ProcedureAsync<T>
-) => EntityRef<T>
-
-
-export type ValueFactory = <T>(value?: T) => EntityRef<T>
-
-export type JsonValueFactory = <T>(json?: string) => EntityRef<T>
-
-
 export interface EntityRef<T> {
   id: (_id: string, _ns?: string) => EntityRef<T>
   val: (value: T) => EntityRef<T>
-  json: (json: string) => EntityRef<T>
   react: ReactionFactory<T>
   HOT: PortSpec<T>
   COLD: PortSpec<T>
-  getId: () => string | undefined
+  getGraph: () => Graph
   onId: (cb: (string) => void) => void
 }
 
@@ -71,22 +56,11 @@ export interface EntityRef<T> {
 export interface EntitySpec<T> {
   id?: string
   value?: T
-  json?: string
   processId?: string
   procedure?: Procedure<T>
   dependencies?: PortSpec<any>[]
   async?: boolean
   autostart?: boolean
-}
-
-export type EntityFactory = {
-  val: ValueFactory,
-  json: JsonValueFactory,
-  stream: StreamFactory,
-  asyncStream: AsyncStreamFactory,
-  streamStart: StreamFactory,
-  asyncStreamStart: AsyncStreamFactory,
-  addToFlow: (entities: {[id: string]: EntityRef<any>}, ns?: string) => void
 }
 
 const streamNameSuffix = "Stream"
@@ -98,244 +72,247 @@ function mergePath(id: string, path?: string): string {
 }
 
 
-export function create(flow: Runtime): EntityFactory {
+function createEntityGraph<T>(spec: EntitySpec<T>): EntityRef<T> {
+  const graph: Graph = graphs.empty()
 
-  function createEntity<T>(spec: EntitySpec<T>): EntityRef<T> {
-    let value = spec.value
-    let json = spec.json
-    let id: string | undefined
-    let ns: string | undefined
-    let reactionCount = 0
+  let value = spec.value
+  let id: string | undefined
+  let ns: string | undefined
+  let reactionCount = 0
 
-    const idCallbacks: ((id: string) => void)[] = []
+  const idCallbacks: ((id: string) => void)[] = []
 
-    const entity = {} as EntityRef<T>
+  const entity = {} as EntityRef<T>
 
-    entity.HOT = {
-      entity,
-      type: PORT_TYPES.HOT
+  entity.HOT = {
+    entity,
+    type: PORT_TYPES.HOT
+  }
+
+  entity.COLD = {
+    entity,
+    type: PORT_TYPES.COLD
+  }
+
+  function updateEntity() {
+    if (id) {
+      graph.entities[id] = createEntity({id, value})
     }
+  }
 
-    entity.COLD = {
-      entity,
-      type: PORT_TYPES.COLD
-    }
+  entity.getGraph = () => graph
 
-    function updateEntity() {
-      id && flow.addEntity({id, value, json})
-    }
+  entity.onId = (cb) => {
+    idCallbacks.push(cb)
+    id && cb(id)
+  }
 
+  entity.id = (_id: string, _ns?: string) => {
+    let tempId = mergePath(_id, _ns)
+    if (id === tempId) return entity
+    id && delete graph.entities[id]
+    ns = _ns
+    id = tempId
+    updateEntity()
+    idCallbacks.forEach(cb => cb(tempId))
+    return entity
+  }
 
-    entity.getId = () => id
-
-    entity.onId = (cb) => {
-      idCallbacks.push(cb)
-      id && cb(id)
-    }
-
-    entity.id = (_id: string, _ns?: string) => {
-      let tempId = mergePath(_id, _ns)
-      if (id === tempId) return entity
-      id && flow.removeEntity(id)
-      ns = _ns
-      id = tempId
-      updateEntity()
-      idCallbacks.forEach(cb => cb(tempId))
-      return entity
-    }
-
-    entity.val = (_value: T) => {
-      value = _value
-      updateEntity()
-      return entity
-    }
-
-    entity.json = (_json: string) => {
-      json = _json
-      updateEntity()
-      return entity
-    }
-
-
-    function registerStream(spec: EntitySpec<T>, suffix) {
-
-      entity.onId(id => {
-        const pid = spec.processId ? mergePath(spec.processId, ns) : id + suffix
-
-        const deps = spec.dependencies
-        let ports: PortType[] = []
-
-        if (deps) {
-          for (let portId in deps) {
-            const port = deps[portId]
-            ports[portId] = port.type
-          }
-        }
-
-        flow.addProcess({
-          id: pid,
-          procedure: spec.procedure,
-          ports,
-          async: spec.async,
-          autostart: spec.autostart
-        } as ProcessData)
-
-        flow.addArc({ process: pid, entity: id })
-
-        if (deps) {
-          for (let portId in deps) {
-            const dep = deps[portId]
-            if (dep.type !== PORT_TYPES.ACCUMULATOR) {
-              dep.entity.onId(id => {
-                flow.addArc({
-                  entity: id,
-                  process: pid,
-                  port: portId
-                })
-              })
-            }
-          }
-        }
-      })
-    }
-
-    if (spec.procedure) {
-      registerStream(spec, streamNameSuffix)
-    }
-
-    entity.react = (
-      a1: string | PortSpec<any>[] | Procedure<T>,
-      a2?: PortSpec<any>[] | Procedure<T>,
-      a3?: Procedure<T>
-    ) => {
-
-      const spec = getStreamSpec<T>(a1, a2, a3)
-      const deps = spec.dependencies
-      spec.dependencies = [{entity, type: PORT_TYPES.ACCUMULATOR} as PortSpec<any>]
-
-      if (deps && deps.length) {
-        spec.dependencies = spec.dependencies.concat(deps)
-      }
-
-      registerStream(spec, reactionNameSuffix + reactionCount++)
-      return entity
-    }
-
+  entity.val = (_value: T) => {
+    value = _value
+    updateEntity()
     return entity
   }
 
 
-  function val<T>(value?: T): EntityRef<T> {
-    return createEntity({ value })
-  }
+  function registerStream(spec: EntitySpec<T>, suffix) {
 
+    entity.onId(id => {
+      const pid = spec.processId ? mergePath(spec.processId, ns) : id + suffix
 
-  function json<T>(json: string): EntityRef<T> {
-    return createEntity({ json })
-  }
+      const deps = spec.dependencies
+      let ports: PortType[] = []
 
-
-  function getStreamSpec<T>(
-    a1: string | PortSpec<any>[] | Procedure<T>,
-    a2?: PortSpec<any>[] | Procedure<T>,
-    a3?: Procedure<T>
-  ): EntitySpec<T> {
-
-    if (typeof a1 === "function") {
-      return ({
-        procedure: a1
-      })
-
-    } else if (Array.isArray(a1) && typeof a2 === "function") {
-      return ({
-        dependencies: a1,
-        procedure: a2
-      })
-
-    } else if (typeof a1 === "string" && typeof a2 === "function") {
-      return ({
-        processId: a1,
-        procedure: a2
-      })
-
-    } else if (typeof a1 === "string" && Array.isArray(a2) && typeof a3 === "function") {
-      return ({
-        processId: a1,
-        dependencies: a2,
-        procedure: a3
-      })
-    } else {
-      throw TypeError('Wrong stream arguments')
-    }
-  }
-
-
-  function stream<T>(
-    a1: string | PortSpec<any>[] | Procedure<T>,
-    a2?: PortSpec<any>[] | Procedure<T>,
-    a3?: Procedure<T>
-  ): EntityRef<T> {
-      return createEntity<T>(getStreamSpec<T>(a1, a2, a3))
-  }
-
-
-  function asyncStream<T>(
-    a1: string | PortSpec<any>[] | Procedure<T>,
-    a2?: PortSpec<any>[] | Procedure<T>,
-    a3?: Procedure<T>
-  ): EntityRef<T> {
-      return createEntity<T>({
-        ...getStreamSpec<T>(a1, a2, a3),
-        async: true
-      })
-  }
-
-
-  function streamStart<T>(
-    a1: string | PortSpec<any>[] | Procedure<T>,
-    a2?: PortSpec<any>[] | Procedure<T>,
-    a3?: Procedure<T>
-  ): EntityRef<T> {
-      return createEntity<T>({
-        ...getStreamSpec<T>(a1, a2, a3),
-        autostart: true
-      })
-  }
-
-
-  function asyncStreamStart<T>(
-    a1: string | PortSpec<any>[] | Procedure<T>,
-    a2?: PortSpec<any>[] | Procedure<T>,
-    a3?: Procedure<T>
-  ): EntityRef<T> {
-      return createEntity<T>({
-        ...getStreamSpec<T>(a1, a2, a3),
-        async: true,
-        autostart: true
-      })
-  }
-
-
-  function addToFlow(
-    es: any,
-    path?: string
-  ): void {
-    for (let id in es) {
-      const e = es[id]
-      if (typeof e.id === "function" && e.HOT && e.COLD) {
-        e.id(id, path)
+      if (deps) {
+        for (let portId in deps) {
+          const port = deps[portId]
+          ports[portId] = port.type
+        }
       }
+
+      graph.processes[pid] = createProcess({
+        id: pid,
+        procedure: spec.procedure,
+        ports,
+        async: spec.async,
+        autostart: spec.autostart
+      } as ProcessData)
+
+      const arc = createArc({ process: pid, entity: id })
+      graph.arcs[arc.id] = arc
+
+      if (deps) {
+        for (let portId in deps) {
+          const dep = deps[portId]
+          if (dep.type !== PORT_TYPES.ACCUMULATOR) {
+            dep.entity.onId(id => {
+              const arc = createArc({ process: pid, entity: id, port: portId })
+              graph.arcs[arc.id] = arc
+            })
+          }
+        }
+      }
+    })
+  }
+
+  if (spec.procedure) {
+    registerStream(spec, streamNameSuffix)
+  }
+
+  entity.react = (
+    a1: string | PortSpec<any>[] | Procedure<T>,
+    a2?: PortSpec<any>[] | Procedure<T>,
+    a3?: Procedure<T>
+  ) => {
+
+    const spec = getStreamSpec<T>(a1, a2, a3)
+    const deps = spec.dependencies
+    spec.dependencies = [{entity, type: PORT_TYPES.ACCUMULATOR} as PortSpec<any>]
+
+    if (deps && deps.length) {
+      spec.dependencies = spec.dependencies.concat(deps)
+    }
+
+    registerStream(spec, reactionNameSuffix + reactionCount++)
+    return entity
+  }
+
+  return entity
+}
+
+
+export function val<T>(value?: T): EntityRef<T> {
+  return createEntityGraph({ value })
+}
+
+
+function getStreamSpec<T>(
+  a1: string | PortSpec<any>[] | Procedure<T>,
+  a2?: PortSpec<any>[] | Procedure<T>,
+  a3?: Procedure<T>
+): EntitySpec<T> {
+
+  if (typeof a1 === "function") {
+    return ({
+      procedure: a1
+    })
+
+  } else if (Array.isArray(a1) && typeof a2 === "function") {
+    return ({
+      dependencies: a1,
+      procedure: a2
+    })
+
+  } else if (typeof a1 === "string" && typeof a2 === "function") {
+    return ({
+      processId: a1,
+      procedure: a2
+    })
+
+  } else if (typeof a1 === "string" && Array.isArray(a2) && typeof a3 === "function") {
+    return ({
+      processId: a1,
+      dependencies: a2,
+      procedure: a3
+    })
+  } else {
+    throw TypeError('Wrong stream arguments')
+  }
+}
+
+
+export function stream<T>(
+  a1: string | PortSpec<any>[] | Procedure<T>,
+  a2?: PortSpec<any>[] | Procedure<T>,
+  a3?: Procedure<T>
+): EntityRef<T> {
+    return createEntityGraph<T>(getStreamSpec<T>(a1, a2, a3))
+}
+
+
+export function asyncStream<T>(
+  a1: string | PortSpec<any>[] | Procedure<T>,
+  a2?: PortSpec<any>[] | Procedure<T>,
+  a3?: Procedure<T>
+): EntityRef<T> {
+    return createEntityGraph<T>({
+      ...getStreamSpec<T>(a1, a2, a3),
+      async: true
+    })
+}
+
+
+export function streamStart<T>(
+  a1: string | PortSpec<any>[] | Procedure<T>,
+  a2?: PortSpec<any>[] | Procedure<T>,
+  a3?: Procedure<T>
+): EntityRef<T> {
+    return createEntityGraph<T>({
+      ...getStreamSpec<T>(a1, a2, a3),
+      autostart: true
+    })
+}
+
+
+export function asyncStreamStart<T>(
+  a1: string | PortSpec<any>[] | Procedure<T>,
+  a2?: PortSpec<any>[] | Procedure<T>,
+  a3?: Procedure<T>
+): EntityRef<T> {
+    return createEntityGraph<T>({
+      ...getStreamSpec<T>(a1, a2, a3),
+      async: true,
+      autostart: true
+    })
+}
+
+
+export function isEntity(e: any): boolean {
+  return e &&
+      typeof e.id === "function" &&
+      typeof e.getGraph === "function" &&
+      e.HOT && e.COLD
+}
+
+
+export function resolveEntities(
+  entities: {[id: string]: any},
+  path?: string
+): any {
+
+  for (let id in entities) {
+    const e = entities[id]
+    if (isEntity(e)) {
+      e.id(id, path)
     }
   }
 
+  return entities
+}
 
-  return {
-    val,
-    json,
-    stream,
-    streamStart,
-    asyncStream,
-    asyncStreamStart,
-    addToFlow
+
+export function getGraphFromEntities(
+  entities: any
+): Graph {
+
+  const es: EntityRef<any>[] = []
+
+  for (let id in entities) {
+    const e = entities[id]
+    if (isEntity(e)) {
+      es.push(e)
+    }
   }
+
+  return es.reduce((g, e) => graphs.merge(g, e.getGraph()), graphs.empty())
 }
