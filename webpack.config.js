@@ -1,5 +1,5 @@
 const {resolve} = require('path')
-const webpack = require('webpack')
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 
 
 module.exports = {
@@ -30,7 +30,7 @@ module.exports = {
   },
 
   plugins: [
-    new webpack.optimize.UglifyJsPlugin({
+    new UglifyJsPlugin({
       beautify: true
     })
   ]

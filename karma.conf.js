@@ -1,4 +1,5 @@
 const {resolve} = require('path')
+const webpack = require('./webpack.config')
 
 
 module.exports = function (config) {
@@ -28,23 +29,8 @@ module.exports = function (config) {
 
 
     webpack: {
-
-      module: {
-        rules: [{
-          exclude: /node_modules/,
-          use: 'ts-loader',
-          test: /\.ts$/
-        }]
-      },
-
-      resolve: {
-        extensions: ['.ts', '.js', '.json'],
-        modules: [
-          'node_modules',
-          resolve(__dirname, "lib")
-        ]
-      },
-
+      module: webpack.module,
+      resolve: webpack.resolve,
       devtool: 'inline-source-map',
     },
 

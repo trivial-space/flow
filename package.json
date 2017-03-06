@@ -44,6 +44,7 @@
     "sinon-chai": "^2.8.0",
     "ts-loader": "^2.0.1",
     "typescript": "^2.2.1",
+    "uglifyjs-webpack-plugin": "^0.3.0",
     "webpack": "^2.2.1"
   }
 }
