@@ -313,17 +313,42 @@ describe('Flow runtime', function() {
         id: 'foo',
         accept: (newVal, oldVal = 0) => newVal > oldVal
       })
+      const stub = sinon.stub()
+      sys.addProcess({
+        id: 'test',
+        ports: [sys.PORT_TYPES.HOT],
+        procedure: stub
+      })
+      sys.addArc({
+        entity: 'foo',
+        process: 'test',
+        port: 0
+      })
 
       sys.set('foo', 10)
       expect(sys.get('foo')).to.equal(10)
+      expect(stub.calledOnce).to.be.true
+      stub.reset()
+
       sys.set('foo', 9)
       expect(sys.get('foo')).to.equal(10)
+      expect(stub.calledOnce).to.be.false
+      stub.reset()
+
       sys.set('foo', 12)
       expect(sys.get('foo')).to.equal(12)
+      expect(stub.calledOnce).to.be.true
+      stub.reset()
+
       sys.set('foo', 10)
       expect(sys.get('foo')).to.equal(12)
+      expect(stub.calledOnce).to.be.false
+      stub.reset()
+
       sys.set('foo', 20)
       expect(sys.get('foo')).to.equal(20)
+      expect(stub.calledOnce).to.be.true
+      stub.reset()
     })
 
 
@@ -340,6 +365,17 @@ describe('Flow runtime', function() {
         ports: [sys.PORT_TYPES.HOT],
         procedure: x => x + 100
       })
+      const stub = sinon.stub()
+      sys.addProcess({
+        id: 'test',
+        ports: [sys.PORT_TYPES.HOT],
+        procedure: stub
+      })
+      sys.addArc({
+        entity: 'foo',
+        process: 'test',
+        port: 0
+      })
       sys.addArc({
         entity: 'bar',
         process: 'p',
@@ -352,14 +388,28 @@ describe('Flow runtime', function() {
 
       sys.set('bar', 10)
       expect(sys.get('foo')).to.equal(110)
+      expect(stub.calledOnce).to.be.true
+      stub.reset()
+
       sys.set('bar', 9)
       expect(sys.get('foo')).to.equal(110)
+      expect(stub.calledOnce).to.be.false
+      stub.reset()
+
       sys.set('bar', 12)
       expect(sys.get('foo')).to.equal(112)
+      expect(stub.calledOnce).to.be.true
+      stub.reset()
+
       sys.set('bar', 10)
       expect(sys.get('foo')).to.equal(112)
+      expect(stub.calledOnce).to.be.false
+      stub.reset()
+
       sys.set('bar', 20)
       expect(sys.get('foo')).to.equal(120)
+      expect(stub.calledOnce).to.be.true
+      stub.reset()
     })
 
 
@@ -377,6 +427,17 @@ describe('Flow runtime', function() {
         ports: [sys.PORT_TYPES.HOT],
         procedure: (send, x) => send(x + 200)
       })
+      const stub = sinon.stub()
+      sys.addProcess({
+        id: 'test',
+        ports: [sys.PORT_TYPES.HOT],
+        procedure: stub
+      })
+      sys.addArc({
+        entity: 'foo',
+        process: 'test',
+        port: 0
+      })
       sys.addArc({
         entity: 'bar',
         process: 'p',
@@ -389,14 +450,28 @@ describe('Flow runtime', function() {
 
       sys.set('bar', 10)
       expect(sys.get('foo')).to.equal(210)
+      expect(stub.calledOnce).to.be.true
+      stub.reset()
+
       sys.set('bar', 9)
       expect(sys.get('foo')).to.equal(210)
+      expect(stub.calledOnce).to.be.false
+      stub.reset()
+
       sys.set('bar', 12)
       expect(sys.get('foo')).to.equal(212)
+      expect(stub.calledOnce).to.be.true
+      stub.reset()
+
       sys.set('bar', 10)
       expect(sys.get('foo')).to.equal(212)
+      expect(stub.calledOnce).to.be.false
+      stub.reset()
+
       sys.set('bar', 20)
       expect(sys.get('foo')).to.equal(220)
+      expect(stub.calledOnce).to.be.true
+      stub.reset()
     })
   })
 
