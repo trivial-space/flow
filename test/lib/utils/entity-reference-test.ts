@@ -1,11 +1,11 @@
 import {
-  resolveEntities,
+  resolveEntityIds,
   val,
   stream,
   asyncStreamStart,
   streamStart,
   asyncStream,
-  getGraphFromEntities
+  getGraphFromAll
 } from 'utils/entity-reference'
 import { createEntity, createProcess, createArc, PORT_TYPES } from "runtime-types";
 
@@ -17,7 +17,7 @@ describe('flow entity reference', function() {
     const e2 = val()
     const id = sinon.stub()
 
-    const graph = getGraphFromEntities(resolveEntities({
+    const graph = getGraphFromAll(resolveEntityIds({
       entity1: e1,
       entity2: e2,
 
@@ -40,11 +40,24 @@ describe('flow entity reference', function() {
   })
 
 
+  it('has a default id', function() {
+    const e = val()
+
+    expect(e.getId()).to.be.a('string')
+    expect(e.getId().length).to.be.greaterThan(0)
+    expect(e.getId()).to.not.equal('foo')
+
+    e.id('foo')
+
+    expect(e.getId()).to.equal('foo')
+  })
+
+
   it('can be added to the flow with prefix', function() {
     const e1 = val()
     const e2 = val()
 
-    const graph = getGraphFromEntities(resolveEntities({
+    const graph = getGraphFromAll(resolveEntityIds({
       entity1: e1,
       entity2: e2
     }, 'foo.bar'))
@@ -60,7 +73,7 @@ describe('flow entity reference', function() {
     const e1 = val().id('entity1', 'foo.bar')
     const e2 = val().id('entity2', 'foo.bar')
 
-    expect(getGraphFromEntities([e1, e2]).entities).to.deep.equal({
+    expect(getGraphFromAll([e1, e2]).entities).to.deep.equal({
       "foo.bar.entity1": createEntity({id: "foo.bar.entity1"}),
       "foo.bar.entity2": createEntity({id: "foo.bar.entity2"})
     })
@@ -85,27 +98,11 @@ describe('flow entity reference', function() {
     const e1 = val("foo")
     const e2 = val(1234)
 
-    const g = getGraphFromEntities(resolveEntities({ e1, e2 }))
+    const g = getGraphFromAll(resolveEntityIds({ e1, e2 }))
 
     expect(g.entities).to.deep.equal({
       e1: createEntity({id: "e1", value: 'foo'}),
       e2: createEntity({id: "e2", value: 1234})
-    })
-  })
-
-
-  it('can change their value', function() {
-    const e1 = val("foo")
-    const e2 = val(1234)
-
-    e1.val('bar')
-    e2.val(4567)
-
-    const g = getGraphFromEntities(resolveEntities({ e1, e2 }))
-
-    expect(g.entities).to.deep.equal({
-      e1: createEntity({id: "e1", value: 'bar'}),
-      e2: createEntity({id: "e2", value: 4567})
     })
   })
 
@@ -144,7 +141,7 @@ describe('flow entity reference', function() {
     const s2 = streamStart('createF', p2).id('f')
     const s3 = asyncStream('createG', p1).id('g')
 
-    expect(getGraphFromEntities([s1, s2, s3])).to.deep.equal({
+    expect(getGraphFromAll([s1, s2, s3])).to.deep.equal({
       entities: {
         e: createEntity({id: 'e'}),
         f: createEntity({id: 'f'}),
@@ -199,7 +196,7 @@ describe('flow entity reference', function() {
         bar.COLD,
       ], p )
 
-    expect(getGraphFromEntities([e, foo, bar])).to.deep.equal({
+    expect(getGraphFromAll([e, foo, bar])).to.deep.equal({
       entities: {
         e: createEntity({id: 'e', value: 4}),
         foo: createEntity({id: 'foo', value: 2}),
@@ -237,16 +234,16 @@ describe('flow entity reference', function() {
   })
 
 
-  it('changes updates flow on changed id', function() {
+  it('updates graph on changed id', function() {
     const p = foo => foo + 2
 
     const foo = val(20)
 
     const e = stream([foo.HOT],p)
 
-    resolveEntities({foo, e})
+    resolveEntityIds({foo, e})
 
-    expect(getGraphFromEntities([foo, e])).to.deep.equal({
+    expect(getGraphFromAll([foo, e])).to.deep.equal({
       entities: {
         e: createEntity({id: 'e'}),
         foo: createEntity({id: 'foo', value: 20})
@@ -275,7 +272,7 @@ describe('flow entity reference', function() {
 
     foo.id('bar')
 
-    expect(getGraphFromEntities([e, foo])).to.deep.equal({
+    expect(getGraphFromAll([e, foo])).to.deep.equal({
       entities: {
         e: createEntity({id: 'e'}),
         bar: createEntity({id: 'bar', value: 20})
@@ -301,30 +298,6 @@ describe('flow entity reference', function() {
       meta: {}
     })
 
-  })
-
-
-  it("only updates the flow entity if the id is different than the previous id", function() {
-    const p = sinon.spy(e => e + 1)
-
-    const e = val(12)
-
-    const e2 = stream([e.HOT], p)
-
-    resolveEntities({e, e2})
-
-    sys.flush()
-
-    expect(p).to.be.called
-    expect(sys.get('e2')).to.equal(13)
-
-    p.reset()
-
-    e.id('e')
-
-    sys.flush()
-
-    expect(p).not.to.be.called
   })
 
 })

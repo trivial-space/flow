@@ -1,9 +1,9 @@
 const runtime = require('../dist/tvs-flow')
 
+const { val, stream, getGraphFromAll, resolveEntityIds } = runtime.utils.entityRef
+
 
 function setupFlow(flow) {
-
-  const {val, stream, addToFlow} = runtime.utils.entityRef.create(flow)
 
   const tick = val()
 
@@ -32,7 +32,10 @@ function setupFlow(flow) {
     e3 => e3.length
   )
 
-  addToFlow({tick, e1, e2, e3, e4})
+  flow.addGraph(
+    getGraphFromAll(
+      resolveEntityIds(
+        {tick, e1, e2, e3, e4})))
 }
 
 

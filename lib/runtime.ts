@@ -502,6 +502,6 @@ export function create(): types.Runtime {
 
     flush,
 
-    PORT_TYPES: Object.assign({}, types.PORT_TYPES)
+    PORT_TYPES: {...types.PORT_TYPES}
   }
 }
