@@ -119,11 +119,13 @@ describe('Flow runtime', function() {
         foo: {
           id: "foo",
           value: undefined,
+          accept: undefined,
           meta: {}
         },
         bar: {
           id: "bar",
           value: 22,
+          accept: undefined,
           meta: {}
         }
       },
@@ -303,6 +305,98 @@ describe('Flow runtime', function() {
         foo: 23,
         bar: 42
       })
+    })
+
+
+    it('can accept values based on old value', function() {
+      sys.addEntity({
+        id: 'foo',
+        accept: (newVal, oldVal = 0) => newVal > oldVal
+      })
+
+      sys.set('foo', 10)
+      expect(sys.get('foo')).to.equal(10)
+      sys.set('foo', 9)
+      expect(sys.get('foo')).to.equal(10)
+      sys.set('foo', 12)
+      expect(sys.get('foo')).to.equal(12)
+      sys.set('foo', 10)
+      expect(sys.get('foo')).to.equal(12)
+      sys.set('foo', 20)
+      expect(sys.get('foo')).to.equal(20)
+    })
+
+
+    it('can accept values based on old value from stream', function() {
+      sys.addEntity({
+        id: 'foo',
+        accept: (newVal, oldVal = 0) => newVal > oldVal
+      })
+      sys.addEntity({
+        id: 'bar',
+      })
+      sys.addProcess({
+        id: 'p',
+        ports: [sys.PORT_TYPES.HOT],
+        procedure: x => x + 100
+      })
+      sys.addArc({
+        entity: 'bar',
+        process: 'p',
+        port: 0
+      })
+      sys.addArc({
+        process: 'p',
+        entity: 'foo'
+      })
+
+      sys.set('bar', 10)
+      expect(sys.get('foo')).to.equal(110)
+      sys.set('bar', 9)
+      expect(sys.get('foo')).to.equal(110)
+      sys.set('bar', 12)
+      expect(sys.get('foo')).to.equal(112)
+      sys.set('bar', 10)
+      expect(sys.get('foo')).to.equal(112)
+      sys.set('bar', 20)
+      expect(sys.get('foo')).to.equal(120)
+    })
+
+
+    it('can accept values based on old value from async stream', function() {
+      sys.addEntity({
+        id: 'foo',
+        accept: (newVal, oldVal = 0) => newVal > oldVal
+      })
+      sys.addEntity({
+        id: 'bar',
+      })
+      sys.addProcess({
+        id: 'p',
+        async: true,
+        ports: [sys.PORT_TYPES.HOT],
+        procedure: (send, x) => send(x + 200)
+      })
+      sys.addArc({
+        entity: 'bar',
+        process: 'p',
+        port: 0
+      })
+      sys.addArc({
+        process: 'p',
+        entity: 'foo'
+      })
+
+      sys.set('bar', 10)
+      expect(sys.get('foo')).to.equal(210)
+      sys.set('bar', 9)
+      expect(sys.get('foo')).to.equal(210)
+      sys.set('bar', 12)
+      expect(sys.get('foo')).to.equal(212)
+      sys.set('bar', 10)
+      expect(sys.get('foo')).to.equal(212)
+      sys.set('bar', 20)
+      expect(sys.get('foo')).to.equal(220)
     })
   })
 

@@ -7,6 +7,7 @@ interface EngineEntity {
   effects: {[id: string]: EngineProcess}
   arcs: {[id: string]: true}
   cb?: (val?: any) => void
+  accept?: types.AcceptPredicate
 }
 
 interface EngineProcess {
@@ -91,10 +92,12 @@ export function create(): types.Runtime {
 
   function set (id: string, value: any) {
     let eE = engineE(id)
-    eE.val = value
-    activatedEntities[id] = true
-    processGraph = true
-    flush()
+    if (!eE.accept || eE.accept(value, eE.val)) {
+      eE.val = value
+      activatedEntities[id] = true
+      processGraph = true
+      flush()
+    }
   }
 
 
@@ -128,6 +131,8 @@ export function create(): types.Runtime {
       activatedEntities[e.id] = false
       processGraph = true
     }
+
+    eE.accept = e.accept
 
     return e
   }
@@ -263,23 +268,28 @@ export function create(): types.Runtime {
 
       // from process to entity
       } else {
-        eP.sink = value => {
-          eE.val = value
-          if (value != null) {
-            activatedEntities[eE.id] = true
-            processGraph = true
-          }
-          if (!blockFlush) {
-            flush()
-          }
-        }
         eP.out = eE
+
         if (eP.acc != null) {
           eP.sources[eP.acc] = eE
           eE.reactions[pId] = eP
         } else {
           delete eE.reactions[pId]
         }
+
+        eP.sink = value => {
+          if (!eE.accept || eE.accept(value, eE.val)) {
+            eE.val = value
+            if (value != null) {
+              activatedEntities[eE.id] = true
+              processGraph = true
+            }
+            if (!blockFlush) {
+              flush()
+            }
+          }
+        }
+
       }
     }
   }
@@ -402,10 +412,13 @@ export function create(): types.Runtime {
       } else {
         let val = processes[eP.id].procedure.apply(context, eP.values)
         if (eP.out) {
-          eP.out.val = val
-          if (val != null) {
-            activatedEntities[eP.out.id] = eP.acc == null
-            processGraph = true
+          let out = eP.out
+          if (!out.accept || out.accept(val, out.val)) {
+            out.val = val
+            if (val != null) {
+              activatedEntities[eP.out.id] = eP.acc == null
+              processGraph = true
+            }
           }
         }
       }

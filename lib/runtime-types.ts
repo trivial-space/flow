@@ -7,10 +7,17 @@ import {evaluate} from './utils/code-evaluator'
 export type Meta = {[m: string]: any}
 
 
+export type AcceptPredicate = (
+  newValue?: any,
+  oldValue?: any
+) => boolean
+
+
 export interface EntityData {
   id?: string
   value?: any
   json?: string
+  accept?: AcceptPredicate
   meta?: Meta
 }
 
@@ -18,6 +25,7 @@ export interface EntityData {
 export interface Entity {
   id: string
   value?: any
+  accept?: AcceptPredicate
   meta: Meta
 }
 
@@ -159,6 +167,7 @@ export function createEntity ({
   id = v4(),
   value,
   json,
+  accept,
   meta
 }: EntityData): Entity {
 
@@ -169,6 +178,7 @@ export function createEntity ({
   return {
     id,
     value,
+    accept,
     meta: {...meta}
   }
 }
