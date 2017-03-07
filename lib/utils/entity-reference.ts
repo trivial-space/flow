@@ -8,7 +8,7 @@ import {
   createProcess,
   createArc
 } from '../runtime-types'
-import { v4 } from "utils/uuid";
+import { v4 } from "./uuid";
 
 
 export interface PortSpec<T> {
@@ -46,6 +46,7 @@ export type ReactionFactory<T> = (
 export interface EntityRef<T> {
   id: (_id: string, _ns?: string) => EntityRef<T>
   getId: () => string
+  val: (value: T) => EntityRef<T>
   react: ReactionFactory<T>
   HOT: PortSpec<T>
   COLD: PortSpec<T>
@@ -97,6 +98,11 @@ function createEntityRef<T>(spec: EntitySpec<T>): EntityRef<T> {
   entity.id = (_id: string, _ns?: string) => {
     id = mergePath(_id, _ns)
     ns = _ns
+    return entity
+  }
+
+  entity.val = (_value: T) => {
+    value = _value
     return entity
   }
 

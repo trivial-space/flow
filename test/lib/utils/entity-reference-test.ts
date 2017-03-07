@@ -107,6 +107,22 @@ describe('flow entity reference', function() {
   })
 
 
+  it('can change the value', function() {
+    const e1 = val("foo")
+    const e2 = val(1234)
+
+    e1.val('bar')
+    e2.val(3456)
+
+    const g = getGraphFromAll(resolveEntityIds({ e1, e2 }))
+
+    expect(g.entities).to.deep.equal({
+      e1: createEntity({id: "e1", value: 'bar'}),
+      e2: createEntity({id: "e2", value: 3456})
+    })
+  })
+
+
   it('can add a stream', function() {
     const p = () => 100
     const s = stream(p).id('e')

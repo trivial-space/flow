@@ -1,4 +1,4 @@
-import { Graph } from "runtime-types";
+import { Graph } from "../runtime-types";
 
 
 export function empty(): Graph {
