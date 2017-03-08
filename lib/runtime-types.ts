@@ -7,9 +7,9 @@ import {evaluate} from './utils/code-evaluator'
 export type Meta = {[m: string]: any}
 
 
-export type AcceptPredicate = (
-  newValue?: any,
-  oldValue?: any
+export type AcceptPredicate<T> = (
+  newValue?: T,
+  oldValue?: T
 ) => boolean
 
 
@@ -17,7 +17,7 @@ export interface EntityData {
   id?: string
   value?: any
   json?: string
-  accept?: AcceptPredicate
+  accept?: AcceptPredicate<any>
   meta?: Meta
 }
 
@@ -25,7 +25,7 @@ export interface EntityData {
 export interface Entity {
   id: string
   value?: any
-  accept?: AcceptPredicate
+  accept?: AcceptPredicate<any>
   meta: Meta
 }
 

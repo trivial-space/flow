@@ -48,7 +48,7 @@ export interface EntityRef<T> {
   id: (_id: string, _ns?: string) => EntityRef<T>
   getId: () => string
   val: (value: T) => EntityRef<T>
-  accept: (a: AcceptPredicate) => EntityRef<T>
+  accept: (a: AcceptPredicate<T>) => EntityRef<T>
   react: ReactionFactory<T>
   HOT: PortSpec<T>
   COLD: PortSpec<T>
@@ -81,7 +81,7 @@ function createEntityRef<T>(spec: EntitySpec<T>): EntityRef<T> {
   let value = spec.value
   let id = v4()
   let ns: string | undefined
-  let accept: AcceptPredicate | undefined
+  let accept: AcceptPredicate<T> | undefined
   let reactionCount = 0
 
   let streams: EntitySpec<T>[] = []
@@ -109,7 +109,7 @@ function createEntityRef<T>(spec: EntitySpec<T>): EntityRef<T> {
     return entity
   }
 
-  entity.accept = (a: AcceptPredicate) => {
+  entity.accept = (a: AcceptPredicate<T>) => {
     accept = a
     return entity
   }
