@@ -6,7 +6,7 @@ interface EngineEntity {
   reactions: {[id: string]: EngineProcess}
   effects: {[id: string]: EngineProcess}
   arcs: {[id: string]: true}
-  cb?: (val?: any) => void
+  cb: ((val?: any) => void)[]
   accept?: types.AcceptPredicate
 }
 
@@ -108,13 +108,17 @@ export function create(): types.Runtime {
 
   function on (id: string, cb: (val: any) => void) {
     let eE = engineE(id)
-    eE.cb = cb
+    eE.cb.push(cb)
   }
 
 
-  function off (id: string) {
+  function off (id: string, cb?: (val: any) => void) {
     let eE = engineE(id)
-    delete eE.cb
+    if (cb) {
+      eE.cb = eE.cb.filter(c => c !== cb)
+    } else {
+      eE.cb = []
+    }
   }
 
 
@@ -354,7 +358,7 @@ export function create(): types.Runtime {
       for (let i = 0; i < activeEIds.length; i++) {
         let eId = activeEIds[i]
         let eE = engine.es[eId]
-        if (eE.cb) {
+        if (eE.cb.length > 0) {
           callbacksWaiting[eId] = eE
         }
         for (let p in eE.effects) {
@@ -375,7 +379,9 @@ export function create(): types.Runtime {
         // callbacks
         for (let eId in callbacksWaiting) {
           let eE = callbacksWaiting[eId];
-          eE.cb(eE.val)
+          for (let i = 0; i < eE.cb.length; i++) {
+            eE.cb[i](eE.val)
+          }
         }
 
         callbacksWaiting = {}
@@ -470,7 +476,8 @@ export function create(): types.Runtime {
       val: undefined,
       reactions: {},
       effects: {},
-      arcs: {}
+      arcs: {},
+      cb: []
     } as EngineEntity)
   }
 

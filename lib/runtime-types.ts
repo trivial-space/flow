@@ -149,7 +149,7 @@ export interface Runtime {
     set: (id: string, value?: any) => void
     update: (id: string, fn: (val: any) => any) => void
     on: (id: string, cb: (val: any) => void) => void
-    off: (id: string) => void
+    off: (id: string, cb?: (val: any) => void) => void
     start: (processId: string) => void
     stop: (processId: string) => void
     flush: () => void

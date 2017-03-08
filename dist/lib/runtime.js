@@ -56,11 +56,16 @@ export function create() {
     }
     function on(id, cb) {
         var eE = engineE(id);
-        eE.cb = cb;
+        eE.cb.push(cb);
     }
-    function off(id) {
+    function off(id, cb) {
         var eE = engineE(id);
-        delete eE.cb;
+        if (cb) {
+            eE.cb = eE.cb.filter(function (c) { return c !== cb; });
+        }
+        else {
+            eE.cb = [];
+        }
     }
     function addEntity(spec) {
         var e = types.createEntity(spec);
@@ -238,7 +243,7 @@ export function create() {
             for (var i = 0; i < activeEIds.length; i++) {
                 var eId = activeEIds[i];
                 var eE = engine.es[eId];
-                if (eE.cb) {
+                if (eE.cb.length > 0) {
                     callbacksWaiting[eId] = eE;
                 }
                 for (var p in eE.effects) {
@@ -255,7 +260,9 @@ export function create() {
             else {
                 for (var eId in callbacksWaiting) {
                     var eE = callbacksWaiting[eId];
-                    eE.cb(eE.val);
+                    for (var i = 0; i < eE.cb.length; i++) {
+                        eE.cb[i](eE.val);
+                    }
                 }
                 callbacksWaiting = {};
                 if (debug) {
@@ -336,7 +343,8 @@ export function create() {
             val: undefined,
             reactions: {},
             effects: {},
-            arcs: {}
+            arcs: {},
+            cb: []
         });
     }
     function engineP(id) {

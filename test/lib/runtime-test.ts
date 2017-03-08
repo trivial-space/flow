@@ -1806,6 +1806,47 @@ describe('Flow runtime', function() {
 
       expect(cb).to.be.calledWith(32)
     })
+
+
+    it('can have many callbacks', function() {
+      let cb1 = sinon.stub()
+      let cb2 = sinon.stub()
+      let cb3 = sinon.stub()
+
+      sys.on('bar', cb1)
+      sys.on('bar', cb2)
+      sys.on('bar', cb3)
+
+      sys.set('bar', 32)
+
+      expect(cb1).to.be.calledWith(32)
+      expect(cb2).to.be.calledWith(32)
+      expect(cb3).to.be.calledWith(32)
+
+      cb1.reset()
+      cb2.reset()
+      cb3.reset()
+
+      sys.off('bar', cb1)
+
+      sys.set('bar', 31)
+
+      expect(cb1).to.not.be.called
+      expect(cb2).to.be.calledWith(31)
+      expect(cb3).to.be.calledWith(31)
+
+      cb1.reset()
+      cb2.reset()
+      cb3.reset()
+
+      sys.off('bar')
+
+      sys.set('bar', 30)
+
+      expect(cb1).to.not.be.called
+      expect(cb2).to.not.be.called
+      expect(cb3).to.not.be.called
+    })
   })
 
 

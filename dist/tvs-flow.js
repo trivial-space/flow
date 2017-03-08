@@ -164,16 +164,19 @@
             }
             function f(e, t) {
                 var r = S(e);
-                r.accept && !r.accept(t, r.val) || (r.val = t, I[e] = !0, G = !0, T());
+                r.accept && !r.accept(t, r.val) || (r.val = t, I[e] = !0, G = !0, P());
             }
             function p(e, t) {
                 f(e, t(u(e)));
             }
             function l(e, t) {
-                S(e).cb = t;
+                S(e).cb.push(t);
             }
-            function d(e) {
-                delete S(e).cb;
+            function d(e, t) {
+                var r = S(e);
+                r.cb = t ? r.cb.filter(function(e) {
+                    return e !== t;
+                }) : [];
             }
             function v(e) {
                 var t = o.createEntity(e);
@@ -196,7 +199,7 @@
                     null == r || t.ports[r] && t.ports[r] !== o.PORT_TYPES.ACCUMULATOR || _(e);
                 });
                 for (var n in t.ports) t.ports[n] === o.PORT_TYPES.ACCUMULATOR && (r.acc = n);
-                for (var c in r.arcs) m(w[c]);
+                for (var c in r.arcs) b(w[c]);
                 return t;
             }
             function h(e) {
@@ -207,7 +210,7 @@
             }
             function g(e) {
                 var t = o.createArc(e);
-                w[t.id] = t, m(t);
+                w[t.id] = t, b(t);
                 var r = x(t.process), n = R[t.process];
                 return n && n.autostart === !0 && Object.keys(r.arcs).length === Object.keys(n.ports).length + 1 && j(r), 
                 t;
@@ -222,23 +225,23 @@
                 }
                 delete w[e];
             }
-            function m(e) {
+            function b(e) {
                 var t = e.process, r = e.entity, n = x(t), c = S(r), s = R[t];
                 c.arcs[e.id] = !0, s && (n.arcs[e.id] = !0, null != e.port ? (delete c.effects[t], 
                 s.ports && null != s.ports[e.port] && (n.sources[e.port] = c, s.ports[e.port] == o.PORT_TYPES.HOT && (c.effects[t] = n))) : (n.out = c, 
                 null != n.acc ? (n.sources[n.acc] = c, c.reactions[t] = n) : delete c.reactions[t], 
                 n.sink = function(e) {
                     c.accept && !c.accept(e, c.val) || (c.val = e, null != e && (I[c.id] = !0, G = !0), 
-                    D || T());
+                    D || P());
                 }));
             }
-            function P(e) {
+            function m(e) {
                 if (e.entities) for (var t in e.entities) v(e.entities[t]);
                 if (e.processes) for (var t in e.processes) O(e.processes[t]);
                 if (e.arcs) for (var t in e.arcs) g(e.arcs[t]);
                 e.meta && i(e.meta);
             }
-            function T() {
+            function P() {
                 L && console.log("flushing graph recursively with", I);
                 var e = Object.keys(I);
                 if (G) {
@@ -246,26 +249,23 @@
                         var r = e[t];
                         if (I[r]) {
                             var n = U.es[r];
-                            for (var o in n.reactions) b(n.reactions[o]);
+                            for (var o in n.reactions) T(n.reactions[o]);
                         }
                     }
                     var c = {};
                     I = {}, G = !1, D = !0;
                     for (var t = 0; t < e.length; t++) {
                         var r = e[t], n = U.es[r];
-                        n.cb && (Y[r] = n);
-                        for (var o in n.effects) c[o] || (b(n.effects[o]), c[o] = !0);
+                        n.cb.length > 0 && (Y[r] = n);
+                        for (var o in n.effects) c[o] || (T(n.effects[o]), c[o] = !0);
                     }
-                    if (D = !1, G) T(); else {
-                        for (var r in Y) {
-                            var n = Y[r];
-                            n.cb(n.val);
-                        }
+                    if (D = !1, G) P(); else {
+                        for (var r in Y) for (var n = Y[r], t = 0; t < n.cb.length; t++) n.cb[t](n.val);
                         Y = {}, L && console.log("flush finished");
                     }
                 }
             }
-            function b(e) {
+            function T(e) {
                 for (var t = !0, r = 0; r < e.sources.length; r++) {
                     var n = e.sources[r];
                     if (null == n.val) {
@@ -286,12 +286,12 @@
             }
             function j(e) {
                 e.async ? setTimeout(function() {
-                    b(e);
-                }, 10) : (b(e), e.out && (I[e.out.id] = !1, G = !0));
+                    T(e);
+                }, 10) : (T(e), e.out && (I[e.out.id] = !1, G = !0));
             }
             function A(e) {
                 var t = x(e);
-                b(t), t.async || T();
+                T(t), t.async || P();
             }
             function E(e) {
                 var t = x(e);
@@ -305,7 +305,8 @@
                     val: void 0,
                     reactions: {},
                     effects: {},
-                    arcs: {}
+                    arcs: {},
+                    cb: []
                 });
             }
             function x(e) {
@@ -326,7 +327,7 @@
                 removeProcess: h,
                 addArc: g,
                 removeArc: _,
-                addGraph: P,
+                addGraph: m,
                 getGraph: e,
                 getState: t,
                 setMeta: i,
@@ -341,7 +342,7 @@
                 off: d,
                 start: A,
                 stop: E,
-                flush: T,
+                flush: P,
                 PORT_TYPES: c({}, o.PORT_TYPES)
             };
         }
