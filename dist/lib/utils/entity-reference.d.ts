@@ -12,7 +12,7 @@ export interface EntityRef<T> {
     id: (_id: string, _ns?: string) => EntityRef<T>;
     getId: () => string;
     val: (value: T) => EntityRef<T>;
-    accept: (a: AcceptPredicate) => EntityRef<T>;
+    accept: (a: AcceptPredicate<T>) => EntityRef<T>;
     react: ReactionFactory<T>;
     HOT: PortSpec<T>;
     COLD: PortSpec<T>;

@@ -7,7 +7,7 @@ interface EngineEntity {
   effects: {[id: string]: EngineProcess}
   arcs: {[id: string]: true}
   cb: ((val?: any) => void)[]
-  accept?: types.AcceptPredicate
+  accept?: types.AcceptPredicate<any>
 }
 
 interface EngineProcess {

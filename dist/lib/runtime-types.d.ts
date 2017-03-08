@@ -1,18 +1,18 @@
 export declare type Meta = {
     [m: string]: any;
 };
-export declare type AcceptPredicate = (newValue?: any, oldValue?: any) => boolean;
+export declare type AcceptPredicate<T> = (newValue?: T, oldValue?: T) => boolean;
 export interface EntityData {
     id?: string;
     value?: any;
     json?: string;
-    accept?: AcceptPredicate;
+    accept?: AcceptPredicate<any>;
     meta?: Meta;
 }
 export interface Entity {
     id: string;
     value?: any;
-    accept?: AcceptPredicate;
+    accept?: AcceptPredicate<any>;
     meta: Meta;
 }
 export declare type PortTypeHot = "HOT";
