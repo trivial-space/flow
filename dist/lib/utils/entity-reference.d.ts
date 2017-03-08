@@ -1,4 +1,4 @@
-import { PortType, Graph } from '../runtime-types';
+import { PortType, Graph, AcceptPredicate } from '../runtime-types';
 export interface PortSpec<T> {
     type: PortType;
     entity: EntityRef<T>;
@@ -12,6 +12,7 @@ export interface EntityRef<T> {
     id: (_id: string, _ns?: string) => EntityRef<T>;
     getId: () => string;
     val: (value: T) => EntityRef<T>;
+    accept: (a: AcceptPredicate) => EntityRef<T>;
     react: ReactionFactory<T>;
     HOT: PortSpec<T>;
     COLD: PortSpec<T>;

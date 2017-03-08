@@ -316,4 +316,24 @@ describe('flow entity reference', function() {
 
   })
 
+
+  it('can add accept predicate', function() {
+    const e = val()
+    const p = (o, n = 0) => o > n
+
+    e.accept(p)
+
+    expect(e.id('foo').getGraph()).to.deep.equal({
+      entities: {
+        foo: createEntity({
+          id: 'foo',
+          accept: p
+        })
+      },
+      processes: {},
+      arcs: {},
+      meta: {}
+    })
+  })
+
 })

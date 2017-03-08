@@ -363,39 +363,42 @@
             return t ? t + "." + e : e;
         }
         function o(e) {
-            var t, o = e.value, c = r.i(O.a)(), i = 0, a = [], u = {};
-            return u.HOT = {
-                entity: u,
+            var t, o, c = e.value, i = r.i(O.a)(), a = 0, u = [], f = {};
+            return f.HOT = {
+                entity: f,
                 type: y.PORT_TYPES.HOT
-            }, u.COLD = {
-                entity: u,
+            }, f.COLD = {
+                entity: f,
                 type: y.PORT_TYPES.COLD
-            }, u.id = function(e, r) {
-                return c = n(e, r), t = r, u;
-            }, u.val = function(e) {
-                return o = e, u;
-            }, u.getId = function() {
-                return c;
-            }, e.procedure && a.push(e), u.react = function(e, t, r) {
+            }, f.id = function(e, r) {
+                return i = n(e, r), t = r, f;
+            }, f.val = function(e) {
+                return c = e, f;
+            }, f.accept = function(e) {
+                return o = e, f;
+            }, f.getId = function() {
+                return i;
+            }, e.procedure && u.push(e), f.react = function(e, t, r) {
                 var n = s(e, t, r);
-                n.pidSuffix = _ + i++;
+                n.pidSuffix = _ + a++;
                 var o = n.dependencies;
                 return n.dependencies = [ {
-                    entity: u,
+                    entity: f,
                     type: y.PORT_TYPES.ACCUMULATOR
-                } ], o && o.length && (n.dependencies = n.dependencies.concat(o)), a.push(n), u;
-            }, u.getGraph = function() {
+                } ], o && o.length && (n.dependencies = n.dependencies.concat(o)), u.push(n), f;
+            }, f.getGraph = function() {
                 var e = v.empty();
-                return e.entities[c] = r.i(y.createEntity)({
-                    id: c,
-                    value: o
-                }), a.forEach(function(o) {
-                    var s = o.processId ? n(o.processId, t) : c + o.pidSuffix, i = o.dependencies, a = [];
-                    if (i) for (var u in i) {
-                        var f = i[u];
+                return e.entities[i] = r.i(y.createEntity)({
+                    id: i,
+                    value: c,
+                    accept: o
+                }), u.forEach(function(o) {
+                    var c = o.processId ? n(o.processId, t) : i + o.pidSuffix, s = o.dependencies, a = [];
+                    if (s) for (var u in s) {
+                        var f = s[u];
                         if (a[u] = f.type, f.type !== y.PORT_TYPES.ACCUMULATOR) {
                             var p = r.i(y.createArc)({
-                                process: s,
+                                process: c,
                                 entity: f.entity.getId(),
                                 port: u
                             });
@@ -403,18 +406,18 @@
                         }
                     }
                     var l = r.i(y.createArc)({
-                        process: s,
-                        entity: c
+                        process: c,
+                        entity: i
                     });
-                    e.arcs[l.id] = l, e.processes[s] = r.i(y.createProcess)({
-                        id: s,
+                    e.arcs[l.id] = l, e.processes[c] = r.i(y.createProcess)({
+                        id: c,
                         ports: a,
                         procedure: o.procedure,
                         async: o.async,
                         autostart: o.autostart
                     });
                 }), e;
-            }, u;
+            }, f;
         }
         function c(e) {
             return o({

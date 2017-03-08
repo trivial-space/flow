@@ -18,6 +18,7 @@ function createEntityRef(spec) {
     var value = spec.value;
     var id = v4();
     var ns;
+    var accept;
     var reactionCount = 0;
     var streams = [];
     var entity = {};
@@ -38,6 +39,10 @@ function createEntityRef(spec) {
         value = _value;
         return entity;
     };
+    entity.accept = function (a) {
+        accept = a;
+        return entity;
+    };
     entity.getId = function () { return id; };
     if (spec.procedure) {
         streams.push(spec);
@@ -55,7 +60,7 @@ function createEntityRef(spec) {
     };
     entity.getGraph = function () {
         var graph = graphs.empty();
-        graph.entities[id] = createEntity({ id: id, value: value });
+        graph.entities[id] = createEntity({ id: id, value: value, accept: accept });
         streams.forEach(function (streamSpec) {
             var pid = streamSpec.processId ?
                 mergePath(streamSpec.processId, ns) :

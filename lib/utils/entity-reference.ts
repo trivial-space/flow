@@ -6,7 +6,8 @@ import {
   Graph,
   createEntity,
   createProcess,
-  createArc
+  createArc,
+  AcceptPredicate
 } from '../runtime-types'
 import { v4 } from "./uuid";
 
@@ -47,6 +48,7 @@ export interface EntityRef<T> {
   id: (_id: string, _ns?: string) => EntityRef<T>
   getId: () => string
   val: (value: T) => EntityRef<T>
+  accept: (a: AcceptPredicate) => EntityRef<T>
   react: ReactionFactory<T>
   HOT: PortSpec<T>
   COLD: PortSpec<T>
@@ -79,6 +81,7 @@ function createEntityRef<T>(spec: EntitySpec<T>): EntityRef<T> {
   let value = spec.value
   let id = v4()
   let ns: string | undefined
+  let accept: AcceptPredicate | undefined
   let reactionCount = 0
 
   let streams: EntitySpec<T>[] = []
@@ -103,6 +106,11 @@ function createEntityRef<T>(spec: EntitySpec<T>): EntityRef<T> {
 
   entity.val = (_value: T) => {
     value = _value
+    return entity
+  }
+
+  entity.accept = (a: AcceptPredicate) => {
+    accept = a
     return entity
   }
 
@@ -134,7 +142,7 @@ function createEntityRef<T>(spec: EntitySpec<T>): EntityRef<T> {
   entity.getGraph = () => {
     const graph = graphs.empty()
 
-    graph.entities[id] = createEntity({id, value})
+    graph.entities[id] = createEntity({id, value, accept})
 
     streams.forEach(streamSpec => {
       const pid = streamSpec.processId ?
