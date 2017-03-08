@@ -3,5 +3,5 @@
 .idea
 node_modules
 test/coverage/*
-dist
+dist/test
 /*.log

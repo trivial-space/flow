@@ -15,7 +15,8 @@
     "baseUrl": ".",
     "paths": {
       "*": ["lib/*"]
-    }
+    },
+    "outDir": "dist"
   },
   "exclude": ["node_modules"],
   "compileOnSave": false,
