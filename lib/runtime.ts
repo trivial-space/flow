@@ -377,14 +377,15 @@ export function create(): types.Runtime {
       } else {
 
         // callbacks
-        for (let eId in callbacksWaiting) {
-          let eE = callbacksWaiting[eId];
+        let cbs = Object.keys(callbacksWaiting)
+        callbacksWaiting = {}
+
+        for (let i in cbs) {
+          let eE = engine.es[cbs[i]];
           for (let i = 0; i < eE.cb.length; i++) {
             eE.cb[i](eE.val)
           }
         }
-
-        callbacksWaiting = {}
 
         if(debug) {
           console.log("flush finished")
