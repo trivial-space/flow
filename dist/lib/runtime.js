@@ -258,13 +258,14 @@ export function create() {
                 flush();
             }
             else {
-                for (var eId in callbacksWaiting) {
-                    var eE = callbacksWaiting[eId];
-                    for (var i = 0; i < eE.cb.length; i++) {
-                        eE.cb[i](eE.val);
+                var cbs = Object.keys(callbacksWaiting);
+                callbacksWaiting = {};
+                for (var i in cbs) {
+                    var eE = engine.es[cbs[i]];
+                    for (var i_1 = 0; i_1 < eE.cb.length; i_1++) {
+                        eE.cb[i_1](eE.val);
                     }
                 }
-                callbacksWaiting = {};
                 if (debug) {
                     console.log("flush finished");
                 }

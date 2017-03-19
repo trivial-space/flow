@@ -260,8 +260,10 @@
                         for (var o in n.effects) c[o] || (T(n.effects[o]), c[o] = !0);
                     }
                     if (D = !1, G) P(); else {
-                        for (var r in Y) for (var n = Y[r], t = 0; t < n.cb.length; t++) n.cb[t](n.val);
-                        Y = {}, L && console.log("flush finished");
+                        var s = Object.keys(Y);
+                        Y = {};
+                        for (var t in s) for (var n = U.es[s[t]], i = 0; i < n.cb.length; i++) n.cb[i](n.val);
+                        L && console.log("flush finished");
                     }
                 }
             }
