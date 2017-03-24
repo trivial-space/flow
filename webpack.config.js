@@ -15,6 +15,7 @@ module.exports = {
 
   module: {
     rules: [{
+      test: /\.ts$/,
       exclude: /node_modules/,
       loader: 'ts-loader',
       options: {
@@ -22,8 +23,7 @@ module.exports = {
           "outDir": "",
           "declaration": false
         }
-      },
-      test: /\.ts$/
+      }
     }]
   },
 
