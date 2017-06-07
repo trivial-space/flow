@@ -153,9 +153,9 @@ describe('flow entity reference', function() {
     const p1 = (send) => send(100)
     const p2 = () => 100
 
-    const s1 = asyncStreamStart('createE', p1).id('e')
-    const s2 = streamStart('createF', p2).id('f')
-    const s3 = asyncStream('createG', p1).id('g')
+    const s1 = asyncStreamStart(p1, 'createE').id('e')
+    const s2 = streamStart(p2, 'createF').id('f')
+    const s3 = asyncStream(p1, 'createG').id('g')
 
     expect(getGraphFromAll([s1, s2, s3])).to.deep.equal({
       entities: {
@@ -210,7 +210,7 @@ describe('flow entity reference', function() {
       .react([
         foo.HOT,
         bar.COLD,
-      ], p )
+      ], p)
 
     expect(getGraphFromAll([e, foo, bar])).to.deep.equal({
       entities: {
@@ -219,8 +219,8 @@ describe('flow entity reference', function() {
         bar: createEntity({id: 'bar', value: 3})
       },
       processes: {
-        eReaction0: createProcess({
-          id: "eReaction0",
+        'eReaction::foo:bar': createProcess({
+          id: "eReaction::foo:bar",
           ports: [
             PORT_TYPES.ACCUMULATOR,
             PORT_TYPES.HOT,
@@ -230,17 +230,17 @@ describe('flow entity reference', function() {
         })
       },
       arcs: {
-        'eReaction0->e': createArc({
-          process: "eReaction0",
+        'eReaction::foo:bar->e': createArc({
+          process: "eReaction::foo:bar",
           entity: "e"
         }),
-        'foo->eReaction0::1': createArc({
-          process: "eReaction0",
+        'foo->eReaction::foo:bar::1': createArc({
+          process: "eReaction::foo:bar",
           entity: "foo",
           port: "1"
         }),
-        'bar->eReaction0::2': createArc({
-          process: "eReaction0",
+        'bar->eReaction::foo:bar::2': createArc({
+          process: "eReaction::foo:bar",
           entity: "bar",
           port: "2"
         })
@@ -255,7 +255,7 @@ describe('flow entity reference', function() {
 
     const foo = val(20)
 
-    const e = stream([foo.HOT],p)
+    const e = stream([foo.HOT], p)
 
     resolveEntityIds({foo, e})
 
@@ -265,19 +265,19 @@ describe('flow entity reference', function() {
         foo: createEntity({id: 'foo', value: 20})
       },
       processes: {
-        eStream: createProcess({
-          id: "eStream",
+        'eStream::foo': createProcess({
+          id: "eStream::foo",
           ports: [PORT_TYPES.HOT],
           procedure: p,
         })
       },
       arcs: {
-        'eStream->e': createArc({
-          process: "eStream",
+        'eStream::foo->e': createArc({
+          process: "eStream::foo",
           entity: "e"
         }),
-        'foo->eStream::0': createArc({
-          process: "eStream",
+        'foo->eStream::foo::0': createArc({
+          process: "eStream::foo",
           entity: "foo",
           port: "0"
         })
@@ -294,19 +294,19 @@ describe('flow entity reference', function() {
         bar: createEntity({id: 'bar', value: 20})
       },
       processes: {
-        eStream: createProcess({
-          id: "eStream",
+        'eStream::bar': createProcess({
+          id: "eStream::bar",
           ports: [PORT_TYPES.HOT] ,
           procedure: p,
         })
       },
       arcs: {
-        'eStream->e': createArc({
-          process: "eStream",
+        'eStream::bar->e': createArc({
+          process: "eStream::bar",
           entity: "e"
         }),
-        'bar->eStream::0': createArc({
-          process: "eStream",
+        'bar->eStream::bar::0': createArc({
+          process: "eStream::bar",
           entity: "bar",
           port: "0"
         })

@@ -37,11 +37,34 @@ export type ProcedureAsync<T> = (
 export type Procedure<T> = ProcedureSync<T> | ProcedureAsync<T>
 
 
-export type ReactionFactory<T> = (
-  a1: string | PortSpec<any>[] | ProcedureReact<T>,
-  a2?: PortSpec<any>[] | ProcedureReact<T>,
-  a3?: ProcedureReact<T>
-) => EntityRef<T>
+export interface StreamFactory {
+  <T>(p: () => T, id?: string): EntityRef<T>
+  <T, A>(deps: [PortSpec<A>], p: (a: A) => T, id?: string): EntityRef<T>
+  <T, A, B>(deps: [PortSpec<A>, PortSpec<B>], p: (a: A, b: B) => T, id?: string): EntityRef<T>
+  <T, A, B, C>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>], p: (a: A, b: B, c: C) => T, id?: string): EntityRef<T>
+  <T, A, B, C, D>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>, PortSpec<D>], p: (a: A, b: B, c: C, d: D) => T, id?: string): EntityRef<T>
+  <T, A, B, C, D, E>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>, PortSpec<D>, PortSpec<E>], p: (a: A, b: B, c: C, d: D, e: E) => T, id?: string): EntityRef<T>
+  <T, A, B, C, D, E, F>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>, PortSpec<D>, PortSpec<E>, PortSpec<F>], p: (a: A, b: B, c: C, d: D, e: E, f: F) => T, id?: string): EntityRef<T>
+}
+
+export interface AsyncStreamFactory {
+  <T>(p: (send: (val?: T) => void) => T, id?: string): EntityRef<T>
+  <T, A>(deps: [PortSpec<A>], p: (send: (val?: T) => void, a: A) => T, id?: string): EntityRef<T>
+  <T, A, B>(deps: [PortSpec<A>, PortSpec<B>], p: (send: (val?: T) => void, a: A, b: B) => T, id?: string): EntityRef<T>
+  <T, A, B, C>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>], p: (send: (val?: T) => void, a: A, b: B, c: C) => T, id?: string): EntityRef<T>
+  <T, A, B, C, D>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>, PortSpec<D>], p: (send: (val?: T) => void, a: A, b: B, c: C, d: D) => T, id?: string): EntityRef<T>
+  <T, A, B, C, D, E>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>, PortSpec<D>, PortSpec<E>], p: (send: (val?: T) => void, a: A, b: B, c: C, d: D, e: E) => T, id?: string): EntityRef<T>
+  <T, A, B, C, D, E, F>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>, PortSpec<D>, PortSpec<E>, PortSpec<F>], p: (send: (val?: T) => void, a: A, b: B, c: C, d: D, e: E, f: F) => T, id?: string): EntityRef<T>
+}
+
+export interface ReactionFactory<T> {
+  <A>(deps: [PortSpec<A>], p: (self: T, a: A) => T, id?: string): EntityRef<T>
+  <A, B>(deps: [PortSpec<A>, PortSpec<B>], p: (self: T, a: A, b: B) => T, id?: string): EntityRef<T>
+  <A, B, C>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>], p: (self: T, a: A, b: B, c: C) => T, id?: string): EntityRef<T>
+  <A, B, C, D>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>, PortSpec<D>], p: (self: T, a: A, b: B, c: C, d: D) => T, id?: string): EntityRef<T>
+  <A, B, C, D, E>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>, PortSpec<D>, PortSpec<E>], p: (self: T, a: A, b: B, c: C, d: D, e: E) => T, id?: string): EntityRef<T>
+  <A, B, C, D, E, F>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>, PortSpec<D>, PortSpec<E>, PortSpec<F>], p: (self: T, a: A, b: B, c: C, d: D, e: E, f: F) => T, id?: string): EntityRef<T>
+}
 
 
 export interface EntityRef<T> {
@@ -82,7 +105,6 @@ function createEntityRef<T>(spec: EntitySpec<T>): EntityRef<T> {
   let id = v4()
   let ns: string | undefined
   let accept: AcceptPredicate<T> | undefined
-  let reactionCount = 0
 
   let streams: EntitySpec<T>[] = []
 
@@ -120,14 +142,9 @@ function createEntityRef<T>(spec: EntitySpec<T>): EntityRef<T> {
     streams.push(spec)
   }
 
-  entity.react = (
-    a1: string | PortSpec<any>[] | Procedure<T>,
-    a2?: PortSpec<any>[] | Procedure<T>,
-    a3?: Procedure<T>
-  ) => {
-
+  entity.react = (a1, a2, a3) => {
     const spec = getStreamSpec<T>(a1, a2, a3)
-    spec.pidSuffix = reactionNameSuffix + reactionCount++
+    spec.pidSuffix = reactionNameSuffix
 
     const deps = spec.dependencies
     spec.dependencies = [{entity, type: PORT_TYPES.ACCUMULATOR} as PortSpec<any>]
@@ -145,11 +162,18 @@ function createEntityRef<T>(spec: EntitySpec<T>): EntityRef<T> {
     graph.entities[id] = createEntity({id, value, accept})
 
     streams.forEach(streamSpec => {
+      const deps = streamSpec.dependencies
+
       const pid = streamSpec.processId ?
         mergePath(streamSpec.processId, ns) :
-        id + streamSpec.pidSuffix
+        id + streamSpec.pidSuffix + (deps && deps.length
+          ? ':' + (deps.reduce((name, dep) => {
+            const depId = dep.entity.getId()
+            if (depId === id) return name
+            return name + ':' + depId
+          }, ''))
+          : '')
 
-      const deps = streamSpec.dependencies
       let ports: PortType[] = []
 
       if (deps) {
@@ -189,90 +213,74 @@ export function val<T>(value?: T): EntityRef<T> {
 
 
 function getStreamSpec<T>(
-  a1: string | PortSpec<any>[] | Procedure<T>,
-  a2?: PortSpec<any>[] | Procedure<T>,
-  a3?: Procedure<T>
+  a1: PortSpec<any>[] | Procedure<T>,
+  a2?: Procedure<T> | string,
+  a3?: string
 ): EntitySpec<T> {
 
   if (typeof a1 === "function") {
-    return ({
-      procedure: a1,
-      pidSuffix: streamNameSuffix
-    })
 
-  } else if (Array.isArray(a1) && typeof a2 === "function") {
-    return ({
-      dependencies: a1,
-      procedure: a2,
-      pidSuffix: streamNameSuffix
-    })
+    if (typeof a2 === "string") {
+      return ({
+        processId: a2,
+        procedure: a1
+      })
 
-  } else if (typeof a1 === "string" && typeof a2 === "function") {
-    return ({
-      processId: a1,
-      procedure: a2
-    })
+    } else {
+      return ({
+        procedure: a1,
+        pidSuffix: streamNameSuffix
+      })
+    }
 
-  } else if (typeof a1 === "string" && Array.isArray(a2) && typeof a3 === "function") {
-    return ({
-      processId: a1,
-      dependencies: a2,
-      procedure: a3
-    })
+  } else if (typeof a2 === "function") {
+    if (a3 != null) {
+      return ({
+        processId: a3,
+        dependencies: a1,
+        procedure: a2
+      })
 
-  } else {
-    throw TypeError('Wrong stream arguments')
+    } else {
+      return ({
+        dependencies: a1,
+        procedure: a2,
+        pidSuffix: streamNameSuffix
+      })
+    }
   }
+
+  throw TypeError('Wrong stream arguments')
 }
 
 
-export function stream<T>(
-  a1: string | PortSpec<any>[] | ProcedureSync<T>,
-  a2?: PortSpec<any>[] | ProcedureSync<T>,
-  a3?: ProcedureSync<T>
-): EntityRef<T> {
-    return createEntityRef<T>(getStreamSpec<T>(a1, a2, a3))
-}
+export const stream: StreamFactory = ((a1, a2, a3) =>
+  createEntityRef(getStreamSpec(a1, a2, a3))) as StreamFactory
 
 
-export function asyncStream<T>(
-  a1: string | PortSpec<any>[] | ProcedureAsync<T>,
-  a2?: PortSpec<any>[] | ProcedureAsync<T>,
-  a3?: ProcedureAsync<T>
-): EntityRef<T> {
-    return createEntityRef<T>({
-      ...getStreamSpec<T>(a1, a2, a3),
+export const asyncStream: AsyncStreamFactory = ((a1, a2, a3) =>
+    createEntityRef({
+      ...getStreamSpec(a1, a2, a3),
       async: true
-    })
-}
+    })) as AsyncStreamFactory
 
 
-export function streamStart<T>(
-  a1: string | PortSpec<any>[] | ProcedureSync<T>,
-  a2?: PortSpec<any>[] | ProcedureSync<T>,
-  a3?: ProcedureSync<T>
-): EntityRef<T> {
-    return createEntityRef<T>({
-      ...getStreamSpec<T>(a1, a2, a3),
+export const streamStart: StreamFactory = ((a1, a2, a3) =>
+    createEntityRef({
+      ...getStreamSpec(a1, a2, a3),
       autostart: true
-    })
-}
+    })) as StreamFactory
 
 
-export function asyncStreamStart<T>(
-  a1: string | PortSpec<any>[] | ProcedureAsync<T>,
-  a2?: PortSpec<any>[] | ProcedureAsync<T>,
-  a3?: ProcedureAsync<T>
-): EntityRef<T> {
-    return createEntityRef<T>({
-      ...getStreamSpec<T>(a1, a2, a3),
+export const asyncStreamStart: AsyncStreamFactory = ((a1, a2, a3) =>
+    createEntityRef({
+      ...getStreamSpec(a1, a2, a3),
       async: true,
       autostart: true
-    })
-}
+    })) as AsyncStreamFactory
 
 
-export function isEntity<T>(e: any): e is EntityRef<T>  {
+export function isEntity<T>(e: any): e is EntityRef<T> {
   return e &&
       typeof e.id === "function" &&
       typeof e.getGraph === "function" &&

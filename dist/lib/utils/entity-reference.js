@@ -19,7 +19,6 @@ function createEntityRef(spec) {
     var id = v4();
     var ns;
     var accept;
-    var reactionCount = 0;
     var streams = [];
     var entity = {};
     entity.HOT = {
@@ -49,7 +48,7 @@ function createEntityRef(spec) {
     }
     entity.react = function (a1, a2, a3) {
         var spec = getStreamSpec(a1, a2, a3);
-        spec.pidSuffix = reactionNameSuffix + reactionCount++;
+        spec.pidSuffix = reactionNameSuffix;
         var deps = spec.dependencies;
         spec.dependencies = [{ entity: entity, type: PORT_TYPES.ACCUMULATOR }];
         if (deps && deps.length) {
@@ -62,10 +61,17 @@ function createEntityRef(spec) {
         var graph = graphs.empty();
         graph.entities[id] = createEntity({ id: id, value: value, accept: accept });
         streams.forEach(function (streamSpec) {
+            var deps = streamSpec.dependencies;
             var pid = streamSpec.processId ?
                 mergePath(streamSpec.processId, ns) :
-                id + streamSpec.pidSuffix;
-            var deps = streamSpec.dependencies;
+                id + streamSpec.pidSuffix + (deps && deps.length
+                    ? ':' + (deps.reduce(function (name, dep) {
+                        var depId = dep.entity.getId();
+                        if (depId === id)
+                            return name;
+                        return name + ':' + depId;
+                    }, ''))
+                    : '');
             var ports = [];
             if (deps) {
                 for (var portId in deps) {
@@ -96,47 +102,49 @@ export function val(value) {
 }
 function getStreamSpec(a1, a2, a3) {
     if (typeof a1 === "function") {
-        return ({
-            procedure: a1,
-            pidSuffix: streamNameSuffix
-        });
+        if (typeof a2 === "string") {
+            return ({
+                processId: a2,
+                procedure: a1
+            });
+        }
+        else {
+            return ({
+                procedure: a1,
+                pidSuffix: streamNameSuffix
+            });
+        }
     }
-    else if (Array.isArray(a1) && typeof a2 === "function") {
-        return ({
-            dependencies: a1,
-            procedure: a2,
-            pidSuffix: streamNameSuffix
-        });
+    else if (typeof a2 === "function") {
+        if (a3 != null) {
+            return ({
+                processId: a3,
+                dependencies: a1,
+                procedure: a2
+            });
+        }
+        else {
+            return ({
+                dependencies: a1,
+                procedure: a2,
+                pidSuffix: streamNameSuffix
+            });
+        }
     }
-    else if (typeof a1 === "string" && typeof a2 === "function") {
-        return ({
-            processId: a1,
-            procedure: a2
-        });
-    }
-    else if (typeof a1 === "string" && Array.isArray(a2) && typeof a3 === "function") {
-        return ({
-            processId: a1,
-            dependencies: a2,
-            procedure: a3
-        });
-    }
-    else {
-        throw TypeError('Wrong stream arguments');
-    }
+    throw TypeError('Wrong stream arguments');
 }
-export function stream(a1, a2, a3) {
+export var stream = (function (a1, a2, a3) {
     return createEntityRef(getStreamSpec(a1, a2, a3));
-}
-export function asyncStream(a1, a2, a3) {
+});
+export var asyncStream = (function (a1, a2, a3) {
     return createEntityRef(__assign({}, getStreamSpec(a1, a2, a3), { async: true }));
-}
-export function streamStart(a1, a2, a3) {
+});
+export var streamStart = (function (a1, a2, a3) {
     return createEntityRef(__assign({}, getStreamSpec(a1, a2, a3), { autostart: true }));
-}
-export function asyncStreamStart(a1, a2, a3) {
+});
+export var asyncStreamStart = (function (a1, a2, a3) {
     return createEntityRef(__assign({}, getStreamSpec(a1, a2, a3), { async: true, autostart: true }));
-}
+});
 export function isEntity(e) {
     return e &&
         typeof e.id === "function" &&
