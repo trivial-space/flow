@@ -383,7 +383,7 @@
                 return a;
             }, e.procedure && i.push(e), u.react = function(e, t, r) {
                 var n = s(e, t, r);
-                n.pidSuffix = "Reaction";
+                n.pidSuffix = y;
                 var o = n.dependencies;
                 return n.dependencies = [ {
                     entity: u,
@@ -434,7 +434,7 @@
             var n = {
                 procedure: t
             };
-            return null != e && (n.dependencies = e), "string" == typeof r ? n.processId = r : n.pidSuffix = "Stream", 
+            return null != e && (n.dependencies = e), "string" == typeof r ? n.processId = r : n.pidSuffix = v, 
             n;
         }
         function a(e) {
@@ -462,13 +462,13 @@
         });
         var f = r(1), p = r(0), l = r(2);
         t.val = c, r.d(t, "stream", function() {
-            return v;
-        }), r.d(t, "asyncStream", function() {
-            return y;
-        }), r.d(t, "streamStart", function() {
             return O;
-        }), r.d(t, "asyncStreamStart", function() {
+        }), r.d(t, "asyncStream", function() {
             return h;
+        }), r.d(t, "streamStart", function() {
+            return g;
+        }), r.d(t, "asyncStreamStart", function() {
+            return _;
         }), t.isEntity = a, t.resolveEntityIds = i, t.getGraphFromAll = u;
         var d = this && this.__assign || Object.assign || function(e) {
             for (var t, r = 1, n = arguments.length; r < n; r++) {
@@ -476,17 +476,17 @@
                 for (var o in t) Object.prototype.hasOwnProperty.call(t, o) && (e[o] = t[o]);
             }
             return e;
-        }, v = function(e, t, r) {
+        }, v = "Stream", y = "Reaction", O = function(e, t, r) {
             return o(s(e, t, r));
-        }, y = function(e, t, r) {
+        }, h = function(e, t, r) {
             return o(d({}, s(e, t, r), {
                 async: !0
             }));
-        }, O = function(e, t, r) {
+        }, g = function(e, t, r) {
             return o(d({}, s(e, t, r), {
                 autostart: !0
             }));
-        }, h = function(e, t, r) {
+        }, _ = function(e, t, r) {
             return o(d({}, s(e, t, r), {
                 async: !0,
                 autostart: !0
