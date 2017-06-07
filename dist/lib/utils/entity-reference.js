@@ -101,37 +101,19 @@ export function val(value) {
     return createEntityRef({ value: value });
 }
 function getStreamSpec(a1, a2, a3) {
-    if (typeof a1 === "function") {
-        if (typeof a2 === "string") {
-            return ({
-                processId: a2,
-                procedure: a1
-            });
-        }
-        else {
-            return ({
-                procedure: a1,
-                pidSuffix: streamNameSuffix
-            });
-        }
+    var spec = {
+        procedure: a2
+    };
+    if (a1 != null) {
+        spec.dependencies = a1;
     }
-    else if (typeof a2 === "function") {
-        if (a3 != null) {
-            return ({
-                processId: a3,
-                dependencies: a1,
-                procedure: a2
-            });
-        }
-        else {
-            return ({
-                dependencies: a1,
-                procedure: a2,
-                pidSuffix: streamNameSuffix
-            });
-        }
+    if (typeof a3 === "string") {
+        spec.processId = a3;
     }
-    throw TypeError('Wrong stream arguments');
+    else {
+        spec.pidSuffix = streamNameSuffix;
+    }
+    return spec;
 }
 export var stream = (function (a1, a2, a3) {
     return createEntityRef(getStreamSpec(a1, a2, a3));

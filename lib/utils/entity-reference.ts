@@ -38,7 +38,7 @@ export type Procedure<T> = ProcedureSync<T> | ProcedureAsync<T>
 
 
 export interface StreamFactory {
-  <T>(p: () => T, id?: string): EntityRef<T>
+  <T>(deps: null, p: () => T, id?: string): EntityRef<T>
   <T, A>(deps: [PortSpec<A>], p: (a: A) => T, id?: string): EntityRef<T>
   <T, A, B>(deps: [PortSpec<A>, PortSpec<B>], p: (a: A, b: B) => T, id?: string): EntityRef<T>
   <T, A, B, C>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>], p: (a: A, b: B, c: C) => T, id?: string): EntityRef<T>
@@ -48,7 +48,7 @@ export interface StreamFactory {
 }
 
 export interface AsyncStreamFactory {
-  <T>(p: (send: (val?: T) => void) => T, id?: string): EntityRef<T>
+  <T>(deps: null, p: (send: (val?: T) => void) => T, id?: string): EntityRef<T>
   <T, A>(deps: [PortSpec<A>], p: (send: (val?: T) => void, a: A) => T, id?: string): EntityRef<T>
   <T, A, B>(deps: [PortSpec<A>, PortSpec<B>], p: (send: (val?: T) => void, a: A, b: B) => T, id?: string): EntityRef<T>
   <T, A, B, C>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>], p: (send: (val?: T) => void, a: A, b: B, c: C) => T, id?: string): EntityRef<T>
@@ -213,44 +213,26 @@ export function val<T>(value?: T): EntityRef<T> {
 
 
 function getStreamSpec<T>(
-  a1: PortSpec<any>[] | Procedure<T>,
-  a2?: Procedure<T> | string,
+  a1: PortSpec<any>[] | null,
+  a2: Procedure<T>,
   a3?: string
 ): EntitySpec<T> {
 
-  if (typeof a1 === "function") {
-
-    if (typeof a2 === "string") {
-      return ({
-        processId: a2,
-        procedure: a1
-      })
-
-    } else {
-      return ({
-        procedure: a1,
-        pidSuffix: streamNameSuffix
-      })
-    }
-
-  } else if (typeof a2 === "function") {
-    if (a3 != null) {
-      return ({
-        processId: a3,
-        dependencies: a1,
-        procedure: a2
-      })
-
-    } else {
-      return ({
-        dependencies: a1,
-        procedure: a2,
-        pidSuffix: streamNameSuffix
-      })
-    }
+  let spec: EntitySpec<T> = {
+    procedure: a2
   }
 
-  throw TypeError('Wrong stream arguments')
+  if (a1 != null) {
+    spec.dependencies = a1
+  }
+
+  if (typeof a3 === "string") {
+    spec.processId = a3
+  } else {
+    spec.pidSuffix = streamNameSuffix
+  }
+
+  return spec
 }
 
 

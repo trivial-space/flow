@@ -125,7 +125,7 @@ describe('flow entity reference', function() {
 
   it('can add a stream', function() {
     const p = () => 100
-    const s = stream(p).id('e')
+    const s = stream(null, p).id('e')
 
     expect(s.getGraph()).to.deep.equal({
       entities: {
@@ -153,9 +153,9 @@ describe('flow entity reference', function() {
     const p1 = (send) => send(100)
     const p2 = () => 100
 
-    const s1 = asyncStreamStart(p1, 'createE').id('e')
-    const s2 = streamStart(p2, 'createF').id('f')
-    const s3 = asyncStream(p1, 'createG').id('g')
+    const s1 = asyncStreamStart(null, p1, 'createE').id('e')
+    const s2 = streamStart(null, p2, 'createF').id('f')
+    const s3 = asyncStream(null, p1, 'createG').id('g')
 
     expect(getGraphFromAll([s1, s2, s3])).to.deep.equal({
       entities: {
