@@ -40,10 +40,10 @@ export function createProcess(_a, context) {
 export function createArc(_a) {
     var id = _a.id, entity = _a.entity, process = _a.process, port = _a.port, meta = _a.meta;
     if (entity == null) {
-        throw TypeError("no entity specified in arc " + id);
+        throw TypeError('no entity specified in arc ' + id);
     }
     if (process == null) {
-        throw TypeError("no process specified in arc " + id);
+        throw TypeError('no process specified in arc ' + id);
     }
     if (id == null) {
         if (port == null) {

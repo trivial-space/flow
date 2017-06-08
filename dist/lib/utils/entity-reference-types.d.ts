@@ -7,7 +7,7 @@ export interface EntityRef<T> {
     HOT: PortSpec<T>;
     COLD: PortSpec<T>;
     getId: () => string | undefined;
-    onId: (cb: (string) => void) => void;
+    onId: (cb: (s: string) => void) => void;
 }
 export interface PortSpec<T> {
     type: PortType;

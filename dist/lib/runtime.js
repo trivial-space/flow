@@ -6,12 +6,18 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
     }
     return t;
 };
-import * as types from './runtime-types';
+import { createEntity, createProcess, PORT_TYPES, createArc } from './runtime-types';
 export function create() {
-    var entities = {}, processes = {}, arcs = {}, meta = {}, context = null, engine = {
+    var entities = {};
+    var processes = {};
+    var arcs = {};
+    var engine = {
         es: {},
-        ps: {},
-    }, debug = false;
+        ps: {}
+    };
+    var meta = {};
+    var context = null;
+    var debug = false;
     function getGraph() {
         return { entities: entities, processes: processes, arcs: arcs, meta: meta };
     }
@@ -32,8 +38,8 @@ export function create() {
         return meta;
     }
     function setMeta(newMeta) {
-        if (newMeta != null && typeof newMeta === "object" && !(newMeta instanceof Array)) {
-            meta = Object.assign({}, meta, newMeta);
+        if (newMeta != null && typeof newMeta === 'object' && !(newMeta instanceof Array)) {
+            meta = __assign({}, meta, newMeta);
         }
     }
     function setDebug(isDebug) {
@@ -68,7 +74,7 @@ export function create() {
         }
     }
     function addEntity(spec) {
-        var e = types.createEntity(spec);
+        var e = createEntity(spec);
         entities[e.id] = e;
         var eE = engineE(e.id);
         if (e.value != null && eE.val == null) {
@@ -88,7 +94,7 @@ export function create() {
         delete entities[id];
     }
     function addProcess(spec) {
-        var p = types.createProcess(spec, context);
+        var p = createProcess(spec, context);
         processes[p.id] = p;
         var eP = engineP(p.id);
         delete eP.acc;
@@ -99,15 +105,15 @@ export function create() {
             var port = arcs[aId].port;
             if (port != null &&
                 (!p.ports[port] ||
-                    p.ports[port] === types.PORT_TYPES.ACCUMULATOR)) {
+                    p.ports[port] === PORT_TYPES.ACCUMULATOR)) {
                 removeArc(aId);
             }
         });
-        for (var portId in p.ports) {
-            if (p.ports[portId] === types.PORT_TYPES.ACCUMULATOR) {
-                eP.acc = portId;
+        p.ports.forEach(function (port, i) {
+            if (port === PORT_TYPES.ACCUMULATOR) {
+                eP.acc = i;
             }
-        }
+        });
         for (var aId in eP.arcs) {
             updateArc(arcs[aId]);
         }
@@ -126,7 +132,7 @@ export function create() {
         delete processes[id];
     }
     function addArc(spec) {
-        var arc = types.createArc(spec);
+        var arc = createArc(spec);
         arcs[arc.id] = arc;
         updateArc(arc);
         var eP = engineP(arc.process), p = processes[arc.process];
@@ -168,7 +174,7 @@ export function create() {
                 delete eE.effects[pId];
                 if (p.ports && p.ports[arc.port] != null) {
                     eP.sources[arc.port] = eE;
-                    if (p.ports[arc.port] == types.PORT_TYPES.HOT) {
+                    if (p.ports[arc.port] === PORT_TYPES.HOT) {
                         eE.effects[pId] = eP;
                     }
                 }
@@ -223,12 +229,12 @@ export function create() {
     var processGraph = false;
     function flush() {
         if (debug) {
-            console.log("flushing graph recursively with", activatedEntities);
+            console.log('flushing graph recursively with', activatedEntities);
         }
         var activeEIds = Object.keys(activatedEntities);
         if (processGraph) {
-            for (var i = 0; i < activeEIds.length; i++) {
-                var eId = activeEIds[i];
+            for (var _i = 0, activeEIds_1 = activeEIds; _i < activeEIds_1.length; _i++) {
+                var eId = activeEIds_1[_i];
                 if (activatedEntities[eId]) {
                     var eE = engine.es[eId];
                     for (var p in eE.reactions) {
@@ -240,8 +246,8 @@ export function create() {
             activatedEntities = {};
             processGraph = false;
             blockFlush = true;
-            for (var i = 0; i < activeEIds.length; i++) {
-                var eId = activeEIds[i];
+            for (var _a = 0, activeEIds_2 = activeEIds; _a < activeEIds_2.length; _a++) {
+                var eId = activeEIds_2[_a];
                 var eE = engine.es[eId];
                 if (eE.cb.length > 0) {
                     callbacksWaiting[eId] = eE;
@@ -262,12 +268,13 @@ export function create() {
                 callbacksWaiting = {};
                 for (var i in cbs) {
                     var eE = engine.es[cbs[i]];
-                    for (var i_1 = 0; i_1 < eE.cb.length; i_1++) {
-                        eE.cb[i_1](eE.val);
+                    for (var _b = 0, _c = eE.cb; _b < _c.length; _b++) {
+                        var cb = _c[_b];
+                        cb(eE.val);
                     }
                 }
                 if (debug) {
-                    console.log("flush finished");
+                    console.log('flush finished');
                 }
             }
         }
@@ -286,10 +293,12 @@ export function create() {
         }
         if (complete) {
             if (debug) {
-                console.log("running process", eP.id);
+                console.log('running process', eP.id);
             }
             if (eP.async) {
-                eP.stop && eP.stop();
+                if (eP.stop) {
+                    eP.stop();
+                }
                 eP.stop = processes[eP.id].procedure.apply(context, [eP.sink].concat(eP.values));
             }
             else {
@@ -378,7 +387,7 @@ export function create() {
         start: start,
         stop: stop,
         flush: flush,
-        PORT_TYPES: __assign({}, types.PORT_TYPES)
+        PORT_TYPES: __assign({}, PORT_TYPES)
     };
 }
 //# sourceMappingURL=runtime.js.map

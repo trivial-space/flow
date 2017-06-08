@@ -15,9 +15,9 @@ export interface Entity {
     accept?: AcceptPredicate<any>;
     meta: Meta;
 }
-export declare type PortTypeHot = "HOT";
-export declare type PortTypeCold = "COLD";
-export declare type PortTypeAccumulator = "ACCUMULATOR";
+export declare type PortTypeHot = 'HOT';
+export declare type PortTypeCold = 'COLD';
+export declare type PortTypeAccumulator = 'ACCUMULATOR';
 export declare type PortType = PortTypeHot | PortTypeCold | PortTypeAccumulator;
 export declare type ProcedureSync = (...args: any[]) => any;
 export declare type ProcedureAsync = (send: (val?: any) => void, ...args: any[]) => any;
@@ -62,14 +62,14 @@ export interface ArcData {
     id?: string;
     entity: string;
     process: string;
-    port?: number | string;
+    port?: number;
     meta?: Meta;
 }
 export interface Arc {
     id: string;
     entity: string;
     process: string;
-    port?: number | string;
+    port?: number;
     meta: Meta;
 }
 export interface Graph {

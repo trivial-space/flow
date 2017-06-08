@@ -8,9 +8,9 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
 };
 import * as graphs from './graph-utils';
 import { PORT_TYPES, createEntity, createProcess, createArc } from '../runtime-types';
-import { v4 } from "./uuid";
-var streamNameSuffix = "Stream";
-var reactionNameSuffix = "Reaction";
+import { v4 } from './uuid';
+var streamNameSuffix = 'Stream';
+var reactionNameSuffix = 'Reaction';
 function mergePath(id, path) {
     return path ? path + '.' + id : id;
 }
@@ -46,8 +46,8 @@ function createEntityRef(spec) {
     if (spec.procedure) {
         streams.push(spec);
     }
-    entity.react = function (a1, a2, a3) {
-        var spec = getStreamSpec(a1, a2, a3);
+    entity.react = function (dependencies, procedure, processId) {
+        var spec = getStreamSpec(dependencies, procedure, processId);
         spec.pidSuffix = reactionNameSuffix;
         var deps = spec.dependencies;
         spec.dependencies = [{ entity: entity, type: PORT_TYPES.ACCUMULATOR }];
@@ -67,21 +67,25 @@ function createEntityRef(spec) {
                 id + streamSpec.pidSuffix + (deps && deps.length
                     ? ':' + (deps.reduce(function (name, dep) {
                         var depId = dep.entity.getId();
-                        if (depId === id)
+                        if (depId === id) {
                             return name;
+                        }
                         return name + ':' + depId;
                     }, ''))
                     : '');
             var ports = [];
             if (deps) {
-                for (var portId in deps) {
-                    var port = deps[portId];
+                deps.forEach(function (port, portId) {
                     ports[portId] = port.type;
                     if (port.type !== PORT_TYPES.ACCUMULATOR) {
-                        var arc_1 = createArc({ process: pid, entity: port.entity.getId(), port: portId });
+                        var arc_1 = createArc({
+                            process: pid,
+                            entity: port.entity.getId(),
+                            port: portId
+                        });
                         graph.arcs[arc_1.id] = arc_1;
                     }
-                }
+                });
             }
             var arc = createArc({ process: pid, entity: id });
             graph.arcs[arc.id] = arc;
@@ -100,37 +104,37 @@ function createEntityRef(spec) {
 export function val(value) {
     return createEntityRef({ value: value });
 }
-function getStreamSpec(a1, a2, a3) {
+function getStreamSpec(dependencies, procedure, processId) {
     var spec = {
-        procedure: a2
+        procedure: procedure
     };
-    if (a1 != null) {
-        spec.dependencies = a1;
+    if (dependencies != null) {
+        spec.dependencies = dependencies;
     }
-    if (typeof a3 === "string") {
-        spec.processId = a3;
+    if (typeof processId === 'string') {
+        spec.processId = processId;
     }
     else {
         spec.pidSuffix = streamNameSuffix;
     }
     return spec;
 }
-export var stream = (function (a1, a2, a3) {
-    return createEntityRef(getStreamSpec(a1, a2, a3));
+export var stream = (function (dependencies, procedure, processId) {
+    return createEntityRef(getStreamSpec(dependencies, procedure, processId));
 });
-export var asyncStream = (function (a1, a2, a3) {
-    return createEntityRef(__assign({}, getStreamSpec(a1, a2, a3), { async: true }));
+export var asyncStream = (function (dependencies, procedure, processId) {
+    return createEntityRef(__assign({}, getStreamSpec(dependencies, procedure, processId), { async: true }));
 });
-export var streamStart = (function (a1, a2, a3) {
-    return createEntityRef(__assign({}, getStreamSpec(a1, a2, a3), { autostart: true }));
+export var streamStart = (function (dependencies, procedure, processId) {
+    return createEntityRef(__assign({}, getStreamSpec(dependencies, procedure, processId), { autostart: true }));
 });
-export var asyncStreamStart = (function (a1, a2, a3) {
-    return createEntityRef(__assign({}, getStreamSpec(a1, a2, a3), { async: true, autostart: true }));
+export var asyncStreamStart = (function (dependencies, procedure, processId) {
+    return createEntityRef(__assign({}, getStreamSpec(dependencies, procedure, processId), { async: true, autostart: true }));
 });
 export function isEntity(e) {
     return e &&
-        typeof e.id === "function" &&
-        typeof e.getGraph === "function" &&
+        typeof e.id === 'function' &&
+        typeof e.getGraph === 'function' &&
         e.HOT && e.COLD;
 }
 export function resolveEntityIds(entities, path) {

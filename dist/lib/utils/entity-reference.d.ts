@@ -62,4 +62,4 @@ export declare function isEntity<T>(e: any): e is EntityRef<T>;
 export declare function resolveEntityIds(entities: {
     [id: string]: any;
 }, path?: string): any;
-export declare function getGraphFromAll(entities: Object): Graph;
+export declare function getGraphFromAll(entities: any): Graph;

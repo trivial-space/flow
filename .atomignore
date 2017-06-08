@@ -1,5 +1,0 @@
-*.js.map
-lib/*.d.ts
-lib/utils/*.d.ts
-lib/*.js
-lib/utils/*.js

@@ -1,2 +1,2 @@
-import * as types from './runtime-types';
-export declare function create(): types.Runtime;
+import { Runtime } from './runtime-types';
+export declare function create(): Runtime;
