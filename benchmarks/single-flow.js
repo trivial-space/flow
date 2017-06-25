@@ -8,10 +8,10 @@ function setupFlow (flow) {
 	const tick = val()
 
 	const e1 = val(0)
-		.react(
+	.react(
 		[tick.HOT],
 		(self, tick) => self + tick
-		)
+	)
 
 	const e2 = stream(
 		[e1.HOT],
@@ -19,13 +19,13 @@ function setupFlow (flow) {
 	)
 
 	const e3 = val([])
-		.react(
+	.react(
 		[e2.HOT],
 		(self, e2) => {
 			self.push(e2)
 			return self
 		}
-		)
+	)
 
 	const e4 = stream(
 		[e3.HOT],

@@ -8,10 +8,10 @@ function setupFlow (flow) {
 	const tick = val()
 
 	const e1 = val(0)
-		.react(
+	.react(
 		[tick.HOT],
 		(self, tick) => self + tick
-		)
+	)
 
 	const e2 = asyncStream(
 		[e1.HOT],
@@ -28,13 +28,13 @@ function setupFlow (flow) {
 	)
 
 	const e4 = val([])
-		.react(
+	.react(
 		[e2.HOT, e3.HOT],
 		(self, e2, e3) => {
 			self.push([e2, e3])
 			return self
 		}
-		)
+	)
 
 	flow.addGraph(
 		getGraphFromAll(

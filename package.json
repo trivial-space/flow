@@ -27,6 +27,7 @@
   "devDependencies": {
     "@types/chai": "^4.0.0",
     "@types/mocha": "^2.2.41",
+    "@types/node": "^7.0.29",
     "@types/sinon": "^2.3.1",
     "@types/sinon-chai": "^2.7.28",
     "chai": "^4.0.2",
@@ -43,13 +44,10 @@
     "mocha": "^3.4.2",
     "sinon": "^2.3.2",
     "sinon-chai": "^2.10.0",
-    "ts-loader": "^2.1.0",
-    "typescript": "^2.3.4",
-    "uglifyjs-webpack-plugin": "^0.4.3",
-    "webpack": "^2.6.1"
-  },
-  "dependencies": {
-    "@types/node": "^7.0.29",
-    "tslint": "^5.4.3"
+    "ts-loader": "^2.2.0",
+    "tslint": "^5.4.3",
+    "typescript": "2.4",
+    "uglifyjs-webpack-plugin": "^0.4.6",
+    "webpack": "^3.0.0"
   }
 }
