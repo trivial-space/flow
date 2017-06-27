@@ -63,6 +63,7 @@ export interface EntityRef<T> {
 	getId: () => string
 	val: (value: T) => EntityRef<T>
 	accept: (a: AcceptPredicate<T>) => EntityRef<T>
+	reset: () => EntityRef<T>
 	react: ReactionFactory<T>
 	HOT: PortSpec<T>
 	COLD: PortSpec<T>
@@ -99,6 +100,7 @@ function createEntityRef<T>(spec: EntitySpec<T>): EntityRef<T> {
 	let id = v4()
 	let ns: string | undefined
 	let accept: AcceptPredicate<T> | undefined
+	let reset: true | undefined
 
 	const streams: EntitySpec<T>[] = []
 
@@ -130,6 +132,11 @@ function createEntityRef<T>(spec: EntitySpec<T>): EntityRef<T> {
 		return entity
 	}
 
+	entity.reset = () => {
+		reset = true
+		return entity
+	}
+
 	entity.getId = () => id
 
 	if (spec.procedure) {
@@ -153,7 +160,7 @@ function createEntityRef<T>(spec: EntitySpec<T>): EntityRef<T> {
 	entity.getGraph = () => {
 		const graph = graphs.empty()
 
-		graph.entities[id] = createEntity({ id, value, accept })
+		graph.entities[id] = createEntity({ id, value, accept, reset })
 
 		streams.forEach(streamSpec => {
 			const deps = streamSpec.dependencies
@@ -162,10 +169,10 @@ function createEntityRef<T>(spec: EntitySpec<T>): EntityRef<T> {
 				mergePath(streamSpec.processId, ns) :
 				id + streamSpec.pidSuffix + (deps && deps.length
 					? ':' + (deps.reduce((name, dep) => {
-						const depId = dep.entity.getId()
-						if (depId === id) { return name }
-						return name + ':' + depId
-					}, ''))
+							const depId = dep.entity.getId()
+							if (depId === id) { return name }
+							return name + ':' + depId
+						}, ''))
 					: '')
 
 			const ports: PortType[] = []

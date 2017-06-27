@@ -131,7 +131,7 @@ export function create (): Runtime {
 
 		const eE = engineE(e.id)
 
-		if (e.value != null && eE.val == null) {
+		if (e.value != null && (e.reset || eE.val == null)) {
 			eE.val = e.value
 			activatedEntities[e.id] = false
 			processGraph = true

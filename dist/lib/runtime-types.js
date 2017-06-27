@@ -9,7 +9,7 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
 import { v4 } from './utils/uuid';
 import { evaluate } from './utils/code-evaluator';
 export function createEntity(_a) {
-    var _b = _a.id, id = _b === void 0 ? v4() : _b, value = _a.value, json = _a.json, accept = _a.accept, meta = _a.meta;
+    var _b = _a.id, id = _b === void 0 ? v4() : _b, value = _a.value, json = _a.json, accept = _a.accept, reset = _a.reset, meta = _a.meta;
     if (value == null && json) {
         value = JSON.parse(json);
     }
@@ -17,6 +17,7 @@ export function createEntity(_a) {
         id: id,
         value: value,
         accept: accept,
+        reset: reset,
         meta: __assign({}, meta)
     };
 }

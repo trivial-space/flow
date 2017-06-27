@@ -7,12 +7,14 @@ export interface EntityData {
     value?: any;
     json?: string;
     accept?: AcceptPredicate<any>;
+    reset?: boolean;
     meta?: Meta;
 }
 export interface Entity {
     id: string;
     value?: any;
     accept?: AcceptPredicate<any>;
+    reset?: boolean;
     meta: Meta;
 }
 export declare type PortTypeHot = 'HOT';
@@ -125,7 +127,7 @@ export interface Runtime {
         readonly ACCUMULATOR: PortTypeAccumulator;
     };
 }
-export declare function createEntity({id, value, json, accept, meta}: EntityData): Entity;
+export declare function createEntity({id, value, json, accept, reset, meta}: EntityData): Entity;
 export declare function createProcess({id, ports, procedure, code, autostart, async, meta}: ProcessData, context?: any): Process;
 export declare function createArc({id, entity, process, port, meta}: ArcData): Arc;
 export declare const PORT_TYPES: {

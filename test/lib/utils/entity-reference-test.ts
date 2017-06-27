@@ -86,6 +86,17 @@ describe('flow entity reference', function() {
 	})
 
 
+	it('can get declare reset', function() {
+		const e = val().reset().id('foo')
+		const f = val().id('bar').reset()
+
+		expect(getGraphFromAll([e, f]).entities).to.deep.equal({
+			foo: createEntity({ id: 'foo', reset: true }),
+			bar: createEntity({ id: 'bar', reset: true })
+		})
+	})
+
+
 	it('can be initialized with a value', function() {
 		const e1 = val('foo')
 		const e2 = val(1234)

@@ -18,7 +18,8 @@ export interface EntityData {
 	value?: any
 	json?: string
 	accept?: AcceptPredicate<any>
-	meta?: Meta
+	reset?: boolean
+	meta?: Meta,
 }
 
 
@@ -26,6 +27,7 @@ export interface Entity {
 	id: string
 	value?: any
 	accept?: AcceptPredicate<any>
+	reset?: boolean
 	meta: Meta
 }
 
@@ -168,6 +170,7 @@ export function createEntity ({
 	value,
 	json,
 	accept,
+	reset,
 	meta
 }: EntityData): Entity {
 
@@ -179,6 +182,7 @@ export function createEntity ({
 		id,
 		value,
 		accept,
+		reset,
 		meta: { ...meta }
 	}
 }

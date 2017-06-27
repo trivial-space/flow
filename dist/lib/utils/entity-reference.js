@@ -19,6 +19,7 @@ function createEntityRef(spec) {
     var id = v4();
     var ns;
     var accept;
+    var reset;
     var streams = [];
     var entity = {};
     entity.HOT = {
@@ -42,6 +43,10 @@ function createEntityRef(spec) {
         accept = a;
         return entity;
     };
+    entity.reset = function () {
+        reset = true;
+        return entity;
+    };
     entity.getId = function () { return id; };
     if (spec.procedure) {
         streams.push(spec);
@@ -59,7 +64,7 @@ function createEntityRef(spec) {
     };
     entity.getGraph = function () {
         var graph = graphs.empty();
-        graph.entities[id] = createEntity({ id: id, value: value, accept: accept });
+        graph.entities[id] = createEntity({ id: id, value: value, accept: accept, reset: reset });
         streams.forEach(function (streamSpec) {
             var deps = streamSpec.dependencies;
             var pid = streamSpec.processId ?

@@ -123,12 +123,14 @@ describe('Flow runtime', function() {
 					id: 'foo',
 					value: undefined,
 					accept: undefined,
+					reset: undefined,
 					meta: {}
 				},
 				bar: {
 					id: 'bar',
 					value: 22,
 					accept: undefined,
+					reset: undefined,
 					meta: {}
 				}
 			},
@@ -475,6 +477,20 @@ describe('Flow runtime', function() {
 			expect(sys.get('foo')).to.equal(220)
 			expect(stub.calledOnce).to.be.true
 			stub.reset()
+		})
+
+
+		it('can reset state value when added', function() {
+			sys.set('fuu', 20)
+			expect(sys.get('fuu')).to.equal(20)
+
+			sys.addEntity({
+				id: 'fuu',
+				value: 30,
+				reset: true
+			})
+
+			expect(sys.get('fuu')).to.equal(30)
 		})
 	})
 
