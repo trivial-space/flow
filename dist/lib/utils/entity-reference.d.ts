@@ -6,15 +6,15 @@ export interface PortSpec<T> {
 export declare type ProcedureSync<T> = (...args: any[]) => T | void;
 export declare type ProcedureReact<T> = (self: T, ...args: any[]) => T | void;
 export declare type ProcedureAsync<T> = (send: (val?: T) => void, ...args: any[]) => (() => void) | void;
-export declare type Procedure<T> = ProcedureSync<T> | ProcedureAsync<T>;
+export declare type Procedure<T> = ProcedureSync<T> | ProcedureAsync<T> | ProcedureReact<T>;
 export interface StreamFactory {
     <T>(deps: null, p: () => T, id?: string): EntityRef<T>;
-    <T, A>(deps: [PortSpec<A>], p: (a: A) => T, id?: string): EntityRef<T>;
-    <T, A, B>(deps: [PortSpec<A>, PortSpec<B>], p: (a: A, b: B) => T, id?: string): EntityRef<T>;
-    <T, A, B, C>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>], p: (a: A, b: B, c: C) => T, id?: string): EntityRef<T>;
-    <T, A, B, C, D>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>, PortSpec<D>], p: (a: A, b: B, c: C, d: D) => T, id?: string): EntityRef<T>;
-    <T, A, B, C, D, E>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>, PortSpec<D>, PortSpec<E>], p: (a: A, b: B, c: C, d: D, e: E) => T, id?: string): EntityRef<T>;
-    <T, A, B, C, D, E, F>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>, PortSpec<D>, PortSpec<E>, PortSpec<F>], p: (a: A, b: B, c: C, d: D, e: E, f: F) => T, id?: string): EntityRef<T>;
+    <T, A>(deps: [PortSpec<A>], p: (a: A) => T | void, id?: string): EntityRef<T>;
+    <T, A, B>(deps: [PortSpec<A>, PortSpec<B>], p: (a: A, b: B) => T | void, id?: string): EntityRef<T>;
+    <T, A, B, C>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>], p: (a: A, b: B, c: C) => T | void, id?: string): EntityRef<T>;
+    <T, A, B, C, D>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>, PortSpec<D>], p: (a: A, b: B, c: C, d: D) => T | void, id?: string): EntityRef<T>;
+    <T, A, B, C, D, E>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>, PortSpec<D>, PortSpec<E>], p: (a: A, b: B, c: C, d: D, e: E) => T | void, id?: string): EntityRef<T>;
+    <T, A, B, C, D, E, F>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>, PortSpec<D>, PortSpec<E>, PortSpec<F>], p: (a: A, b: B, c: C, d: D, e: E, f: F) => T | void, id?: string): EntityRef<T>;
 }
 export interface AsyncStreamFactory {
     <T>(deps: null, p: (send: (val?: T) => void) => ((() => void) | void), id?: string): EntityRef<T>;
@@ -26,12 +26,12 @@ export interface AsyncStreamFactory {
     <T, A, B, C, D, E, F>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>, PortSpec<D>, PortSpec<E>, PortSpec<F>], p: (send: (val?: T) => void, a: A, b: B, c: C, d: D, e: E, f: F) => ((() => void) | void), id?: string): EntityRef<T>;
 }
 export interface ReactionFactory<T> {
-    <A>(deps: [PortSpec<A>], p: (self: T, a: A) => T, id?: string): EntityRef<T>;
-    <A, B>(deps: [PortSpec<A>, PortSpec<B>], p: (self: T, a: A, b: B) => T, id?: string): EntityRef<T>;
-    <A, B, C>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>], p: (self: T, a: A, b: B, c: C) => T, id?: string): EntityRef<T>;
-    <A, B, C, D>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>, PortSpec<D>], p: (self: T, a: A, b: B, c: C, d: D) => T, id?: string): EntityRef<T>;
-    <A, B, C, D, E>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>, PortSpec<D>, PortSpec<E>], p: (self: T, a: A, b: B, c: C, d: D, e: E) => T, id?: string): EntityRef<T>;
-    <A, B, C, D, E, F>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>, PortSpec<D>, PortSpec<E>, PortSpec<F>], p: (self: T, a: A, b: B, c: C, d: D, e: E, f: F) => T, id?: string): EntityRef<T>;
+    <A>(deps: [PortSpec<A>], p: (self: T, a: A) => T | void, id?: string): EntityRef<T>;
+    <A, B>(deps: [PortSpec<A>, PortSpec<B>], p: (self: T, a: A, b: B) => T | void, id?: string): EntityRef<T>;
+    <A, B, C>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>], p: (self: T, a: A, b: B, c: C) => T | void, id?: string): EntityRef<T>;
+    <A, B, C, D>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>, PortSpec<D>], p: (self: T, a: A, b: B, c: C, d: D) => T | void, id?: string): EntityRef<T>;
+    <A, B, C, D, E>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>, PortSpec<D>, PortSpec<E>], p: (self: T, a: A, b: B, c: C, d: D, e: E) => T | void, id?: string): EntityRef<T>;
+    <A, B, C, D, E, F>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>, PortSpec<D>, PortSpec<E>, PortSpec<F>], p: (self: T, a: A, b: B, c: C, d: D, e: E, f: F) => T | void, id?: string): EntityRef<T>;
 }
 export interface EntityRef<T> {
     id: (_id: string, _ns?: string) => EntityRef<T>;
