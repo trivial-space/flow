@@ -37,6 +37,7 @@ export interface EntityRef<T> {
     id: (_id: string, _ns?: string) => EntityRef<T>;
     getId: () => string;
     val: (value: T) => EntityRef<T>;
+    updateVal: (fn: (oldVal: T) => T) => EntityRef<T>;
     accept: (a: AcceptPredicate<T>) => EntityRef<T>;
     reset: () => EntityRef<T>;
     react: ReactionFactory<T>;

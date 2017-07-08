@@ -402,6 +402,8 @@
                 return a = n(e, r), t = r, u;
             }, u.val = function(e) {
                 return c = e, u;
+            }, u.updateVal = function(e) {
+                return c = e(c), u;
             }, u.accept = function(e) {
                 return r = e, u;
             }, u.reset = function() {

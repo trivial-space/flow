@@ -39,6 +39,10 @@ function createEntityRef(spec) {
         value = _value;
         return entity;
     };
+    entity.updateVal = function (fn) {
+        value = fn(value);
+        return entity;
+    };
     entity.accept = function (a) {
         accept = a;
         return entity;

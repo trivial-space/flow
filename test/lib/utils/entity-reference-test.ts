@@ -110,6 +110,22 @@ describe('flow entity reference', function() {
 	})
 
 
+	it('can update the value', function() {
+		const e1 = val('foo')
+		const e2 = val(1)
+
+		e1.updateVal(v => v + 'bar')
+		e2.updateVal(v => v + 10)
+
+		const g = getGraphFromAll(resolveEntityIds({ e1, e2 }))
+
+		expect(g.entities).to.deep.equal({
+			e1: createEntity({ id: 'e1', value: 'foobar' }),
+			e2: createEntity({ id: 'e2', value: 11 })
+		})
+	})
+
+
 	it('can change the value', function() {
 		const e1 = val('foo')
 		const e2 = val(1234)
