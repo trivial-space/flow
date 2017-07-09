@@ -1,9 +1,11 @@
 import * as types from 'runtime-types'
 import * as runtime from 'runtime'
 
+
 type N = number
 type S = string
 type FN = Function
+
 
 describe('Flow runtime', function() {
 
@@ -141,6 +143,7 @@ describe('Flow runtime', function() {
 					procedure: p,
 					autostart: false,
 					async: false,
+					delta: false,
 					meta: {}
 				}
 			},
@@ -1019,7 +1022,7 @@ describe('Flow runtime', function() {
 			sys.addProcess({
 				...sys.getGraph().processes['p'],
 				ports: [sys.PORT_TYPES.ACCUMULATOR]
-			})
+			} as types.Process)
 
 			expect(sys.getGraph().arcs).to.deep.equal({
 				'p->dest': types.createArc({
@@ -1701,6 +1704,76 @@ describe('Flow runtime', function() {
 
 			expect(procedure).to.not.be.called
 		})
+	})
+
+
+	describe('delta processes', function() {
+
+		it('reseive old and new values from an entity', function() {
+			const p = sinon.spy((newVal: N, oldVal: N) => newVal - oldVal)
+
+			sys.addGraph({
+				processes: [{
+					id: 'p',
+					procedure: p,
+					ports: [sys.PORT_TYPES.HOT],
+					delta: true
+				}],
+				arcs: [{
+					entity: 'src',
+					process: 'p',
+					port: 0
+				}, {
+					process: 'p',
+					entity: 'dest'
+				}]
+			})
+
+
+			sys.set('src', 2)
+			expect(p).to.not.be.called
+			expect(sys.get('dest')).to.be.undefined
+
+			p.reset()
+
+			sys.set('src', 3)
+			expect(p).to.be.calledWith(3, 2)
+			expect(sys.get('dest')).to.equal(1)
+
+			p.reset()
+
+			sys.set('src', 5)
+			expect(p).to.be.calledWith(5, 3)
+			expect(sys.get('dest')).to.equal(2)
+		})
+
+
+		it('doesnt need explicit ports', function() {
+			const p = sinon.spy((newVal: N, oldVal: N) => newVal - oldVal)
+
+			sys.addGraph({
+				processes: [{
+					id: 'p',
+					procedure: p,
+					delta: true
+				}],
+				arcs: [{
+					entity: 'src',
+					process: 'p',
+					port: 0
+				}, {
+					process: 'p',
+					entity: 'dest'
+				}]
+			})
+
+
+			sys.set('src', 2)
+			sys.set('src', 3)
+			expect(p).to.be.calledWith(3, 2)
+			expect(sys.get('dest')).to.equal(1)
+		})
+
 	})
 
 

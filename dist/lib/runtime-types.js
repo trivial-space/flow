@@ -22,12 +22,15 @@ export function createEntity(_a) {
     };
 }
 export function createProcess(_a, context) {
-    var _b = _a.id, id = _b === void 0 ? v4() : _b, _c = _a.ports, ports = _c === void 0 ? [] : _c, procedure = _a.procedure, code = _a.code, _d = _a.autostart, autostart = _d === void 0 ? false : _d, _e = _a.async, async = _e === void 0 ? false : _e, meta = _a.meta;
+    var _b = _a.id, id = _b === void 0 ? v4() : _b, _c = _a.ports, ports = _c === void 0 ? [] : _c, procedure = _a.procedure, code = _a.code, _d = _a.autostart, autostart = _d === void 0 ? false : _d, _e = _a.async, async = _e === void 0 ? false : _e, _f = _a.delta, delta = _f === void 0 ? false : _f, meta = _a.meta;
     if (procedure == null && code != null) {
         procedure = evaluate(code, context);
     }
     if (procedure == null) {
         throw TypeError('Process must have procedure or code set');
+    }
+    if (delta && !ports.length) {
+        ports.push(PORT_TYPES.HOT);
     }
     return {
         id: id,
@@ -35,6 +38,7 @@ export function createProcess(_a, context) {
         procedure: procedure,
         autostart: autostart,
         async: async,
+        delta: delta,
         meta: __assign({}, meta)
     };
 }

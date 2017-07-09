@@ -1,9 +1,10 @@
-import { AcceptPredicate, Runtime, Entity, Process, Arc, Meta, EntityData, createEntity, ProcessData, createProcess, PORT_TYPES, ArcData, createArc, Graph } from './runtime-types'
+import { AcceptPredicate, Runtime, Entity, Process, Arc, Meta, EntityData, createEntity, ProcessData, createProcess, PORT_TYPES, ArcData, createArc, Graph, PortType } from './runtime-types'
 
 
 interface EngineEntity {
 	id: string
-	val?: any
+	val?: any,
+	oldVal?: any
 	reactions: { [id: string]: EngineProcess }
 	effects: { [id: string]: EngineProcess }
 	arcs: { [id: string]: true }
@@ -16,6 +17,7 @@ interface EngineProcess {
 	out?: EngineEntity
 	acc?: number
 	async?: boolean
+	delta?: boolean
 	sources: EngineEntity[]
 	values: any[]
 	sink: (val?: any) => void
@@ -92,11 +94,7 @@ export function create (): Runtime {
 
 
 	function set (id: string, value: any) {
-		const eE = engineE(id)
-		if (!eE.accept || eE.accept(value, eE.val)) {
-			eE.val = value
-			activatedEntities[id] = true
-			processGraph = true
+		if (setVal(engineE(id), value, true)) {
 			flush()
 		}
 	}
@@ -155,26 +153,28 @@ export function create (): Runtime {
 
 	function addProcess (spec: ProcessData): Process {
 		const p = createProcess(spec, context)
-		processes[p.id] = p
+		const ports: PortType[] = p.ports
 		const eP = engineP(p.id)
+
+		processes[p.id] = p
 
 		delete eP.acc
 		eP.values = []
 		eP.sources = []
 		eP.async = p.async
+		eP.delta = p.delta
 
 		// cleanup unused arcs
 		Object.keys(eP.arcs).forEach(aId => {
 			const port = arcs[aId].port
 			if (port != null &&
-				(!p.ports[port] ||
-					p.ports[port] === PORT_TYPES.ACCUMULATOR)) {
+				(!ports[port] || ports[port] === PORT_TYPES.ACCUMULATOR)) {
 				removeArc(aId)
 			}
 		})
 
 		// set accumulator if present
-		p.ports.forEach((port, i) => {
+		ports.forEach((port, i) => {
 			if (port === PORT_TYPES.ACCUMULATOR) {
 				eP.acc = i
 			}
@@ -283,15 +283,8 @@ export function create (): Runtime {
 				}
 
 				eP.sink = value => {
-					if (!eE.accept || eE.accept(value, eE.val)) {
-						eE.val = value
-						if (value != null) {
-							activatedEntities[eE.id] = true
-							processGraph = true
-						}
-						if (!blockFlush) {
-							flush()
-						}
+					if (setVal(eE, value, true) && !blockFlush) {
+						flush()
 					}
 				}
 
@@ -323,6 +316,20 @@ export function create (): Runtime {
 
 
 	// ===== flow execution =====
+
+	function setVal(eE: EngineEntity, val: any, activate: boolean) {
+		if (!eE.accept || eE.accept(val, eE.val)) {
+			eE.oldVal = eE.val
+			eE.val = val
+			if (val != null) {
+				activatedEntities[eE.id] = activate
+				processGraph = true
+			}
+			return true
+		}
+		return false
+	}
+
 
 	let callbacksWaiting: { [id: string]: EngineEntity } = {}
 	let activatedEntities: { [id: string]: boolean } = {}
@@ -402,8 +409,14 @@ export function create (): Runtime {
 			if (src.val == null) {
 				complete = false
 				break
+			} else if (eP.delta && src.oldVal == null) {
+				complete = false
+				break
 			} else {
 				eP.values[portId] = src.val
+				if (eP.delta) {
+					eP.values[portId + 1] = src.oldVal
+				}
 			}
 		}
 
@@ -419,14 +432,7 @@ export function create (): Runtime {
 			} else {
 				const val = processes[eP.id].procedure.apply(context, eP.values)
 				if (eP.out) {
-					const out = eP.out
-					if (!out.accept || out.accept(val, out.val)) {
-						out.val = val
-						if (val != null) {
-							activatedEntities[eP.out.id] = eP.acc == null
-							processGraph = true
-						}
-					}
+					setVal(eP.out, val, eP.acc == null)
 				}
 			}
 		}
@@ -442,7 +448,6 @@ export function create (): Runtime {
 			execute(eP)
 			if (eP.out) {
 				activatedEntities[eP.out.id] = false
-				processGraph = true
 			}
 		}
 	}

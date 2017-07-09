@@ -49,11 +49,7 @@ export function create() {
         return engine.es[id] && engine.es[id].val;
     }
     function set(id, value) {
-        var eE = engineE(id);
-        if (!eE.accept || eE.accept(value, eE.val)) {
-            eE.val = value;
-            activatedEntities[id] = true;
-            processGraph = true;
+        if (setVal(engineE(id), value, true)) {
             flush();
         }
     }
@@ -95,21 +91,22 @@ export function create() {
     }
     function addProcess(spec) {
         var p = createProcess(spec, context);
-        processes[p.id] = p;
+        var ports = p.ports;
         var eP = engineP(p.id);
+        processes[p.id] = p;
         delete eP.acc;
         eP.values = [];
         eP.sources = [];
         eP.async = p.async;
+        eP.delta = p.delta;
         Object.keys(eP.arcs).forEach(function (aId) {
             var port = arcs[aId].port;
             if (port != null &&
-                (!p.ports[port] ||
-                    p.ports[port] === PORT_TYPES.ACCUMULATOR)) {
+                (!ports[port] || ports[port] === PORT_TYPES.ACCUMULATOR)) {
                 removeArc(aId);
             }
         });
-        p.ports.forEach(function (port, i) {
+        ports.forEach(function (port, i) {
             if (port === PORT_TYPES.ACCUMULATOR) {
                 eP.acc = i;
             }
@@ -189,15 +186,8 @@ export function create() {
                     delete eE.reactions[pId];
                 }
                 eP.sink = function (value) {
-                    if (!eE.accept || eE.accept(value, eE.val)) {
-                        eE.val = value;
-                        if (value != null) {
-                            activatedEntities[eE.id] = true;
-                            processGraph = true;
-                        }
-                        if (!blockFlush) {
-                            flush();
-                        }
+                    if (setVal(eE, value, true) && !blockFlush) {
+                        flush();
                     }
                 };
             }
@@ -222,6 +212,18 @@ export function create() {
         if (graphSpec.meta) {
             setMeta(graphSpec.meta);
         }
+    }
+    function setVal(eE, val, activate) {
+        if (!eE.accept || eE.accept(val, eE.val)) {
+            eE.oldVal = eE.val;
+            eE.val = val;
+            if (val != null) {
+                activatedEntities[eE.id] = activate;
+                processGraph = true;
+            }
+            return true;
+        }
+        return false;
     }
     var callbacksWaiting = {};
     var activatedEntities = {};
@@ -287,8 +289,15 @@ export function create() {
                 complete = false;
                 break;
             }
+            else if (eP.delta && src.oldVal == null) {
+                complete = false;
+                break;
+            }
             else {
                 eP.values[portId] = src.val;
+                if (eP.delta) {
+                    eP.values[portId + 1] = src.oldVal;
+                }
             }
         }
         if (complete) {
@@ -304,14 +313,7 @@ export function create() {
             else {
                 var val = processes[eP.id].procedure.apply(context, eP.values);
                 if (eP.out) {
-                    var out = eP.out;
-                    if (!out.accept || out.accept(val, out.val)) {
-                        out.val = val;
-                        if (val != null) {
-                            activatedEntities[eP.out.id] = eP.acc == null;
-                            processGraph = true;
-                        }
-                    }
+                    setVal(eP.out, val, eP.acc == null);
                 }
             }
         }
@@ -326,7 +328,6 @@ export function create() {
             execute(eP);
             if (eP.out) {
                 activatedEntities[eP.out.id] = false;
-                processGraph = true;
             }
         }
     }

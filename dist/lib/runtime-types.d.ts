@@ -23,7 +23,8 @@ export declare type PortTypeAccumulator = 'ACCUMULATOR';
 export declare type PortType = PortTypeHot | PortTypeCold | PortTypeAccumulator;
 export declare type ProcedureSync = (...args: any[]) => any;
 export declare type ProcedureAsync = (send: (val?: any) => void, ...args: any[]) => any;
-export declare type Procedure = ProcessSync | ProcedureAsync;
+export declare type ProcedureDelta = (oldVal: any, newVal: any) => any;
+export declare type Procedure = ProcessSync | ProcedureAsync | ProcedureDelta;
 export interface ProcessDataSync {
     id?: string;
     ports?: PortType[];
@@ -31,6 +32,7 @@ export interface ProcessDataSync {
     code?: string;
     autostart?: boolean;
     async?: false;
+    delta?: false;
     meta?: Meta;
 }
 export interface ProcessDataAsync {
@@ -40,15 +42,27 @@ export interface ProcessDataAsync {
     code?: string;
     autostart?: boolean;
     async: true;
+    delta?: false;
     meta?: Meta;
 }
-export declare type ProcessData = ProcessDataSync | ProcessDataAsync;
+export interface ProcessDataDelta {
+    id?: string;
+    procedure: ProcedureDelta;
+    ports?: [PortTypeHot];
+    code?: string;
+    delta: true;
+    autostart?: false;
+    async?: false;
+    meta?: Meta;
+}
+export declare type ProcessData = ProcessDataSync | ProcessDataAsync | ProcessDataDelta;
 export interface ProcessSync {
     id: string;
     ports: PortType[];
     procedure: ProcedureSync;
     autostart?: boolean;
-    async: false;
+    async?: false;
+    delta?: false;
     meta: Meta;
 }
 export interface ProcessAsync {
@@ -57,9 +71,19 @@ export interface ProcessAsync {
     procedure: ProcedureAsync;
     autostart?: boolean;
     async: true;
+    delta?: false;
     meta: Meta;
 }
-export declare type Process = ProcessSync | ProcessAsync;
+export interface ProcessDelta {
+    id: string;
+    ports: [PortTypeHot];
+    procedure: ProcedureDelta;
+    delta: true;
+    autostart?: false;
+    async?: false;
+    meta: Meta;
+}
+export declare type Process = ProcessSync | ProcessAsync | ProcessDelta;
 export interface ArcData {
     id?: string;
     entity: string;
@@ -128,7 +152,7 @@ export interface Runtime {
     };
 }
 export declare function createEntity({id, value, json, accept, reset, meta}: EntityData): Entity;
-export declare function createProcess({id, ports, procedure, code, autostart, async, meta}: ProcessData, context?: any): Process;
+export declare function createProcess({id, ports, procedure, code, autostart, async, delta, meta}: ProcessData, context?: any): Process;
 export declare function createArc({id, entity, process, port, meta}: ArcData): Arc;
 export declare const PORT_TYPES: {
     COLD: "COLD";

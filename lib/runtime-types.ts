@@ -39,18 +39,13 @@ export type PortTypeAccumulator = 'ACCUMULATOR'
 export type PortType = PortTypeHot | PortTypeCold | PortTypeAccumulator
 
 
-export type ProcedureSync = (
-	...args: any[]
-) => any
+export type ProcedureSync = ( ...args: any[]) => any
 
+export type ProcedureAsync = ( send: (val?: any) => void, ...args: any[]) => any
 
-export type ProcedureAsync = (
-	send: (val?: any) => void,
-	...args: any[]
-) => any
+export type ProcedureDelta = ( oldVal: any, newVal: any) => any
 
-
-export type Procedure = ProcessSync | ProcedureAsync
+export type Procedure = ProcessSync | ProcedureAsync | ProcedureDelta
 
 
 export interface ProcessDataSync {
@@ -60,6 +55,7 @@ export interface ProcessDataSync {
 	code?: string
 	autostart?: boolean
 	async?: false
+	delta?: false
 	meta?: Meta
 }
 
@@ -71,10 +67,24 @@ export interface ProcessDataAsync {
 	code?: string
 	autostart?: boolean
 	async: true
+	delta?: false
 	meta?: Meta
 }
 
-export type ProcessData = ProcessDataSync | ProcessDataAsync
+
+export interface ProcessDataDelta {
+	id?: string
+	procedure: ProcedureDelta
+	ports?: [PortTypeHot]
+	code?: string
+	delta: true
+	autostart?: false
+	async?: false
+	meta?: Meta
+}
+
+
+export type ProcessData = ProcessDataSync | ProcessDataAsync | ProcessDataDelta
 
 
 export interface ProcessSync {
@@ -82,7 +92,8 @@ export interface ProcessSync {
 	ports: PortType[]
 	procedure: ProcedureSync
 	autostart?: boolean
-	async: false
+	async?: false
+	delta?: false
 	meta: Meta
 }
 
@@ -93,11 +104,23 @@ export interface ProcessAsync {
 	procedure: ProcedureAsync
 	autostart?: boolean
 	async: true
+	delta?: false
 	meta: Meta
 }
 
 
-export type Process = ProcessSync | ProcessAsync
+export interface ProcessDelta {
+	id: string
+	ports: [PortTypeHot]
+	procedure: ProcedureDelta
+	delta: true
+	autostart?: false
+	async?: false
+	meta: Meta
+}
+
+
+export type Process = ProcessSync | ProcessAsync | ProcessDelta
 
 
 export interface ArcData {
@@ -195,6 +218,7 @@ export function createProcess ({
 	code,
 	autostart = false,
 	async = false,
+	delta = false,
 	meta
 }: ProcessData, context?: any): Process {
 
@@ -206,12 +230,17 @@ export function createProcess ({
 		throw TypeError('Process must have procedure or code set')
 	}
 
+	if (delta && !ports.length) {
+		ports.push(PORT_TYPES.HOT)
+	}
+
 	return {
 		id,
 		ports,
 		procedure,
 		autostart,
 		async,
+		delta,
 		meta: { ...meta }
 	} as Process
 }
