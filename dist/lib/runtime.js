@@ -213,18 +213,6 @@ export function create() {
             setMeta(graphSpec.meta);
         }
     }
-    function setVal(eE, val, activate) {
-        if (!eE.accept || eE.accept(val, eE.val)) {
-            eE.oldVal = eE.val;
-            eE.val = val;
-            if (val != null) {
-                activatedEntities[eE.id] = activate;
-                processGraph = true;
-            }
-            return true;
-        }
-        return false;
-    }
     var callbacksWaiting = {};
     var activatedEntities = {};
     var blockFlush = false;
@@ -320,11 +308,23 @@ export function create() {
             }
         }
     }
+    function setVal(eE, val, activate) {
+        if (!eE.accept || eE.accept(val, eE.val)) {
+            eE.oldVal = eE.val;
+            eE.val = val;
+            if (val != null) {
+                activatedEntities[eE.id] = activate;
+                processGraph = true;
+            }
+            return true;
+        }
+        return false;
+    }
     function autostart(eP) {
         if (eP.async) {
-            setTimeout(function () {
+            requestAnimationFrame(function () {
                 execute(eP);
-            }, 10);
+            });
         }
         else {
             execute(eP);

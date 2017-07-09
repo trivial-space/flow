@@ -54,12 +54,14 @@ export interface EntitySpec<T> {
     dependencies?: PortSpec<any>[];
     async?: boolean;
     autostart?: boolean;
+    delta?: boolean;
 }
 export declare function val<T>(value?: T): EntityRef<T>;
 export declare const stream: StreamFactory;
 export declare const asyncStream: AsyncStreamFactory;
 export declare const streamStart: StreamFactory;
 export declare const asyncStreamStart: AsyncStreamFactory;
+export declare const delta: <T, B>(entity: EntityRef<B>, procedure: (newVal: B, oldVal: B) => T, processId?: string | undefined) => EntityRef<T>;
 export declare function isEntity<T>(e: any): e is EntityRef<T>;
 export declare function resolveEntityIds(entities: {
     [id: string]: any;

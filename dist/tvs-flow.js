@@ -180,7 +180,7 @@
                 return k.es[e] && k.es[e].val;
             }
             function f(e, t) {
-                P(S(e), t, !0) && T();
+                j(S(e), t, !0) && P();
             }
             function l(e, t) {
                 f(e, t(u(e)));
@@ -247,7 +247,7 @@
                 s.ports && null != s.ports[e.port] && (n.sources[e.port] = c, s.ports[e.port] === o.PORT_TYPES.HOT && (c.effects[t] = n))) : (n.out = c, 
                 null != n.acc ? (n.sources[n.acc] = c, c.reactions[t] = n) : delete c.reactions[t], 
                 n.sink = function(e) {
-                    P(c, e, !0) && !D && T();
+                    j(c, e, !0) && !D && P();
                 }));
             }
             function m(e) {
@@ -256,11 +256,7 @@
                 if (e.arcs) for (var t in e.arcs) g(e.arcs[t]);
                 e.meta && a(e.meta);
             }
-            function P(e, t, r) {
-                return !(e.accept && !e.accept(t, e.val)) && (e.oldVal = e.val, e.val = t, null != t && (I[e.id] = r, 
-                G = !0), !0);
-            }
-            function T() {
+            function P() {
                 Y && console.log("flushing graph recursively with", I);
                 var e = Object.keys(I);
                 if (G) {
@@ -268,7 +264,7 @@
                         var n = r[t];
                         if (I[n]) {
                             var o = k.es[n];
-                            for (var c in o.reactions) j(o.reactions[c]);
+                            for (var c in o.reactions) T(o.reactions[c]);
                         }
                     }
                     var s = {};
@@ -276,9 +272,9 @@
                     for (var a = 0, i = e; a < i.length; a++) {
                         var n = i[a], o = k.es[n];
                         o.cb.length > 0 && (H[n] = o);
-                        for (var c in o.effects) s[c] || (j(o.effects[c]), s[c] = !0);
+                        for (var c in o.effects) s[c] || (T(o.effects[c]), s[c] = !0);
                     }
-                    if (D = !1, G) T(); else {
+                    if (D = !1, G) P(); else {
                         var u = Object.keys(H);
                         H = {};
                         for (var f in u) for (var o = k.es[u[f]], l = 0, p = o.cb; l < p.length; l++) {
@@ -289,7 +285,7 @@
                     }
                 }
             }
-            function j(e) {
+            function T(e) {
                 for (var t = !0, r = 0; r < e.sources.length; r++) {
                     var n = e.sources[r];
                     if (null == n.val) {
@@ -307,17 +303,21 @@
                 if (t) if (Y && console.log("running process", e.id), e.async) e.stop && e.stop(), 
                 e.stop = w[e.id].procedure.apply(L, [ e.sink ].concat(e.values)); else {
                     var o = w[e.id].procedure.apply(L, e.values);
-                    e.out && P(e.out, o, null == e.acc);
+                    e.out && j(e.out, o, null == e.acc);
                 }
             }
+            function j(e, t, r) {
+                return !(e.accept && !e.accept(t, e.val)) && (e.oldVal = e.val, e.val = t, null != t && (I[e.id] = r, 
+                G = !0), !0);
+            }
             function E(e) {
-                e.async ? setTimeout(function() {
-                    j(e);
-                }, 10) : (j(e), e.out && (I[e.out.id] = !1));
+                e.async ? requestAnimationFrame(function() {
+                    T(e);
+                }) : (T(e), e.out && (I[e.out.id] = !1));
             }
             function x(e) {
                 var t = C(e);
-                j(t), t.async || T();
+                T(t), t.async || P();
             }
             function A(e) {
                 var t = C(e);
@@ -368,7 +368,7 @@
                 off: d,
                 start: x,
                 stop: A,
-                flush: T,
+                flush: P,
                 PORT_TYPES: c({}, o.PORT_TYPES)
             };
         }
@@ -453,7 +453,8 @@
                         ports: s,
                         procedure: r.procedure,
                         async: r.async,
-                        autostart: r.autostart
+                        autostart: r.autostart,
+                        delta: r.delta
                     });
                 }), e;
             }, u;
@@ -500,6 +501,8 @@
             return g;
         }), r.d(t, "asyncStreamStart", function() {
             return _;
+        }), r.d(t, "delta", function() {
+            return b;
         }), t.isEntity = a, t.resolveEntityIds = i, t.getGraphFromAll = u;
         var f = r(2), l = r(0), p = r(1), d = this && this.__assign || Object.assign || function(e) {
             for (var t, r = 1, n = arguments.length; r < n; r++) {
@@ -521,6 +524,10 @@
             return o(d({}, s(e, t, r), {
                 async: !0,
                 autostart: !0
+            }));
+        }, b = function(e, t, r) {
+            return o(d({}, s([ e.HOT ], t, r), {
+                delta: !0
             }));
         };
     } ]);

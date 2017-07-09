@@ -80,7 +80,8 @@ export interface EntitySpec<T> {
 	procedure?: Procedure<T>
 	dependencies?: PortSpec<any>[]
 	async?: boolean
-	autostart?: boolean
+	autostart?: boolean,
+	delta?: boolean
 }
 
 
@@ -206,7 +207,8 @@ function createEntityRef<T>(spec: EntitySpec<T>): EntityRef<T> {
 				ports,
 				procedure: streamSpec.procedure,
 				async: streamSpec.async,
-				autostart: streamSpec.autostart
+				autostart: streamSpec.autostart,
+				delta: streamSpec.delta
 			} as ProcessData)
 		})
 
@@ -286,6 +288,16 @@ export const asyncStreamStart: AsyncStreamFactory = (<T>(
 		async: true,
 		autostart: true
 	})) as AsyncStreamFactory
+
+
+export const delta = <T, B>(
+	entity: EntityRef<B>,
+	procedure: (newVal: B, oldVal: B) => T,
+	processId?: string
+) => createEntityRef<T>({
+		...getStreamSpec<T>([entity.HOT], procedure, processId),
+		delta: true
+	})
 
 
 export function isEntity<T>(e: any): e is EntityRef<T> {

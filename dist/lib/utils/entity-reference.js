@@ -103,7 +103,8 @@ function createEntityRef(spec) {
                 ports: ports,
                 procedure: streamSpec.procedure,
                 async: streamSpec.async,
-                autostart: streamSpec.autostart
+                autostart: streamSpec.autostart,
+                delta: streamSpec.delta
             });
         });
         return graph;
@@ -140,6 +141,7 @@ export var streamStart = (function (dependencies, procedure, processId) {
 export var asyncStreamStart = (function (dependencies, procedure, processId) {
     return createEntityRef(__assign({}, getStreamSpec(dependencies, procedure, processId), { async: true, autostart: true }));
 });
+export var delta = function (entity, procedure, processId) { return createEntityRef(__assign({}, getStreamSpec([entity.HOT], procedure, processId), { delta: true })); };
 export function isEntity(e) {
     return e &&
         typeof e.id === 'function' &&

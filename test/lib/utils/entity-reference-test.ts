@@ -1,5 +1,9 @@
-import { resolveEntityIds, val, stream, asyncStreamStart, streamStart, asyncStream, getGraphFromAll } from 'utils/entity-reference'
+import { resolveEntityIds, val, stream, asyncStreamStart, streamStart, asyncStream, getGraphFromAll, delta } from 'utils/entity-reference'
 import { createEntity, createProcess, createArc, PORT_TYPES } from 'runtime-types'
+
+
+type N = number
+type FN = Function
 
 
 describe('flow entity reference', function() {
@@ -169,7 +173,7 @@ describe('flow entity reference', function() {
 
 
 	it('can add a stream with all props', function() {
-		const p1 = (send: Function) => send(100)
+		const p1 = (send: FN) => send(100)
 		const p2 = () => 100
 
 		const s1 = asyncStreamStart(null, p1, 'createE').id('e')
@@ -351,6 +355,40 @@ describe('flow entity reference', function() {
 			},
 			processes: {},
 			arcs: {},
+			meta: {}
+		})
+	})
+
+
+	it('can produce deltas', function() {
+		const e = val().id('e')
+		const p = (newVal: N, oldVal: N) => newVal - oldVal
+		const d = delta(e, p)
+
+		expect(d.id('d').getGraph()).to.deep.equal({
+			entities: {
+				d: createEntity({
+					id: 'd'
+				})
+			},
+			processes: {
+				'dStream::e': createProcess({
+					id: 'dStream::e',
+					delta: true,
+					procedure: p
+				})
+			},
+			arcs: {
+				'dStream::e->d': createArc({
+					process: 'dStream::e',
+					entity: 'd'
+				}),
+				'e->dStream::e::0': createArc({
+					entity: 'e',
+					process: 'dStream::e',
+					port: 0
+				})
+			},
 			meta: {}
 		})
 	})
