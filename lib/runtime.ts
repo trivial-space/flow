@@ -317,20 +317,6 @@ export function create (): Runtime {
 
 	// ===== flow execution =====
 
-	function setVal(eE: EngineEntity, val: any, activate: boolean) {
-		if (!eE.accept || eE.accept(val, eE.val)) {
-			eE.oldVal = eE.val
-			eE.val = val
-			if (val != null) {
-				activatedEntities[eE.id] = activate
-				processGraph = true
-			}
-			return true
-		}
-		return false
-	}
-
-
 	let callbacksWaiting: { [id: string]: EngineEntity } = {}
 	let activatedEntities: { [id: string]: boolean } = {}
 
@@ -409,13 +395,15 @@ export function create (): Runtime {
 			if (src.val == null) {
 				complete = false
 				break
-			} else if (eP.delta && src.oldVal == null) {
-				complete = false
-				break
 			} else {
 				eP.values[portId] = src.val
 				if (eP.delta) {
-					eP.values[portId + 1] = src.oldVal
+					if (src.oldVal == null) {
+						complete = false
+						break
+					} else {
+						eP.values[portId + 1] = src.oldVal
+					}
 				}
 			}
 		}
@@ -439,11 +427,25 @@ export function create (): Runtime {
 	}
 
 
+	function setVal(eE: EngineEntity, val: any, activate: boolean) {
+		if (!eE.accept || eE.accept(val, eE.val)) {
+			eE.oldVal = eE.val
+			eE.val = val
+			if (val != null) {
+				activatedEntities[eE.id] = activate
+				processGraph = true
+			}
+			return true
+		}
+		return false
+	}
+
+
 	function autostart (eP: EngineProcess) {
 		if (eP.async) {
-			setTimeout(function() {
+			requestAnimationFrame(function() {
 				execute(eP)
-			}, 10)
+			})
 		} else {
 			execute(eP)
 			if (eP.out) {

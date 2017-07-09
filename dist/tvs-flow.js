@@ -296,11 +296,13 @@
                         t = !1;
                         break;
                     }
-                    if (e.delta && null == n.oldVal) {
-                        t = !1;
-                        break;
+                    if (e.values[r] = n.val, e.delta) {
+                        if (null == n.oldVal) {
+                            t = !1;
+                            break;
+                        }
+                        e.values[r + 1] = n.oldVal;
                     }
-                    e.values[r] = n.val, e.delta && (e.values[r + 1] = n.oldVal);
                 }
                 if (t) if (Y && console.log("running process", e.id), e.async) e.stop && e.stop(), 
                 e.stop = w[e.id].procedure.apply(L, [ e.sink ].concat(e.values)); else {

@@ -289,14 +289,16 @@ export function create() {
                 complete = false;
                 break;
             }
-            else if (eP.delta && src.oldVal == null) {
-                complete = false;
-                break;
-            }
             else {
                 eP.values[portId] = src.val;
                 if (eP.delta) {
-                    eP.values[portId + 1] = src.oldVal;
+                    if (src.oldVal == null) {
+                        complete = false;
+                        break;
+                    }
+                    else {
+                        eP.values[portId + 1] = src.oldVal;
+                    }
                 }
             }
         }

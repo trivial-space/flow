@@ -1,6 +1,11 @@
+"use strict";
+
 const runtime = require('../dist/tvs-flow')
 
-const { val, asyncStream, getGraphFromAll, resolveEntityIds } = runtime.utils.entityRef
+const val = runtime.utils.entityRef.val
+const asyncStream = runtime.utils.entityRef.asyncStream
+const getGraphFromAll = runtime.utils.entityRef.getGraphFromAll
+const resolveEntityIds = runtime.utils.entityRef.resolveEntityIds
 
 
 function setupFlow (flow) {
@@ -43,7 +48,7 @@ function setupFlow (flow) {
 }
 
 
-function run (iterations = 100000) {
+function run (iterations) {
 	const flow = runtime.create()
 	setupFlow(flow)
 	// flow.setDebug(true)
@@ -64,18 +69,19 @@ function run (iterations = 100000) {
 }
 
 
-function test (runs = 20, results = []) {
+function test (runs, results) {
 	if (runs <= 0) {
 		const sum = results.reduce((a, b) => a + b)
 		console.log('average time: ', sum / results.length)
 		return
 	}
 
-	results.push(run())
+	results.push(run(100000))
 
 	setTimeout(function() {
 		test(runs - 1, results)
 	}, 10)
 }
 
-test()
+
+test(20, [])
