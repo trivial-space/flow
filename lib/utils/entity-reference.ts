@@ -36,6 +36,8 @@ export interface StreamFactory {
 	<T, A, B, C, D>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>, PortSpec<D>], p: (a: A, b: B, c: C, d: D) => T | void, id?: string): EntityRef<T>
 	<T, A, B, C, D, E>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>, PortSpec<D>, PortSpec<E>], p: (a: A, b: B, c: C, d: D, e: E) => T | void, id?: string): EntityRef<T>
 	<T, A, B, C, D, E, F>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>, PortSpec<D>, PortSpec<E>, PortSpec<F>], p: (a: A, b: B, c: C, d: D, e: E, f: F) => T | void, id?: string): EntityRef<T>
+	<T, A, B, C, D, E, F, G>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>, PortSpec<D>, PortSpec<E>, PortSpec<F>, PortSpec<G>], p: (a: A, b: B, c: C, d: D, e: E, f: F, g: G) => T | void, id?: string): EntityRef<T>
+	<T, A, B, C, D, E, F, G, H>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>, PortSpec<D>, PortSpec<E>, PortSpec<F>, PortSpec<G>, PortSpec<H>], p: (a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H) => T | void, id?: string): EntityRef<T>
 }
 
 export interface AsyncStreamFactory {
@@ -46,6 +48,8 @@ export interface AsyncStreamFactory {
 	<T, A, B, C, D>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>, PortSpec<D>], p: (send: (val?: T) => void, a: A, b: B, c: C, d: D) => ((() => void) | void), id?: string): EntityRef<T>
 	<T, A, B, C, D, E>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>, PortSpec<D>, PortSpec<E>], p: (send: (val?: T) => void, a: A, b: B, c: C, d: D, e: E) => ((() => void) | void), id?: string): EntityRef<T>
 	<T, A, B, C, D, E, F>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>, PortSpec<D>, PortSpec<E>, PortSpec<F>], p: (send: (val?: T) => void, a: A, b: B, c: C, d: D, e: E, f: F) => ((() => void) | void), id?: string): EntityRef<T>
+	<T, A, B, C, D, E, F, G>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>, PortSpec<D>, PortSpec<E>, PortSpec<F>, PortSpec<G>], p: (send: (val?: T) => void, a: A, b: B, c: C, d: D, e: E, f: F, g: G) => ((() => void) | void), id?: string): EntityRef<T>
+	<T, A, B, C, D, E, F, G, H>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>, PortSpec<D>, PortSpec<E>, PortSpec<F>, PortSpec<G>, PortSpec<H>], p: (send: (val?: T) => void, a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H) => ((() => void) | void), id?: string): EntityRef<T>
 }
 
 export interface ReactionFactory<T> {
@@ -55,6 +59,8 @@ export interface ReactionFactory<T> {
 	<A, B, C, D>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>, PortSpec<D>], p: (self: T, a: A, b: B, c: C, d: D) => T | void, id?: string): EntityRef<T>
 	<A, B, C, D, E>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>, PortSpec<D>, PortSpec<E>], p: (self: T, a: A, b: B, c: C, d: D, e: E) => T | void, id?: string): EntityRef<T>
 	<A, B, C, D, E, F>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>, PortSpec<D>, PortSpec<E>, PortSpec<F>], p: (self: T, a: A, b: B, c: C, d: D, e: E, f: F) => T | void, id?: string): EntityRef<T>
+	<A, B, C, D, E, F, G>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>, PortSpec<D>, PortSpec<E>, PortSpec<F>, PortSpec<G>], p: (self: T, a: A, b: B, c: C, d: D, e: E, f: F, g: G) => T | void, id?: string): EntityRef<T>
+	<A, B, C, D, E, F, G, H>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>, PortSpec<D>, PortSpec<E>, PortSpec<F>, PortSpec<G>, PortSpec<H>], p: (self: T, a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H) => T | void, id?: string): EntityRef<T>
 }
 
 
