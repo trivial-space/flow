@@ -258,31 +258,28 @@
             }
             function P() {
                 Y && console.log("flushing graph recursively with", I);
-                var e = Object.keys(I);
-                if (G) {
-                    for (var t = 0, r = e; t < r.length; t++) {
-                        var n = r[t];
-                        if (I[n]) {
-                            var o = k.es[n];
-                            for (var c in o.reactions) T(o.reactions[c]);
-                        }
+                for (var e = Object.keys(I), t = 0, r = e; t < r.length; t++) {
+                    var n = r[t];
+                    if (I[n]) {
+                        var o = k.es[n];
+                        for (var c in o.reactions) T(o.reactions[c]);
                     }
-                    var s = {};
-                    I = {}, G = !1, D = !0;
-                    for (var a = 0, i = e; a < i.length; a++) {
-                        var n = i[a], o = k.es[n];
-                        o.cb.length > 0 && (H[n] = o);
-                        for (var c in o.effects) s[c] || (T(o.effects[c]), s[c] = !0);
+                }
+                var s = {};
+                I = {}, G = !1, D = !0;
+                for (var a = 0, i = e; a < i.length; a++) {
+                    var n = i[a], o = k.es[n];
+                    o.cb.length > 0 && (H[n] = o);
+                    for (var c in o.effects) s[c] || (T(o.effects[c]), s[c] = !0);
+                }
+                if (D = !1, G) P(); else {
+                    var u = Object.keys(H);
+                    H = {};
+                    for (var f in u) for (var o = k.es[u[f]], l = 0, p = o.cb; l < p.length; l++) {
+                        var d = p[l];
+                        d(o.val);
                     }
-                    if (D = !1, G) P(); else {
-                        var u = Object.keys(H);
-                        H = {};
-                        for (var f in u) for (var o = k.es[u[f]], l = 0, p = o.cb; l < p.length; l++) {
-                            var d = p[l];
-                            d(o.val);
-                        }
-                        Y && console.log("flush finished");
-                    }
+                    Y && console.log("flush finished");
                 }
             }
             function T(e) {

@@ -1247,6 +1247,68 @@ describe('Flow runtime', function() {
 			expect(filter.callCount).to.equal(6)
 			expect(acc.callCount).to.equal(3)
 		})
+
+
+		it('processes execute in the same update cycle only once', function() {
+			const p = sinon.spy((self: N[][], val1: N, val2: N) => [...self, [val1, val2]])
+			sys.addGraph({
+				entities: [{
+					id: 'dest',
+					value: []
+				}, {
+					id: 'src',
+					value: 'source'
+				}],
+				processes: [{
+					id: 'p1',
+					ports: [sys.PORT_TYPES.HOT],
+					procedure: (val: N) => val + 10
+				}, {
+					id: 'p2',
+					ports: [sys.PORT_TYPES.HOT],
+					procedure: (val: N) => val + 20
+				}, {
+					id: 'p3',
+					ports: [
+						sys.PORT_TYPES.ACCUMULATOR,
+						sys.PORT_TYPES.HOT,
+						sys.PORT_TYPES.HOT
+					],
+					procedure: p
+				}],
+				arcs: [{
+					entity: 'src',
+					process: 'p1',
+					port: 0
+				}, {
+					entity: 'src',
+					process: 'p2',
+					port: 0
+				}, {
+					process: 'p2',
+					entity: 'e2'
+				}, {
+					process: 'p1',
+					entity: 'e1'
+				}, {
+					entity: 'e1',
+					process: 'p3',
+					port: 1
+				}, {
+					entity: 'e2',
+					process: 'p3',
+					port: 2
+				}, {
+					process: 'p3',
+					entity: 'dest'
+				}]
+			})
+
+			sys.flush()
+
+			expect(p).to.be.calledOnce
+			expect(sys.get('dest')).to.deep.equal([['source10', 'source20']])
+		})
 	})
 
 

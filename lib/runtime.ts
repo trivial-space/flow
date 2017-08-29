@@ -323,6 +323,7 @@ export function create (): Runtime {
 	let blockFlush = false
 	let processGraph = false
 
+
 	function flush () {
 		if (debug) {
 			console.log('flushing graph recursively with', activatedEntities)
@@ -330,59 +331,55 @@ export function create (): Runtime {
 
 		const activeEIds = Object.keys(activatedEntities)
 
-		// still stuff to do
-		if (processGraph) {
-
-			// update reactive state
-			for (const eId of activeEIds) {
-				if (activatedEntities[eId]) {
-					const eE = engine.es[eId]
-					for (const p in eE.reactions) {
-						execute(eE.reactions[p])
-					}
-				}
-			}
-
-			const calledProcesses: { [id: string]: boolean } = {}
-			activatedEntities = {}
-			processGraph = false
-
-			blockFlush = true
-			for (const eId of activeEIds) {
-
+		// update reactive state
+		for (const eId of activeEIds) {
+			if (activatedEntities[eId]) {
 				const eE = engine.es[eId]
-				if (eE.cb.length > 0) {
-					callbacksWaiting[eId] = eE
-				}
-				for (const p in eE.effects) {
-					if (!calledProcesses[p]) {
-						execute(eE.effects[p])
-						calledProcesses[p] = true
-					}
+				for (const p in eE.reactions) {
+					execute(eE.reactions[p])
 				}
 			}
-			blockFlush = false
+		}
 
-			if (processGraph) {
-				flush()
+		const calledProcesses: { [id: string]: boolean } = {}
+		activatedEntities = {}
+		processGraph = false
 
-				// cleanup
-			} else {
+		blockFlush = true
+		for (const eId of activeEIds) {
 
-				// callbacks
-				const cbs = Object.keys(callbacksWaiting)
-				callbacksWaiting = {}
-
-				for (const i in cbs) {
-					const eE = engine.es[cbs[i]]
-					for (const cb of eE.cb) {
-						cb(eE.val)
-					}
+			const eE = engine.es[eId]
+			if (eE.cb.length > 0) {
+				callbacksWaiting[eId] = eE
+			}
+			for (const p in eE.effects) {
+				if (!calledProcesses[p]) {
+					execute(eE.effects[p])
+					calledProcesses[p] = true
 				}
+			}
+		}
+		blockFlush = false
 
-				if (debug) {
-					console.log('flush finished')
+		if (processGraph) {
+			flush()
+
+			// cleanup
+		} else {
+
+			// callbacks
+			const cbs = Object.keys(callbacksWaiting)
+			callbacksWaiting = {}
+
+			for (const i in cbs) {
+				const eE = engine.es[cbs[i]]
+				for (const cb of eE.cb) {
+					cb(eE.val)
 				}
+			}
+
+			if (debug) {
+				console.log('flush finished')
 			}
 		}
 	}
@@ -427,12 +424,12 @@ export function create (): Runtime {
 	}
 
 
-	function setVal(eE: EngineEntity, val: any, activate: boolean) {
+	function setVal(eE: EngineEntity, val: any, runReactions: boolean) {
 		if (!eE.accept || eE.accept(val, eE.val)) {
 			eE.oldVal = eE.val
 			eE.val = val
 			if (val != null) {
-				activatedEntities[eE.id] = activate
+				activatedEntities[eE.id] = runReactions
 				processGraph = true
 			}
 			return true
