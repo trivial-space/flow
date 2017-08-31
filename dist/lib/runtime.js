@@ -230,12 +230,12 @@ export function create() {
                 }
             }
         }
-        var entitiesToRemove = Object.keys(entities)
-            .filter(function (id) { return !newEntityIds[id]; });
-        var processesToRemove = Object.keys(processes)
-            .filter(function (id) { return !newProcessIds[id]; });
-        entitiesToRemove.forEach(removeEntity);
-        processesToRemove.forEach(removeProcess);
+        Object.keys(entities)
+            .filter(function (id) { return !newEntityIds[id]; })
+            .forEach(removeEntity);
+        Object.keys(processes)
+            .filter(function (id) { return !newProcessIds[id]; })
+            .forEach(removeProcess);
         addGraph(graphSpec);
     }
     var callbacksWaiting = {};

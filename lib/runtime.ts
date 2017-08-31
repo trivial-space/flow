@@ -336,14 +336,13 @@ export function create (): Runtime {
 			}
 		}
 
-		const entitiesToRemove = Object.keys(entities)
+		Object.keys(entities)
 			.filter(id => !newEntityIds[id])
+			.forEach(removeEntity)
 
-		const processesToRemove = Object.keys(processes)
+		Object.keys(processes)
 			.filter(id => !newProcessIds[id])
-
-		entitiesToRemove.forEach(removeEntity)
-		processesToRemove.forEach(removeProcess)
+			.forEach(removeProcess)
 
 		addGraph(graphSpec)
 	}

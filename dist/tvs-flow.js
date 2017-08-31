@@ -31,18 +31,18 @@
     }([ function(e, t, r) {
         "use strict";
         function n(e) {
-            var t = e.id, r = void 0 === t ? Object(s.a)() : t, n = e.value, o = e.json, c = e.accept, a = e.reset, u = e.meta;
+            var t = e.id, r = void 0 === t ? Object(s.a)() : t, n = e.value, o = e.json, c = e.accept, i = e.reset, u = e.meta;
             return null == n && o && (n = JSON.parse(o)), {
                 id: r,
                 value: n,
                 accept: c,
-                reset: a,
-                meta: i({}, u)
+                reset: i,
+                meta: a({}, u)
             };
         }
         function o(e, t) {
             var r = e.id, n = void 0 === r ? Object(s.a)() : r, o = e.ports, c = void 0 === o ? [] : o, f = e.procedure, l = e.code, p = e.autostart, d = void 0 !== p && p, v = e.async, y = void 0 !== v && v, O = e.delta, h = void 0 !== O && O, b = e.meta;
-            if (null == f && null != l && (f = Object(a.a)(l, t)), null == f) throw TypeError("Process must have procedure or code set");
+            if (null == f && null != l && (f = Object(i.a)(l, t)), null == f) throw TypeError("Process must have procedure or code set");
             return h && !c.length && c.push(u.HOT), {
                 id: n,
                 ports: c,
@@ -50,7 +50,7 @@
                 autostart: d,
                 async: y,
                 delta: h,
-                meta: i({}, b)
+                meta: a({}, b)
             };
         }
         function c(e) {
@@ -62,7 +62,7 @@
                 entity: r,
                 process: n,
                 port: o,
-                meta: i({}, c)
+                meta: a({}, c)
             };
         }
         Object.defineProperty(t, "__esModule", {
@@ -70,7 +70,7 @@
         }), t.createEntity = n, t.createProcess = o, t.createArc = c, r.d(t, "PORT_TYPES", function() {
             return u;
         });
-        var s = r(1), a = r(5), i = this && this.__assign || Object.assign || function(e) {
+        var s = r(1), i = r(5), a = this && this.__assign || Object.assign || function(e) {
             for (var t, r = 1, n = arguments.length; r < n; r++) {
                 t = arguments[r];
                 for (var o in t) Object.prototype.hasOwnProperty.call(t, o) && (e[o] = t[o]);
@@ -84,7 +84,7 @@
     }, function(e, t, r) {
         "use strict";
         function n(e) {
-            var t = a, r = 0;
+            var t = i, r = 0;
             return t[e[r++]] + t[e[r++]] + t[e[r++]] + t[e[r++]] + "-" + t[e[r++]] + t[e[r++]] + "-" + t[e[r++]] + t[e[r++]] + "-" + t[e[r++]] + t[e[r++]] + "-" + t[e[r++]] + t[e[r++]] + t[e[r++]] + t[e[r++]] + t[e[r++]] + t[e[r++]];
         }
         function o() {
@@ -96,8 +96,8 @@
             for (var e = 0, t = void 0; e < 16; e++) 0 == (3 & e) && (t = 4294967296 * Math.random(), 
             c[e] = t >>> ((3 & e) << 3) & 255);
             return c;
-        }, a = [], i = {}, u = 0; u < 256; u++) a[u] = (u + 256).toString(16).substr(1), 
-        i[a[u]] = u;
+        }, i = [], a = {}, u = 0; u < 256; u++) i[u] = (u + 256).toString(16).substr(1), 
+        a[i[u]] = u;
     }, function(e, t, r) {
         "use strict";
         function n() {
@@ -131,9 +131,9 @@
         Object.defineProperty(t, "__esModule", {
             value: !0
         }), r.d(t, "runtime", function() {
-            return a;
-        }), r.d(t, "create", function() {
             return i;
+        }), r.d(t, "create", function() {
+            return a;
         }), r.d(t, "types", function() {
             return u;
         }), r.d(t, "utils", function() {
@@ -141,7 +141,7 @@
         });
         var n = r(4), o = r(6), c = r(2), s = r(0);
         t.default = n;
-        var a = n, i = n.create, u = s, f = {
+        var i = n, a = n.create, u = s, f = {
             entityRef: o,
             graph: c
         };
@@ -170,10 +170,10 @@
             function s() {
                 return L;
             }
-            function a(e) {
+            function i(e) {
                 null == e || "object" != typeof e || e instanceof Array || (L = c({}, L, e));
             }
-            function i(e) {
+            function a(e) {
                 H = e;
             }
             function u(e) {
@@ -254,7 +254,7 @@
                 if (e.entities) for (var t in e.entities) v(e.entities[t]);
                 if (e.processes) for (var t in e.processes) O(e.processes[t]);
                 if (e.arcs) for (var t in e.arcs) b(e.arcs[t]);
-                a(e.meta);
+                i(e.meta);
             }
             function m(e) {
                 var t = {}, r = {};
@@ -266,12 +266,11 @@
                     var c = e.processes[n];
                     c.id && (r[c.id] = !0);
                 }
-                var s = Object.keys(k).filter(function(e) {
+                Object.keys(k).filter(function(e) {
                     return !t[e];
-                }), a = Object.keys(w).filter(function(e) {
+                }).forEach(y), Object.keys(w).filter(function(e) {
                     return !r[e];
-                });
-                s.forEach(y), a.forEach(h), j(e);
+                }).forEach(h), j(e);
             }
             function P() {
                 H && console.log("flushing graph recursively with", I);
@@ -284,8 +283,8 @@
                 }
                 var s = {};
                 I = {}, F = !1, D = !0;
-                for (var a = 0, i = e; a < i.length; a++) {
-                    var n = i[a], o = U.es[n];
+                for (var i = 0, a = e; i < a.length; i++) {
+                    var n = a[i], o = U.es[n];
                     o.cb.length > 0 && (G[n] = o);
                     for (var c in o.effects) s[c] || (T(o.effects[c]), s[c] = !0);
                 }
@@ -371,11 +370,11 @@
                 replaceGraph: m,
                 getGraph: e,
                 getState: t,
-                setMeta: a,
+                setMeta: i,
                 getMeta: s,
                 getContext: r,
                 setContext: n,
-                setDebug: i,
+                setDebug: a,
                 get: u,
                 set: f,
                 update: l,
@@ -410,7 +409,7 @@
             return t ? t + "." + e : e;
         }
         function o(e) {
-            var t, r, o, c = e.value, a = Object(p.a)(), i = [], u = {};
+            var t, r, o, c = e.value, i = Object(p.a)(), a = [], u = {};
             return u.HOT = {
                 entity: u,
                 type: l.PORT_TYPES.HOT
@@ -418,7 +417,7 @@
                 entity: u,
                 type: l.PORT_TYPES.COLD
             }, u.id = function(e, r) {
-                return a = n(e, r), t = r, u;
+                return i = n(e, r), t = r, u;
             }, u.val = function(e) {
                 return c = e, u;
             }, u.updateVal = function(e) {
@@ -428,26 +427,26 @@
             }, u.reset = function() {
                 return o = !0, u;
             }, u.getId = function() {
-                return a;
-            }, e.procedure && i.push(e), u.react = function(e, t, r) {
+                return i;
+            }, e.procedure && a.push(e), u.react = function(e, t, r) {
                 var n = s(e, t, r);
                 n.pidSuffix = y;
                 var o = n.dependencies;
                 return n.dependencies = [ {
                     entity: u,
                     type: l.PORT_TYPES.ACCUMULATOR
-                } ], o && o.length && (n.dependencies = n.dependencies.concat(o)), i.push(n), u;
+                } ], o && o.length && (n.dependencies = n.dependencies.concat(o)), a.push(n), u;
             }, u.getGraph = function() {
                 var e = f.empty();
-                return e.entities[a] = Object(l.createEntity)({
-                    id: a,
+                return e.entities[i] = Object(l.createEntity)({
+                    id: i,
                     value: c,
                     accept: r,
                     reset: o
-                }), i.forEach(function(r) {
-                    var o = r.dependencies, c = r.processId ? n(r.processId, t) : a + r.pidSuffix + (o && o.length ? ":" + o.reduce(function(e, t) {
+                }), a.forEach(function(r) {
+                    var o = r.dependencies, c = r.processId ? n(r.processId, t) : i + r.pidSuffix + (o && o.length ? ":" + o.reduce(function(e, t) {
                         var r = t.entity.getId();
-                        return r === a ? e : e + ":" + r;
+                        return r === i ? e : e + ":" + r;
                     }, "") : ""), s = [];
                     o && o.forEach(function(t, r) {
                         if (s[r] = t.type, t.type !== l.PORT_TYPES.ACCUMULATOR) {
@@ -459,11 +458,11 @@
                             e.arcs[n.id] = n;
                         }
                     });
-                    var i = Object(l.createArc)({
+                    var a = Object(l.createArc)({
                         process: c,
-                        entity: a
+                        entity: i
                     });
-                    e.arcs[i.id] = i, e.processes[c] = Object(l.createProcess)({
+                    e.arcs[a.id] = a, e.processes[c] = Object(l.createProcess)({
                         id: c,
                         ports: s,
                         procedure: r.procedure,
@@ -486,13 +485,13 @@
             return null != e && (n.dependencies = e), "string" == typeof r ? n.processId = r : n.pidSuffix = v, 
             n;
         }
-        function a(e) {
+        function i(e) {
             return e && "function" == typeof e.id && "function" == typeof e.getGraph && e.HOT && e.COLD;
         }
-        function i(e, t) {
+        function a(e, t) {
             for (var r in e) {
                 var n = e[r];
-                a(n) && n.id(r, t);
+                i(n) && n.id(r, t);
             }
             return e;
         }
@@ -500,7 +499,7 @@
             var t = [];
             for (var r in e) {
                 var n = e[r];
-                a(n) && t.push(n);
+                i(n) && t.push(n);
             }
             return t.reduce(function(e, t) {
                 return f.merge(e, t.getGraph());
@@ -518,7 +517,7 @@
             return g;
         }), r.d(t, "delta", function() {
             return _;
-        }), t.isEntity = a, t.resolveEntityIds = i, t.getGraphFromAll = u;
+        }), t.isEntity = i, t.resolveEntityIds = a, t.getGraphFromAll = u;
         var f = r(2), l = r(0), p = r(1), d = this && this.__assign || Object.assign || function(e) {
             for (var t, r = 1, n = arguments.length; r < n; r++) {
                 t = arguments[r];
