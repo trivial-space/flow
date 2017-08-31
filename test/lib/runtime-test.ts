@@ -2216,5 +2216,14 @@ describe('Flow runtime', function() {
 				arcs: {}
 			})
 		})
+
+
+		it('setMeta returns new Meta', function() {
+			const result = sys.setMeta({
+				foo: 'bar'
+			})
+
+			expect(result).to.equal(sys.getMeta())
+		})
 	})
 })

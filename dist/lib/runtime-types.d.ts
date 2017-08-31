@@ -135,7 +135,7 @@ export interface Runtime {
     getState: () => {
         [id: string]: any;
     };
-    setMeta: (newMeta: Meta) => void;
+    setMeta: (newMeta: Meta) => Meta;
     getMeta: () => Meta;
     getContext: () => null;
     setContext: (ctx: any) => void;

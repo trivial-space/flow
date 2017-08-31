@@ -165,7 +165,8 @@
                 return Y;
             }
             function i(e) {
-                null == e || "object" != typeof e || Array.isArray(e) || (Y = Object(c.a)(Y, e));
+                return null == e || "object" != typeof e || Array.isArray(e) || (Y = Object(c.a)(Y, e)), 
+                Y;
             }
             function u(e) {
                 G = e;

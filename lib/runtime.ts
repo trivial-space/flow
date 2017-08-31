@@ -79,6 +79,7 @@ export function create (): Runtime {
 		if (newMeta != null && typeof newMeta === 'object' && !(Array.isArray(newMeta))) {
 			meta = deepmerge(meta, newMeta)
 		}
+		return meta
 	}
 
 

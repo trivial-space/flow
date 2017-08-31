@@ -42,6 +42,7 @@ export function create() {
         if (newMeta != null && typeof newMeta === 'object' && !(Array.isArray(newMeta))) {
             meta = deepmerge(meta, newMeta);
         }
+        return meta;
     }
     function setDebug(isDebug) {
         debug = isDebug;

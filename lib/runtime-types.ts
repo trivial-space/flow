@@ -166,7 +166,7 @@ export interface Runtime {
 	replaceGraph: (graphSpec: GraphData) => void
 	getGraph: () => Graph
 	getState: () => { [id: string]: any }
-	setMeta: (newMeta: Meta) => void
+	setMeta: (newMeta: Meta) => Meta
 	getMeta: () => Meta
 	getContext: () => null
 	setContext: (ctx: any) => void
