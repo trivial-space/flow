@@ -7,6 +7,7 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
     return t;
 };
 import { createEntity, createProcess, PORT_TYPES, createArc } from './runtime-types';
+import { deepmerge } from 'utils/helpers';
 export function create() {
     var entities = {};
     var processes = {};
@@ -38,8 +39,8 @@ export function create() {
         return meta;
     }
     function setMeta(newMeta) {
-        if (newMeta != null && typeof newMeta === 'object' && !(newMeta instanceof Array)) {
-            meta = __assign({}, meta, newMeta);
+        if (newMeta != null && typeof newMeta === 'object' && !(Array.isArray(newMeta))) {
+            meta = deepmerge(meta, newMeta);
         }
     }
     function setDebug(isDebug) {
@@ -79,15 +80,30 @@ export function create() {
             processGraph = true;
         }
         eE.accept = e.accept;
+        e.meta && setMeta({
+            entities: (_a = {},
+                _a[e.id] = e.meta,
+                _a)
+        });
         return e;
+        var _a;
     }
     function removeEntity(id) {
         var eE = engineE(id);
         for (var aId in eE.arcs) {
             removeArc(aId);
         }
+        var e = entities[id];
+        if (e && e.meta) {
+            setMeta({
+                entities: (_a = {},
+                    _a[e.id] = undefined,
+                    _a)
+            });
+        }
         delete engine.es[id];
         delete entities[id];
+        var _a;
     }
     function addProcess(spec) {
         var p = createProcess(spec, context);
@@ -114,7 +130,13 @@ export function create() {
         for (var aId in eP.arcs) {
             updateArc(arcs[aId]);
         }
+        p.meta && setMeta({
+            processes: (_a = {},
+                _a[p.id] = p.meta,
+                _a)
+        });
         return p;
+        var _a;
     }
     function removeProcess(id) {
         var eP = engineP(id);
@@ -126,7 +148,16 @@ export function create() {
             removeArc(aId);
         }
         delete engine.ps[id];
+        var p = processes[id];
+        if (p && p.meta) {
+            setMeta({
+                processes: (_a = {},
+                    _a[p.id] = undefined,
+                    _a)
+            });
+        }
         delete processes[id];
+        var _a;
     }
     function addArc(spec) {
         var arc = createArc(spec);
@@ -137,7 +168,13 @@ export function create() {
             Object.keys(eP.arcs).length === Object.keys(p.ports).length + 1) {
             autostart(eP);
         }
+        arc.meta && setMeta({
+            arcs: (_a = {},
+                _a[arc.id] = arc.meta,
+                _a)
+        });
         return arc;
+        var _a;
     }
     function removeArc(id) {
         var arc = arcs[id];
@@ -159,8 +196,14 @@ export function create() {
                 delete eP.out;
                 delete eE.reactions[arc.process];
             }
+            arc.meta && setMeta({
+                arcs: (_a = {},
+                    _a[arc.id] = undefined,
+                    _a)
+            });
         }
         delete arcs[id];
+        var _a;
     }
     function updateArc(arc) {
         var pId = arc.process, eId = arc.entity, eP = engineP(pId), eE = engineE(eId), p = processes[pId];

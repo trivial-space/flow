@@ -1,4 +1,5 @@
 import { AcceptPredicate, Runtime, Entity, Process, Arc, Meta, EntityData, createEntity, ProcessData, createProcess, PORT_TYPES, ArcData, createArc, PortType, GraphData } from './runtime-types'
+import { deepmerge } from 'utils/helpers'
 
 
 interface EngineEntity {
@@ -75,8 +76,8 @@ export function create (): Runtime {
 
 
 	function setMeta (newMeta: any) {
-		if (newMeta != null && typeof newMeta === 'object' && !(newMeta instanceof Array)) {
-			meta = { ...meta, ...newMeta }
+		if (newMeta != null && typeof newMeta === 'object' && !(Array.isArray(newMeta))) {
+			meta = deepmerge(meta, newMeta)
 		}
 	}
 
@@ -137,6 +138,12 @@ export function create (): Runtime {
 
 		eE.accept = e.accept
 
+		e.meta && setMeta({
+			entities: {
+				[e.id]: e.meta
+			}
+		})
+
 		return e
 	}
 
@@ -146,6 +153,16 @@ export function create (): Runtime {
 		for (const aId in eE.arcs) {
 			removeArc(aId)
 		}
+
+		const e = entities[id]
+		if (e && e.meta) {
+			setMeta({
+				entities: {
+					[e.id]: undefined
+				}
+			})
+		}
+
 		delete engine.es[id]
 		delete entities[id]
 	}
@@ -185,6 +202,12 @@ export function create (): Runtime {
 			updateArc(arcs[aId])
 		}
 
+		p.meta && setMeta({
+			processes: {
+				[p.id]: p.meta
+			}
+		})
+
 		return p
 	}
 
@@ -199,6 +222,16 @@ export function create (): Runtime {
 			removeArc(aId)
 		}
 		delete engine.ps[id]
+		const p = processes[id]
+
+		if (p && p.meta) {
+			setMeta({
+				processes: {
+					[p.id]: undefined
+				}
+			})
+		}
+
 		delete processes[id]
 	}
 
@@ -215,6 +248,12 @@ export function create (): Runtime {
 			Object.keys(eP.arcs).length === Object.keys(p.ports).length + 1) {
 			autostart(eP)
 		}
+
+		arc.meta && setMeta({
+			arcs: {
+				[arc.id]: arc.meta
+			}
+		})
 
 		return arc
 	}
@@ -243,6 +282,13 @@ export function create (): Runtime {
 				delete eP.out
 				delete eE.reactions[arc.process]
 			}
+
+			arc.meta && setMeta({
+				arcs: {
+					[arc.id]: undefined
+				}
+			})
+
 		}
 		delete arcs[id]
 	}

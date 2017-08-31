@@ -31,26 +31,26 @@
     }([ function(e, t, r) {
         "use strict";
         function n(e) {
-            var t = e.id, r = void 0 === t ? Object(s.a)() : t, n = e.value, o = e.json, c = e.accept, i = e.reset, u = e.meta;
+            var t = e.id, r = void 0 === t ? Object(a.a)() : t, n = e.value, o = e.json, c = e.accept, s = e.reset, i = e.meta;
             return null == n && o && (n = JSON.parse(o)), {
                 id: r,
                 value: n,
                 accept: c,
-                reset: i,
-                meta: a({}, u)
+                reset: s,
+                meta: i
             };
         }
         function o(e, t) {
-            var r = e.id, n = void 0 === r ? Object(s.a)() : r, o = e.ports, c = void 0 === o ? [] : o, f = e.procedure, l = e.code, p = e.autostart, d = void 0 !== p && p, v = e.async, y = void 0 !== v && v, O = e.delta, h = void 0 !== O && O, b = e.meta;
-            if (null == f && null != l && (f = Object(i.a)(l, t)), null == f) throw TypeError("Process must have procedure or code set");
-            return h && !c.length && c.push(u.HOT), {
+            var r = e.id, n = void 0 === r ? Object(a.a)() : r, o = e.ports, c = void 0 === o ? [] : o, u = e.procedure, f = e.code, l = e.autostart, p = void 0 !== l && l, d = e.async, v = void 0 !== d && d, y = e.delta, O = void 0 !== y && y, h = e.meta;
+            if (null == u && null != f && (u = Object(s.a)(f, t)), null == u) throw TypeError("Process must have procedure or code set");
+            return O && !c.length && c.push(i.HOT), {
                 id: n,
                 ports: c,
-                procedure: f,
-                autostart: d,
-                async: y,
-                delta: h,
-                meta: a({}, b)
+                procedure: u,
+                autostart: p,
+                async: v,
+                delta: O,
+                meta: h
             };
         }
         function c(e) {
@@ -62,21 +62,15 @@
                 entity: r,
                 process: n,
                 port: o,
-                meta: a({}, c)
+                meta: c
             };
         }
         Object.defineProperty(t, "__esModule", {
             value: !0
         }), t.createEntity = n, t.createProcess = o, t.createArc = c, r.d(t, "PORT_TYPES", function() {
-            return u;
+            return i;
         });
-        var s = r(1), i = r(5), a = this && this.__assign || Object.assign || function(e) {
-            for (var t, r = 1, n = arguments.length; r < n; r++) {
-                t = arguments[r];
-                for (var o in t) Object.prototype.hasOwnProperty.call(t, o) && (e[o] = t[o]);
-            }
-            return e;
-        }, u = {
+        var a = r(1), s = r(5), i = {
             COLD: "COLD",
             HOT: "HOT",
             ACCUMULATOR: "ACCUMULATOR"
@@ -84,20 +78,20 @@
     }, function(e, t, r) {
         "use strict";
         function n(e) {
-            var t = i, r = 0;
+            var t = s, r = 0;
             return t[e[r++]] + t[e[r++]] + t[e[r++]] + t[e[r++]] + "-" + t[e[r++]] + t[e[r++]] + "-" + t[e[r++]] + t[e[r++]] + "-" + t[e[r++]] + t[e[r++]] + "-" + t[e[r++]] + t[e[r++]] + t[e[r++]] + t[e[r++]] + t[e[r++]] + t[e[r++]];
         }
         function o() {
-            var e = s();
+            var e = a();
             return e[6] = 15 & e[6] | 64, e[8] = 63 & e[8] | 128, n(e);
         }
         t.a = o;
-        for (var c = new Array(16), s = function() {
+        for (var c = new Array(16), a = function() {
             for (var e = 0, t = void 0; e < 16; e++) 0 == (3 & e) && (t = 4294967296 * Math.random(), 
             c[e] = t >>> ((3 & e) << 3) & 255);
             return c;
-        }, i = [], a = {}, u = 0; u < 256; u++) i[u] = (u + 256).toString(16).substr(1), 
-        a[i[u]] = u;
+        }, s = [], i = {}, u = 0; u < 256; u++) s[u] = (u + 256).toString(16).substr(1), 
+        i[s[u]] = u;
     }, function(e, t, r) {
         "use strict";
         function n() {
@@ -131,17 +125,17 @@
         Object.defineProperty(t, "__esModule", {
             value: !0
         }), r.d(t, "runtime", function() {
-            return i;
+            return s;
         }), r.d(t, "create", function() {
-            return a;
+            return i;
         }), r.d(t, "types", function() {
             return u;
         }), r.d(t, "utils", function() {
             return f;
         });
-        var n = r(4), o = r(6), c = r(2), s = r(0);
+        var n = r(4), o = r(7), c = r(2), a = r(0);
         t.default = n;
-        var i = n, a = n.create, u = s, f = {
+        var s = n, i = n.create, u = a, f = {
             entityRef: o,
             graph: c
         };
@@ -150,113 +144,134 @@
         function n() {
             function e() {
                 return {
-                    entities: k,
-                    processes: w,
-                    arcs: M,
-                    meta: L
+                    entities: w,
+                    processes: M,
+                    arcs: U,
+                    meta: Y
                 };
             }
             function t() {
                 var e = {};
-                for (var t in U.es) e[t] = U.es[t].val;
+                for (var t in L.es) e[t] = L.es[t].val;
                 return e;
             }
             function r() {
-                return Y;
+                return H;
             }
             function n(e) {
-                Y = e;
-            }
-            function s() {
-                return L;
-            }
-            function i(e) {
-                null == e || "object" != typeof e || e instanceof Array || (L = c({}, L, e));
-            }
-            function a(e) {
                 H = e;
             }
-            function u(e) {
-                return U.es[e] && U.es[e].val;
+            function s() {
+                return Y;
             }
-            function f(e, t) {
-                E(C(e), t, !0) && P();
+            function i(e) {
+                null == e || "object" != typeof e || Array.isArray(e) || (Y = Object(c.a)(Y, e));
+            }
+            function u(e) {
+                G = e;
+            }
+            function f(e) {
+                return L.es[e] && L.es[e].val;
             }
             function l(e, t) {
-                f(e, t(u(e)));
+                E(R(e), t, !0) && T();
             }
             function p(e, t) {
-                C(e).cb.push(t);
+                l(e, t(f(e)));
             }
             function d(e, t) {
-                var r = C(e);
+                R(e).cb.push(t);
+            }
+            function v(e, t) {
+                var r = R(e);
                 r.cb = t ? r.cb.filter(function(e) {
                     return e !== t;
                 }) : [];
             }
-            function v(e) {
-                var t = Object(o.createEntity)(e);
-                k[t.id] = t;
-                var r = C(t.id);
-                return null == t.value || !t.reset && null != r.val || (r.val = t.value, I[t.id] = !1, 
-                F = !0), r.accept = t.accept, t;
-            }
             function y(e) {
-                var t = C(e);
-                for (var r in t.arcs) g(r);
-                delete U.es[e], delete k[e];
+                var t = Object(o.createEntity)(e);
+                w[t.id] = t;
+                var r = R(t.id);
+                return null == t.value || !t.reset && null != r.val || (r.val = t.value, D[t.id] = !1, 
+                V = !0), r.accept = t.accept, t.meta && i({
+                    entities: (n = {}, n[t.id] = t.meta, n)
+                }), t;
+                var n;
             }
             function O(e) {
-                var t = Object(o.createProcess)(e, Y), r = t.ports, n = R(t.id);
-                w[t.id] = t, delete n.acc, n.values = [], n.sources = [], n.async = t.async, n.delta = t.delta, 
+                var t = R(e);
+                for (var r in t.arcs) m(r);
+                var n = w[e];
+                n && n.meta && i({
+                    entities: (o = {}, o[n.id] = void 0, o)
+                }), delete L.es[e], delete w[e];
+                var o;
+            }
+            function h(e) {
+                var t = Object(o.createProcess)(e, H), r = t.ports, n = k(t.id);
+                M[t.id] = t, delete n.acc, n.values = [], n.sources = [], n.async = t.async, n.delta = t.delta, 
                 Object.keys(n.arcs).forEach(function(e) {
-                    var t = M[e].port;
-                    null == t || r[t] && r[t] !== o.PORT_TYPES.ACCUMULATOR || g(e);
+                    var t = U[e].port;
+                    null == t || r[t] && r[t] !== o.PORT_TYPES.ACCUMULATOR || m(e);
                 }), r.forEach(function(e, t) {
                     e === o.PORT_TYPES.ACCUMULATOR && (n.acc = t);
                 });
-                for (var c in n.arcs) _(M[c]);
-                return t;
-            }
-            function h(e) {
-                var t = R(e);
-                t.stop && (t.stop(), delete t.stop);
-                for (var r in t.arcs) g(r);
-                delete U.ps[e], delete w[e];
+                for (var c in n.arcs) _(U[c]);
+                return t.meta && i({
+                    processes: (a = {}, a[t.id] = t.meta, a)
+                }), t;
+                var a;
             }
             function b(e) {
-                var t = Object(o.createArc)(e);
-                M[t.id] = t, _(t);
-                var r = R(t.process), n = w[t.process];
-                return n && !0 === n.autostart && Object.keys(r.arcs).length === Object.keys(n.ports).length + 1 && x(r), 
-                t;
+                var t = k(e);
+                t.stop && (t.stop(), delete t.stop);
+                for (var r in t.arcs) m(r);
+                delete L.ps[e];
+                var n = M[e];
+                n && n.meta && i({
+                    processes: (o = {}, o[n.id] = void 0, o)
+                }), delete M[e];
+                var o;
             }
             function g(e) {
-                var t = M[e];
+                var t = Object(o.createArc)(e);
+                U[t.id] = t, _(t);
+                var r = k(t.process), n = M[t.process];
+                return n && !0 === n.autostart && Object.keys(r.arcs).length === Object.keys(n.ports).length + 1 && x(r), 
+                t.meta && i({
+                    arcs: (c = {}, c[t.id] = t.meta, c)
+                }), t;
+                var c;
+            }
+            function m(e) {
+                var t = U[e];
                 if (t) {
-                    var r = R(t.process), n = C(t.entity);
+                    var r = k(t.process), n = R(t.entity);
                     delete r.arcs[e], delete n.arcs[e], null != t.port ? (delete n.effects[t.process], 
                     delete r.sources[t.port], delete r.values[t.port]) : (r.stop && (r.stop(), delete r.stop), 
-                    r.sink = function() {}, delete r.out, delete n.reactions[t.process]);
+                    r.sink = function() {}, delete r.out, delete n.reactions[t.process]), t.meta && i({
+                        arcs: (o = {}, o[t.id] = void 0, o)
+                    });
                 }
-                delete M[e];
+                delete U[e];
+                var o;
             }
             function _(e) {
-                var t = e.process, r = e.entity, n = R(t), c = C(r), s = w[t];
-                c.arcs[e.id] = !0, s && (n.arcs[e.id] = !0, null != e.port ? (delete c.effects[t], 
-                s.ports && null != s.ports[e.port] && (n.sources[e.port] = c, s.ports[e.port] === o.PORT_TYPES.HOT && (c.effects[t] = n))) : (n.out = c, 
+                var t = e.process, r = e.entity, n = k(t), c = R(r), a = M[t];
+                c.arcs[e.id] = !0, a && (n.arcs[e.id] = !0, null != e.port ? (delete c.effects[t], 
+                a.ports && null != a.ports[e.port] && (n.sources[e.port] = c, a.ports[e.port] === o.PORT_TYPES.HOT && (c.effects[t] = n))) : (n.out = c, 
                 null != n.acc ? (n.sources[n.acc] = c, c.reactions[t] = n) : delete c.reactions[t], 
                 n.sink = function(e) {
-                    E(c, e, !0) && !D && P();
+                    E(c, e, !0) && !F && T();
                 }));
             }
             function j(e) {
-                if (e.entities) for (var t in e.entities) v(e.entities[t]);
-                if (e.processes) for (var t in e.processes) O(e.processes[t]);
-                if (e.arcs) for (var t in e.arcs) b(e.arcs[t]);
+                if (e.entities) for (var t in e.entities) y(e.entities[t]);
+                if (e.processes) for (var t in e.processes) h(e.processes[t]);
+                if (e.arcs) for (var t in e.arcs) g(e.arcs[t]);
                 i(e.meta);
             }
-            function m(e) {
+            function P(e) {
                 var t = {}, r = {};
                 if (e.entities) for (var n in e.entities) {
                     var o = e.entities[n];
@@ -266,39 +281,39 @@
                     var c = e.processes[n];
                     c.id && (r[c.id] = !0);
                 }
-                Object.keys(k).filter(function(e) {
+                Object.keys(w).filter(function(e) {
                     return !t[e];
-                }).forEach(y), Object.keys(w).filter(function(e) {
+                }).forEach(O), Object.keys(M).filter(function(e) {
                     return !r[e];
-                }).forEach(h), j(e);
+                }).forEach(b), j(e);
             }
-            function P() {
-                H && console.log("flushing graph recursively with", I);
-                for (var e = Object.keys(I), t = 0, r = e; t < r.length; t++) {
+            function T() {
+                G && console.log("flushing graph recursively with", D);
+                for (var e = Object.keys(D), t = 0, r = e; t < r.length; t++) {
                     var n = r[t];
-                    if (I[n]) {
-                        var o = U.es[n];
-                        for (var c in o.reactions) T(o.reactions[c]);
+                    if (D[n]) {
+                        var o = L.es[n];
+                        for (var c in o.reactions) A(o.reactions[c]);
                     }
                 }
-                var s = {};
-                I = {}, F = !1, D = !0;
-                for (var i = 0, a = e; i < a.length; i++) {
-                    var n = a[i], o = U.es[n];
-                    o.cb.length > 0 && (G[n] = o);
-                    for (var c in o.effects) s[c] || (T(o.effects[c]), s[c] = !0);
+                var a = {};
+                D = {}, V = !1, F = !0;
+                for (var s = 0, i = e; s < i.length; s++) {
+                    var n = i[s], o = L.es[n];
+                    o.cb.length > 0 && (I[n] = o);
+                    for (var c in o.effects) a[c] || (A(o.effects[c]), a[c] = !0);
                 }
-                if (D = !1, F) P(); else {
-                    var u = Object.keys(G);
-                    G = {};
-                    for (var f in u) for (var o = U.es[u[f]], l = 0, p = o.cb; l < p.length; l++) {
+                if (F = !1, V) T(); else {
+                    var u = Object.keys(I);
+                    I = {};
+                    for (var f in u) for (var o = L.es[u[f]], l = 0, p = o.cb; l < p.length; l++) {
                         var d = p[l];
                         d(o.val);
                     }
-                    H && console.log("flush finished");
+                    G && console.log("flush finished");
                 }
             }
-            function T(e) {
+            function A(e) {
                 for (var t = !0, r = 0; r < e.sources.length; r++) {
                     var n = e.sources[r];
                     if (null == n.val) {
@@ -313,33 +328,33 @@
                         e.values[r + 1] = n.oldVal;
                     }
                 }
-                if (t) if (H && console.log("running process", e.id), e.async) e.stop && e.stop(), 
-                e.stop = w[e.id].procedure.apply(Y, [ e.sink ].concat(e.values)); else {
-                    var o = w[e.id].procedure.apply(Y, e.values);
+                if (t) if (G && console.log("running process", e.id), e.async) e.stop && e.stop(), 
+                e.stop = M[e.id].procedure.apply(H, [ e.sink ].concat(e.values)); else {
+                    var o = M[e.id].procedure.apply(H, e.values);
                     e.out && E(e.out, o, null == e.acc);
                 }
             }
             function E(e, t, r) {
-                return !(e.accept && !e.accept(t, e.val)) && (e.oldVal = e.val, e.val = t, null != t && (I[e.id] = r, 
-                F = !0), !0);
+                return !(e.accept && !e.accept(t, e.val)) && (e.oldVal = e.val, e.val = t, null != t && (D[e.id] = r, 
+                V = !0), !0);
             }
             function x(e) {
                 e.async ? requestAnimationFrame(function() {
-                    T(e);
-                }) : (T(e), e.out && (I[e.out.id] = !1));
-            }
-            function A(e) {
-                var t = R(e);
-                T(t), t.async || P();
+                    A(e);
+                }) : (A(e), e.out && (D[e.out.id] = !1));
             }
             function S(e) {
-                var t = R(e);
-                t.stop && (t.stop(), delete t.stop);
+                var t = k(e);
+                A(t), t.async || T();
             }
             function C(e) {
-                return k[e] || v({
+                var t = k(e);
+                t.stop && (t.stop(), delete t.stop);
+            }
+            function R(e) {
+                return w[e] || y({
                     id: e
-                }), U.es[e] || (U.es[e] = {
+                }), L.es[e] || (L.es[e] = {
                     id: e,
                     val: void 0,
                     reactions: {},
@@ -348,48 +363,48 @@
                     cb: []
                 });
             }
-            function R(e) {
-                return U.ps[e] || (U.ps[e] = {
+            function k(e) {
+                return L.ps[e] || (L.ps[e] = {
                     id: e,
                     arcs: {},
                     sink: function() {}
                 });
             }
-            var k = {}, w = {}, M = {}, U = {
+            var w = {}, M = {}, U = {}, L = {
                 es: {},
                 ps: {}
-            }, L = {}, Y = null, H = !1, G = {}, I = {}, D = !1, F = !1;
+            }, Y = {}, H = null, G = !1, I = {}, D = {}, F = !1, V = !1;
             return {
-                addEntity: v,
-                removeEntity: y,
-                addProcess: O,
-                removeProcess: h,
-                addArc: b,
-                removeArc: g,
+                addEntity: y,
+                removeEntity: O,
+                addProcess: h,
+                removeProcess: b,
+                addArc: g,
+                removeArc: m,
                 addGraph: j,
-                replaceGraph: m,
+                replaceGraph: P,
                 getGraph: e,
                 getState: t,
                 setMeta: i,
                 getMeta: s,
                 getContext: r,
                 setContext: n,
-                setDebug: a,
-                get: u,
-                set: f,
-                update: l,
-                on: p,
-                off: d,
-                start: A,
-                stop: S,
-                flush: P,
-                PORT_TYPES: c({}, o.PORT_TYPES)
+                setDebug: u,
+                get: f,
+                set: l,
+                update: p,
+                on: d,
+                off: v,
+                start: S,
+                stop: C,
+                flush: T,
+                PORT_TYPES: a({}, o.PORT_TYPES)
             };
         }
         Object.defineProperty(t, "__esModule", {
             value: !0
         }), t.create = n;
-        var o = r(0), c = this && this.__assign || Object.assign || function(e) {
+        var o = r(0), c = r(6), a = this && this.__assign || Object.assign || function(e) {
             for (var t, r = 1, n = arguments.length; r < n; r++) {
                 t = arguments[r];
                 for (var o in t) Object.prototype.hasOwnProperty.call(t, o) && (e[o] = t[o]);
@@ -406,10 +421,31 @@
     }, function(e, t, r) {
         "use strict";
         function n(e, t) {
+            if ("object" == typeof e && "object" == typeof t && !Array.isArray(e) && !Array.isArray(t)) {
+                var r = o({}, e);
+                for (var c in t) {
+                    var a = e[c], s = t[c];
+                    void 0 !== s ? r[c] = n(a, s) : delete r[c];
+                }
+                return r;
+            }
+            return t;
+        }
+        t.a = n;
+        var o = this && this.__assign || Object.assign || function(e) {
+            for (var t, r = 1, n = arguments.length; r < n; r++) {
+                t = arguments[r];
+                for (var o in t) Object.prototype.hasOwnProperty.call(t, o) && (e[o] = t[o]);
+            }
+            return e;
+        };
+    }, function(e, t, r) {
+        "use strict";
+        function n(e, t) {
             return t ? t + "." + e : e;
         }
         function o(e) {
-            var t, r, o, c = e.value, i = Object(p.a)(), a = [], u = {};
+            var t, r, o, c = e.value, s = Object(p.a)(), i = [], u = {};
             return u.HOT = {
                 entity: u,
                 type: l.PORT_TYPES.HOT
@@ -417,7 +453,7 @@
                 entity: u,
                 type: l.PORT_TYPES.COLD
             }, u.id = function(e, r) {
-                return i = n(e, r), t = r, u;
+                return s = n(e, r), t = r, u;
             }, u.val = function(e) {
                 return c = e, u;
             }, u.updateVal = function(e) {
@@ -427,29 +463,29 @@
             }, u.reset = function() {
                 return o = !0, u;
             }, u.getId = function() {
-                return i;
-            }, e.procedure && a.push(e), u.react = function(e, t, r) {
-                var n = s(e, t, r);
+                return s;
+            }, e.procedure && i.push(e), u.react = function(e, t, r) {
+                var n = a(e, t, r);
                 n.pidSuffix = y;
                 var o = n.dependencies;
                 return n.dependencies = [ {
                     entity: u,
                     type: l.PORT_TYPES.ACCUMULATOR
-                } ], o && o.length && (n.dependencies = n.dependencies.concat(o)), a.push(n), u;
+                } ], o && o.length && (n.dependencies = n.dependencies.concat(o)), i.push(n), u;
             }, u.getGraph = function() {
                 var e = f.empty();
-                return e.entities[i] = Object(l.createEntity)({
-                    id: i,
+                return e.entities[s] = Object(l.createEntity)({
+                    id: s,
                     value: c,
                     accept: r,
                     reset: o
-                }), a.forEach(function(r) {
-                    var o = r.dependencies, c = r.processId ? n(r.processId, t) : i + r.pidSuffix + (o && o.length ? ":" + o.reduce(function(e, t) {
+                }), i.forEach(function(r) {
+                    var o = r.dependencies, c = r.processId ? n(r.processId, t) : s + r.pidSuffix + (o && o.length ? ":" + o.reduce(function(e, t) {
                         var r = t.entity.getId();
-                        return r === i ? e : e + ":" + r;
-                    }, "") : ""), s = [];
+                        return r === s ? e : e + ":" + r;
+                    }, "") : ""), a = [];
                     o && o.forEach(function(t, r) {
-                        if (s[r] = t.type, t.type !== l.PORT_TYPES.ACCUMULATOR) {
+                        if (a[r] = t.type, t.type !== l.PORT_TYPES.ACCUMULATOR) {
                             var n = Object(l.createArc)({
                                 process: c,
                                 entity: t.entity.getId(),
@@ -458,13 +494,13 @@
                             e.arcs[n.id] = n;
                         }
                     });
-                    var a = Object(l.createArc)({
+                    var i = Object(l.createArc)({
                         process: c,
-                        entity: i
+                        entity: s
                     });
-                    e.arcs[a.id] = a, e.processes[c] = Object(l.createProcess)({
+                    e.arcs[i.id] = i, e.processes[c] = Object(l.createProcess)({
                         id: c,
-                        ports: s,
+                        ports: a,
                         procedure: r.procedure,
                         async: r.async,
                         autostart: r.autostart,
@@ -478,20 +514,20 @@
                 value: e
             });
         }
-        function s(e, t, r) {
+        function a(e, t, r) {
             var n = {
                 procedure: t
             };
             return null != e && (n.dependencies = e), "string" == typeof r ? n.processId = r : n.pidSuffix = v, 
             n;
         }
-        function i(e) {
+        function s(e) {
             return e && "function" == typeof e.id && "function" == typeof e.getGraph && e.HOT && e.COLD;
         }
-        function a(e, t) {
+        function i(e, t) {
             for (var r in e) {
                 var n = e[r];
-                i(n) && n.id(r, t);
+                s(n) && n.id(r, t);
             }
             return e;
         }
@@ -499,7 +535,7 @@
             var t = [];
             for (var r in e) {
                 var n = e[r];
-                i(n) && t.push(n);
+                s(n) && t.push(n);
             }
             return t.reduce(function(e, t) {
                 return f.merge(e, t.getGraph());
@@ -516,8 +552,8 @@
         }), r.d(t, "asyncStreamStart", function() {
             return g;
         }), r.d(t, "delta", function() {
-            return _;
-        }), t.isEntity = i, t.resolveEntityIds = a, t.getGraphFromAll = u;
+            return m;
+        }), t.isEntity = s, t.resolveEntityIds = i, t.getGraphFromAll = u;
         var f = r(2), l = r(0), p = r(1), d = this && this.__assign || Object.assign || function(e) {
             for (var t, r = 1, n = arguments.length; r < n; r++) {
                 t = arguments[r];
@@ -525,22 +561,22 @@
             }
             return e;
         }, v = "Stream", y = "Reaction", O = function(e, t, r) {
-            return o(s(e, t, r));
+            return o(a(e, t, r));
         }, h = function(e, t, r) {
-            return o(d({}, s(e, t, r), {
+            return o(d({}, a(e, t, r), {
                 async: !0
             }));
         }, b = function(e, t, r) {
-            return o(d({}, s(e, t, r), {
+            return o(d({}, a(e, t, r), {
                 autostart: !0
             }));
         }, g = function(e, t, r) {
-            return o(d({}, s(e, t, r), {
+            return o(d({}, a(e, t, r), {
                 async: !0,
                 autostart: !0
             }));
-        }, _ = function(e, t, r) {
-            return o(d({}, s([ e.HOT ], t, r), {
+        }, m = function(e, t, r) {
+            return o(d({}, a([ e.HOT ], t, r), {
                 delta: !0
             }));
         };

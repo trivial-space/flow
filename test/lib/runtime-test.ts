@@ -43,50 +43,6 @@ describe('Flow runtime', function() {
 	})
 
 
-	it('can set and get meta data', function() {
-		const meta = {
-			foo: 'bar'
-		}
-		sys.setMeta(meta)
-
-		expect(sys.getMeta()).to.deep.equal(meta)
-	})
-
-
-	it('merges new meta to old one', function() {
-		sys.setMeta({
-			foo: 'foo',
-			bar: 'bar'
-		})
-
-		sys.setMeta({
-			bar: 'baz',
-			lala: 'lala'
-		})
-
-		expect(sys.getMeta()).to.deep.equal({
-			foo: 'foo',
-			bar: 'baz',
-			lala: 'lala'
-		})
-	})
-
-
-	it('allows only objects', function() {
-		sys.setMeta({
-			foo: 'foo'
-		})
-
-		sys.setMeta(123)
-		sys.setMeta([1, 3, 4])
-		sys.setMeta(null)
-		sys.setMeta(undefined)
-		sys.setMeta('bar')
-
-		expect(sys.getMeta()).to.deep.equal({ foo: 'foo' })
-	})
-
-
 	it('can load and transfer a whole graph', function() {
 		const p = (bar: N) => bar + 1
 
@@ -126,14 +82,14 @@ describe('Flow runtime', function() {
 					value: undefined,
 					accept: undefined,
 					reset: undefined,
-					meta: {}
+					meta: undefined
 				},
 				bar: {
 					id: 'bar',
 					value: 22,
 					accept: undefined,
 					reset: undefined,
-					meta: {}
+					meta: undefined
 				}
 			},
 			processes: {
@@ -144,7 +100,7 @@ describe('Flow runtime', function() {
 					autostart: false,
 					async: false,
 					delta: false,
-					meta: {}
+					meta: undefined
 				}
 			},
 			arcs: {
@@ -153,14 +109,14 @@ describe('Flow runtime', function() {
 					entity: 'bar',
 					process: 'lala',
 					port: 0,
-					meta: {}
+					meta: undefined
 				},
 				'lala->foo': {
 					id: 'lala->foo',
 					entity: 'foo',
 					process: 'lala',
 					port: undefined,
-					meta: {}
+					meta: undefined
 				}
 			},
 			meta: {
@@ -2138,6 +2094,127 @@ describe('Flow runtime', function() {
 
 			sys.start('p')
 			expect(sys.get('foo')).to.equal(42)
+		})
+	})
+
+
+	describe('meta data', function() {
+
+		it('can set and get meta data', function() {
+			const meta = {
+				foo: 'bar'
+			}
+			sys.setMeta(meta)
+
+			expect(sys.getMeta()).to.deep.equal(meta)
+		})
+
+
+		it('deeply merges new meta to old one', function() {
+			sys.setMeta({
+				foo: 'foo',
+				bar: 'bar',
+				baz: {
+					ku: 2
+				}
+			})
+
+			sys.setMeta({
+				bar: 'baz',
+				lala: 'lala',
+				baz: {
+					ka: 3
+				}
+			})
+
+			expect(sys.getMeta()).to.deep.equal({
+				foo: 'foo',
+				bar: 'baz',
+				lala: 'lala',
+				baz: {
+					ku: 2,
+					ka: 3
+				}
+			})
+		})
+
+
+		it('allows only objects', function() {
+			sys.setMeta({
+				foo: 'foo'
+			})
+
+			sys.setMeta(123 as any)
+			sys.setMeta([1, 3, 4] as any)
+			sys.setMeta(null as any)
+			sys.setMeta(undefined as any)
+			sys.setMeta('bar' as any)
+
+			expect(sys.getMeta()).to.deep.equal({ foo: 'foo' })
+		})
+
+
+		it('merges and removes node meta data into state data', function() {
+			sys.setMeta({
+				entities: {
+					foo: {
+						kaka: 66
+					}
+				}
+			})
+
+			sys.addEntity({
+				id: 'foo',
+				meta: {
+					kuku: 1
+				}
+			})
+
+			sys.addProcess({
+				id: 'bar',
+				procedure: () => {},
+				meta: {
+					lala: 2
+				}
+			})
+
+			sys.addArc({
+				id: 'baz',
+				entity: 'foo',
+				process: 'bar',
+				meta: {
+					lulu: 3
+				}
+			})
+
+			expect(sys.getMeta()).to.deep.equal({
+				entities: {
+					foo: {
+						kuku: 1,
+						kaka: 66
+					}
+				},
+				processes: {
+					bar: {
+						lala: 2
+					}
+				},
+				arcs: {
+					baz: {
+						lulu: 3
+					}
+				}
+			})
+
+			sys.removeEntity('foo')
+			sys.removeProcess('bar')
+			sys.removeArc('baz')
+
+			expect(sys.getMeta()).to.deep.equal({
+				entities: {},
+				processes: {},
+				arcs: {}
+			})
 		})
 	})
 })

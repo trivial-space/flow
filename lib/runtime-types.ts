@@ -28,7 +28,7 @@ export interface Entity {
 	value?: any
 	accept?: AcceptPredicate<any>
 	reset?: boolean
-	meta: Meta
+	meta?: Meta
 }
 
 
@@ -94,7 +94,7 @@ export interface ProcessSync {
 	autostart?: boolean
 	async?: false
 	delta?: false
-	meta: Meta
+	meta?: Meta
 }
 
 
@@ -105,7 +105,7 @@ export interface ProcessAsync {
 	autostart?: boolean
 	async: true
 	delta?: false
-	meta: Meta
+	meta?: Meta
 }
 
 
@@ -116,7 +116,7 @@ export interface ProcessDelta {
 	delta: true
 	autostart?: false
 	async?: false
-	meta: Meta
+	meta?: Meta
 }
 
 
@@ -137,7 +137,7 @@ export interface Arc {
 	entity: string
 	process: string
 	port?: number
-	meta: Meta
+	meta?: Meta
 }
 
 
@@ -165,8 +165,8 @@ export interface Runtime {
 	addGraph: (graphSpec: GraphData) => void
 	replaceGraph: (graphSpec: GraphData) => void
 	getGraph: () => Graph
-	getState: () => {}
-	setMeta: (newMeta: any) => void
+	getState: () => { [id: string]: any }
+	setMeta: (newMeta: Meta) => void
 	getMeta: () => Meta
 	getContext: () => null
 	setContext: (ctx: any) => void
@@ -207,7 +207,7 @@ export function createEntity ({
 		value,
 		accept,
 		reset,
-		meta: { ...meta }
+		meta
 	}
 }
 
@@ -242,7 +242,7 @@ export function createProcess ({
 		autostart,
 		async,
 		delta,
-		meta: { ...meta }
+		meta
 	} as Process
 }
 
@@ -274,7 +274,7 @@ export function createArc ({
 		entity,
 		process,
 		port,
-		meta: { ...meta }
+		meta
 	}
 }
 

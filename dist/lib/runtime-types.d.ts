@@ -15,7 +15,7 @@ export interface Entity {
     value?: any;
     accept?: AcceptPredicate<any>;
     reset?: boolean;
-    meta: Meta;
+    meta?: Meta;
 }
 export declare type PortTypeHot = 'HOT';
 export declare type PortTypeCold = 'COLD';
@@ -63,7 +63,7 @@ export interface ProcessSync {
     autostart?: boolean;
     async?: false;
     delta?: false;
-    meta: Meta;
+    meta?: Meta;
 }
 export interface ProcessAsync {
     id: string;
@@ -72,7 +72,7 @@ export interface ProcessAsync {
     autostart?: boolean;
     async: true;
     delta?: false;
-    meta: Meta;
+    meta?: Meta;
 }
 export interface ProcessDelta {
     id: string;
@@ -81,7 +81,7 @@ export interface ProcessDelta {
     delta: true;
     autostart?: false;
     async?: false;
-    meta: Meta;
+    meta?: Meta;
 }
 export declare type Process = ProcessSync | ProcessAsync | ProcessDelta;
 export interface ArcData {
@@ -96,7 +96,7 @@ export interface Arc {
     entity: string;
     process: string;
     port?: number;
-    meta: Meta;
+    meta?: Meta;
 }
 export interface Graph {
     entities: {
@@ -132,8 +132,10 @@ export interface Runtime {
     addGraph: (graphSpec: GraphData) => void;
     replaceGraph: (graphSpec: GraphData) => void;
     getGraph: () => Graph;
-    getState: () => {};
-    setMeta: (newMeta: any) => void;
+    getState: () => {
+        [id: string]: any;
+    };
+    setMeta: (newMeta: Meta) => void;
     getMeta: () => Meta;
     getContext: () => null;
     setContext: (ctx: any) => void;
