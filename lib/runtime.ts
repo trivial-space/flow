@@ -1,4 +1,4 @@
-import { AcceptPredicate, Runtime, Entity, Process, Arc, Meta, EntityData, createEntity, ProcessData, createProcess, PORT_TYPES, ArcData, createArc, Graph, PortType } from './runtime-types'
+import { AcceptPredicate, Runtime, Entity, Process, Arc, Meta, EntityData, createEntity, ProcessData, createProcess, PORT_TYPES, ArcData, createArc, PortType, GraphData } from './runtime-types'
 
 
 interface EngineEntity {
@@ -293,25 +293,59 @@ export function create (): Runtime {
 	}
 
 
-	function addGraph (graphSpec: Graph) {
+	function addGraph (graphSpec: GraphData) {
 		if (graphSpec.entities) {
 			for (const i in graphSpec.entities) {
-				addEntity(graphSpec.entities[i])
+				addEntity((graphSpec.entities as any)[i])
 			}
 		}
 		if (graphSpec.processes) {
 			for (const i in graphSpec.processes) {
-				addProcess(graphSpec.processes[i])
+				addProcess((graphSpec.processes as any)[i])
 			}
 		}
 		if (graphSpec.arcs) {
 			for (const i in graphSpec.arcs) {
-				addArc(graphSpec.arcs[i])
+				addArc((graphSpec.arcs as any)[i])
 			}
 		}
-		if (graphSpec.meta) {
-			setMeta(graphSpec.meta)
+		setMeta(graphSpec.meta)
+	}
+
+
+	function replaceGraph (graphSpec: GraphData) {
+
+		const newEntityIds: {[id: string]: true} = {}
+		const newProcessIds: {[id: string]: true} = {}
+
+		if (graphSpec.entities) {
+			for (const i in graphSpec.entities) {
+				const e: EntityData = (graphSpec.entities as any)[i]
+				if (e.id) {
+					newEntityIds[e.id] = true
+				}
+			}
 		}
+
+		if (graphSpec.processes) {
+			for (const i in graphSpec.processes) {
+				const p: ProcessData = (graphSpec.processes as any)[i]
+				if (p.id) {
+					newProcessIds[p.id] = true
+				}
+			}
+		}
+
+		const entitiesToRemove = Object.keys(entities)
+			.filter(id => !newEntityIds[id])
+
+		const processesToRemove = Object.keys(processes)
+			.filter(id => !newProcessIds[id])
+
+		entitiesToRemove.forEach(removeEntity)
+		processesToRemove.forEach(removeProcess)
+
+		addGraph(graphSpec)
 	}
 
 
@@ -507,6 +541,7 @@ export function create (): Runtime {
 		addArc,
 		removeArc,
 		addGraph,
+		replaceGraph,
 
 		getGraph,
 		getState,

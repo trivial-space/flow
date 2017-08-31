@@ -209,9 +209,34 @@ export function create() {
                 addArc(graphSpec.arcs[i]);
             }
         }
-        if (graphSpec.meta) {
-            setMeta(graphSpec.meta);
+        setMeta(graphSpec.meta);
+    }
+    function replaceGraph(graphSpec) {
+        var newEntityIds = {};
+        var newProcessIds = {};
+        if (graphSpec.entities) {
+            for (var i in graphSpec.entities) {
+                var e = graphSpec.entities[i];
+                if (e.id) {
+                    newEntityIds[e.id] = true;
+                }
+            }
         }
+        if (graphSpec.processes) {
+            for (var i in graphSpec.processes) {
+                var p = graphSpec.processes[i];
+                if (p.id) {
+                    newProcessIds[p.id] = true;
+                }
+            }
+        }
+        var entitiesToRemove = Object.keys(entities)
+            .filter(function (id) { return !newEntityIds[id]; });
+        var processesToRemove = Object.keys(processes)
+            .filter(function (id) { return !newProcessIds[id]; });
+        entitiesToRemove.forEach(removeEntity);
+        processesToRemove.forEach(removeProcess);
+        addGraph(graphSpec);
     }
     var callbacksWaiting = {};
     var activatedEntities = {};
@@ -373,6 +398,7 @@ export function create() {
         addArc: addArc,
         removeArc: removeArc,
         addGraph: addGraph,
+        replaceGraph: replaceGraph,
         getGraph: getGraph,
         getState: getState,
         setMeta: setMeta,

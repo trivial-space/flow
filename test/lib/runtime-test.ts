@@ -182,6 +182,70 @@ describe('Flow runtime', function() {
 	})
 
 
+	it('can replace the hole graph without loosing state', function() {
+
+		sys.addGraph({
+			entities: [{
+				id: 'foo'
+			}, {
+				id: 'bar',
+				value: 22
+			}],
+			processes: [{
+				id: 'lala',
+				ports: [sys.PORT_TYPES.HOT],
+				procedure: (bar: N) => bar + 1
+			}],
+			arcs: [{
+				entity: 'bar',
+				process: 'lala',
+				port: 0
+			}, {
+				process: 'lala',
+				entity: 'foo'
+			}]
+		})
+
+		sys.flush()
+
+		sys.replaceGraph({
+			entities: [{
+				id: 'fooo'
+			}, {
+				id: 'bar',
+				value: 33
+			}],
+			processes: [{
+				id: 'fufu',
+				ports: [sys.PORT_TYPES.HOT],
+				procedure: (bar: N) => bar + 2
+			}],
+			arcs: [{
+				entity: 'bar',
+				process: 'fufu',
+				port: 0
+			}, {
+				process: 'fufu',
+				entity: 'fooo'
+			}]
+		})
+
+		const graph = sys.getGraph()
+
+		expect(graph.entities.foo).to.not.exist
+		expect(graph.processes.lala).to.not.exist
+
+		sys.flush()
+
+		expect(sys.get('bar')).to.equal(22)
+
+		sys.set('bar', 11)
+
+		expect(sys.get('fooo')).to.equal(13)
+
+	})
+
+
 	it('has a debug mode', function() {
 		sinon.spy(console, 'log')
 

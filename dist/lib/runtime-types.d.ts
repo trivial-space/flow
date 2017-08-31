@@ -130,6 +130,7 @@ export interface Runtime {
     addArc: (spec: ArcData) => Arc;
     removeArc: (id: string) => void;
     addGraph: (graphSpec: GraphData) => void;
+    replaceGraph: (graphSpec: GraphData) => void;
     getGraph: () => Graph;
     getState: () => {};
     setMeta: (newMeta: any) => void;
