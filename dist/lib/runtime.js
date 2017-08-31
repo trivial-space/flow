@@ -222,50 +222,48 @@ export function create() {
             console.log('flushing graph recursively with', activatedEntities);
         }
         var activeEIds = Object.keys(activatedEntities);
-        if (processGraph) {
-            for (var _i = 0, activeEIds_1 = activeEIds; _i < activeEIds_1.length; _i++) {
-                var eId = activeEIds_1[_i];
-                if (activatedEntities[eId]) {
-                    var eE = engine.es[eId];
-                    for (var p in eE.reactions) {
-                        execute(eE.reactions[p]);
-                    }
-                }
-            }
-            var calledProcesses = {};
-            activatedEntities = {};
-            processGraph = false;
-            blockFlush = true;
-            for (var _a = 0, activeEIds_2 = activeEIds; _a < activeEIds_2.length; _a++) {
-                var eId = activeEIds_2[_a];
+        for (var _i = 0, activeEIds_1 = activeEIds; _i < activeEIds_1.length; _i++) {
+            var eId = activeEIds_1[_i];
+            if (activatedEntities[eId]) {
                 var eE = engine.es[eId];
-                if (eE.cb.length > 0) {
-                    callbacksWaiting[eId] = eE;
-                }
-                for (var p in eE.effects) {
-                    if (!calledProcesses[p]) {
-                        execute(eE.effects[p]);
-                        calledProcesses[p] = true;
-                    }
+                for (var p in eE.reactions) {
+                    execute(eE.reactions[p]);
                 }
             }
-            blockFlush = false;
-            if (processGraph) {
-                flush();
+        }
+        var calledProcesses = {};
+        activatedEntities = {};
+        processGraph = false;
+        blockFlush = true;
+        for (var _a = 0, activeEIds_2 = activeEIds; _a < activeEIds_2.length; _a++) {
+            var eId = activeEIds_2[_a];
+            var eE = engine.es[eId];
+            if (eE.cb.length > 0) {
+                callbacksWaiting[eId] = eE;
             }
-            else {
-                var cbs = Object.keys(callbacksWaiting);
-                callbacksWaiting = {};
-                for (var i in cbs) {
-                    var eE = engine.es[cbs[i]];
-                    for (var _b = 0, _c = eE.cb; _b < _c.length; _b++) {
-                        var cb = _c[_b];
-                        cb(eE.val);
-                    }
+            for (var p in eE.effects) {
+                if (!calledProcesses[p]) {
+                    execute(eE.effects[p]);
+                    calledProcesses[p] = true;
                 }
-                if (debug) {
-                    console.log('flush finished');
+            }
+        }
+        blockFlush = false;
+        if (processGraph) {
+            flush();
+        }
+        else {
+            var cbs = Object.keys(callbacksWaiting);
+            callbacksWaiting = {};
+            for (var i in cbs) {
+                var eE = engine.es[cbs[i]];
+                for (var _b = 0, _c = eE.cb; _b < _c.length; _b++) {
+                    var cb = _c[_b];
+                    cb(eE.val);
                 }
+            }
+            if (debug) {
+                console.log('flush finished');
             }
         }
     }
@@ -308,12 +306,12 @@ export function create() {
             }
         }
     }
-    function setVal(eE, val, activate) {
+    function setVal(eE, val, runReactions) {
         if (!eE.accept || eE.accept(val, eE.val)) {
             eE.oldVal = eE.val;
             eE.val = val;
             if (val != null) {
-                activatedEntities[eE.id] = activate;
+                activatedEntities[eE.id] = runReactions;
                 processGraph = true;
             }
             return true;
