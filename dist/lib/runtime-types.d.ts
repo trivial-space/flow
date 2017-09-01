@@ -100,13 +100,13 @@ export interface Arc {
 }
 export interface Graph {
     entities: {
-        [id: string]: EntityData;
+        [id: string]: Entity;
     };
     processes: {
-        [id: string]: ProcessData;
+        [id: string]: Process;
     };
     arcs: {
-        [id: string]: ArcData;
+        [id: string]: Arc;
     };
     meta?: Meta;
 }
