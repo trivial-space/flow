@@ -142,9 +142,9 @@ export interface Arc {
 
 
 export interface Graph {
-	entities: { [id: string]: EntityData },
-	processes: { [id: string]: ProcessData },
-	arcs: { [id: string]: ArcData },
+	entities: { [id: string]: Entity },
+	processes: { [id: string]: Process },
+	arcs: { [id: string]: Arc },
 	meta?: Meta
 }
 
