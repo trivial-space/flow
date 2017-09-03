@@ -1223,36 +1223,62 @@ describe('Flow runtime', function() {
 
 		it('can be canceled by returning undefined from process', function() {
 			const acc = sinon.spy((self: N[], val: N) => [...self, val])
-			const filter = sinon.spy((v: N) => (v % 2) === 0 ? v : null)
+			const filter1 = sinon.spy((v: N) => (v % 2) === 0 ? v : null)
+			const filter2 = sinon.spy((v: N) => (v % 2) === 0 ? v : undefined)
 
 			sys.addGraph({
 				entities: [{
-					id: 'dest',
+					id: 'dest1',
+					value: []
+				}, {
+					id: 'dest2',
 					value: []
 				}],
 				processes: [{
-					id: 'acc',
+					id: 'acc1',
 					ports: [sys.PORT_TYPES.ACCUMULATOR, sys.PORT_TYPES.HOT],
 					procedure: acc
 				}, {
-					id: 'filter',
+					id: 'acc2',
+					ports: [sys.PORT_TYPES.ACCUMULATOR, sys.PORT_TYPES.HOT],
+					procedure: acc
+				}, {
+					id: 'filter2',
 					ports: [sys.PORT_TYPES.HOT],
-					procedure: filter
+					procedure: filter2
+				}, {
+					id: 'filter1',
+					ports: [sys.PORT_TYPES.HOT],
+					procedure: filter1
 				}],
 				arcs: [{
 					entity: 'src',
-					process: 'filter',
+					process: 'filter1',
 					port: 0
 				}, {
-					process: 'filter',
-					entity: 'result'
+					process: 'filter1',
+					entity: 'result1'
 				}, {
-					entity: 'result',
-					process: 'acc',
+					entity: 'result1',
+					process: 'acc1',
 					port: 1
 				}, {
-					process: 'acc',
-					entity: 'dest'
+					process: 'acc1',
+					entity: 'dest1'
+				}, {
+					entity: 'src',
+					process: 'filter2',
+					port: 0
+				}, {
+					process: 'filter2',
+					entity: 'result2'
+				}, {
+					entity: 'result2',
+					process: 'acc2',
+					port: 1
+				}, {
+					process: 'acc2',
+					entity: 'dest2'
 				}]
 			})
 
@@ -1263,9 +1289,13 @@ describe('Flow runtime', function() {
 			sys.set('src', 5)
 			sys.set('src', 6)
 
-			expect(sys.get('dest')).to.deep.equal([2, 4, 6])
-			expect(filter.callCount).to.equal(6)
-			expect(acc.callCount).to.equal(3)
+			expect(sys.get('dest1')).to.deep.equal([null, 2, null, 4, null, 6])
+			expect(filter1.callCount).to.equal(6)
+
+			expect(sys.get('dest2')).to.deep.equal([2, 4, 6])
+			expect(filter2.callCount).to.equal(6)
+
+			expect(acc.callCount).to.equal(9)
 		})
 
 

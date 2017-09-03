@@ -75,7 +75,7 @@ export function create() {
         var e = createEntity(spec);
         entities[e.id] = e;
         var eE = engineE(e.id);
-        if (e.value != null && (e.reset || eE.val == null)) {
+        if (e.value !== undefined && (e.reset || eE.val === undefined)) {
             eE.val = e.value;
             activatedEntities[e.id] = false;
             processGraph = true;
@@ -340,14 +340,14 @@ export function create() {
         var complete = true;
         for (var portId = 0; portId < eP.sources.length; portId++) {
             var src = eP.sources[portId];
-            if (src.val == null) {
+            if (src.val === undefined) {
                 complete = false;
                 break;
             }
             else {
                 eP.values[portId] = src.val;
                 if (eP.delta) {
-                    if (src.oldVal == null) {
+                    if (src.oldVal === undefined) {
                         complete = false;
                         break;
                     }
@@ -379,7 +379,7 @@ export function create() {
         if (!eE.accept || eE.accept(val, eE.val)) {
             eE.oldVal = eE.val;
             eE.val = val;
-            if (val != null) {
+            if (val !== undefined) {
                 activatedEntities[eE.id] = runReactions;
                 processGraph = true;
             }

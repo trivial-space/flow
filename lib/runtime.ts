@@ -131,7 +131,7 @@ export function create (): Runtime {
 
 		const eE = engineE(e.id)
 
-		if (e.value != null && (e.reset || eE.val == null)) {
+		if (e.value !== undefined && (e.reset || eE.val === undefined)) {
 			eE.val = e.value
 			activatedEntities[e.id] = false
 			processGraph = true
@@ -469,13 +469,13 @@ export function create (): Runtime {
 		let complete = true
 		for (let portId = 0; portId < eP.sources.length; portId++) {
 			const src = eP.sources[portId]
-			if (src.val == null) {
+			if (src.val === undefined) {
 				complete = false
 				break
 			} else {
 				eP.values[portId] = src.val
 				if (eP.delta) {
-					if (src.oldVal == null) {
+					if (src.oldVal === undefined) {
 						complete = false
 						break
 					} else {
@@ -508,7 +508,7 @@ export function create (): Runtime {
 		if (!eE.accept || eE.accept(val, eE.val)) {
 			eE.oldVal = eE.val
 			eE.val = val
-			if (val != null) {
+			if (val !== undefined) {
 				activatedEntities[eE.id] = runReactions
 				processGraph = true
 			}
