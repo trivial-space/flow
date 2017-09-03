@@ -32,7 +32,7 @@
         "use strict";
         function n(e) {
             var t = e.id, r = void 0 === t ? Object(a.a)() : t, n = e.value, o = e.json, c = e.accept, i = e.reset, s = e.meta;
-            return null == n && o && (n = JSON.parse(o)), {
+            return void 0 === n && o && (n = JSON.parse(o)), {
                 id: r,
                 value: n,
                 accept: c,

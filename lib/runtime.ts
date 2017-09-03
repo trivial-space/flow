@@ -1,5 +1,5 @@
 import { AcceptPredicate, Runtime, Entity, Process, Arc, Meta, EntityData, createEntity, ProcessData, createProcess, PORT_TYPES, ArcData, createArc, PortType, GraphData } from './runtime-types'
-import { deepmerge } from 'utils/helpers'
+import { deepmerge } from './utils/helpers'
 
 
 interface EngineEntity {

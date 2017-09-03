@@ -7,7 +7,7 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
     return t;
 };
 import { createEntity, createProcess, PORT_TYPES, createArc } from './runtime-types';
-import { deepmerge } from 'utils/helpers';
+import { deepmerge } from './utils/helpers';
 export function create() {
     var entities = {};
     var processes = {};
