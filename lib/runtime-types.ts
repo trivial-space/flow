@@ -198,7 +198,7 @@ export function createEntity ({
 	meta
 }: EntityData): Entity {
 
-	if (value == null && json) {
+	if (value === undefined && json) {
 		value = JSON.parse(json)
 	}
 
