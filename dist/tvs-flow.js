@@ -336,8 +336,8 @@
                 }
             }
             function E(e, t, r) {
-                return !(e.accept && !e.accept(t, e.val)) && (e.oldVal = e.val, e.val = t, void 0 !== t && (D[e.id] = r, 
-                V = !0), !0);
+                return !(void 0 === t || e.accept && !e.accept(t, e.val)) && (e.oldVal = e.val, 
+                e.val = t, D[e.id] = r, V = !0, !0);
             }
             function x(e) {
                 e.async ? requestAnimationFrame(function() {

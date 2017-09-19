@@ -1359,6 +1359,27 @@ describe('Flow runtime', function() {
 			expect(p).to.be.calledOnce
 			expect(sys.get('dest')).to.deep.equal([['source10', 'source20']])
 		})
+
+
+		it('does not accept undefined as entity value', function() {
+			sys.set('src1', undefined)
+
+			expect(sys.get('src1')).to.equal('src1_value')
+
+			sys.addProcess({
+				id: 'fooProcess',
+				procedure: () => undefined
+			})
+
+			sys.addArc({
+				process: 'fooProcess',
+				entity: 'src1'
+			})
+
+			sys.start('fooProcess')
+
+			expect(sys.get('src1')).to.equal('src1_value')
+		})
 	})
 
 

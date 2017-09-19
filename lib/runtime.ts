@@ -505,13 +505,11 @@ export function create (): Runtime {
 
 
 	function setVal(eE: EngineEntity, val: any, runReactions: boolean) {
-		if (!eE.accept || eE.accept(val, eE.val)) {
+		if (val !== undefined && (!eE.accept || eE.accept(val, eE.val))) {
 			eE.oldVal = eE.val
 			eE.val = val
-			if (val !== undefined) {
-				activatedEntities[eE.id] = runReactions
-				processGraph = true
-			}
+			activatedEntities[eE.id] = runReactions
+			processGraph = true
 			return true
 		}
 		return false
