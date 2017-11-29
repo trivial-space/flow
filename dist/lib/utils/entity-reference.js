@@ -118,7 +118,7 @@ function getStreamSpec(dependencies, procedure, processId) {
     var spec = {
         procedure: procedure
     };
-    if (dependencies != null) {
+    if (dependencies != null && dependencies.length) {
         spec.dependencies = dependencies;
     }
     if (typeof processId === 'string') {

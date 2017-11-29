@@ -8,7 +8,7 @@ export declare type ProcedureReact<T> = (self: T, ...args: any[]) => T | void;
 export declare type ProcedureAsync<T> = (send: (val?: T) => void, ...args: any[]) => (() => void) | void;
 export declare type Procedure<T> = ProcedureSync<T> | ProcedureAsync<T> | ProcedureReact<T>;
 export interface StreamFactory {
-    <T>(deps: null, p: () => T, id?: string): EntityRef<T>;
+    <T>(deps: null | never[], p: () => T, id?: string): EntityRef<T>;
     <T, A>(deps: [PortSpec<A>], p: (a: A) => T | void | undefined, id?: string): EntityRef<T>;
     <T, A, B>(deps: [PortSpec<A>, PortSpec<B>], p: (a: A, b: B) => T | void | undefined, id?: string): EntityRef<T>;
     <T, A, B, C>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>], p: (a: A, b: B, c: C) => T | void | undefined, id?: string): EntityRef<T>;
@@ -19,7 +19,7 @@ export interface StreamFactory {
     <T, A, B, C, D, E, F, G, H>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>, PortSpec<D>, PortSpec<E>, PortSpec<F>, PortSpec<G>, PortSpec<H>], p: (a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H) => T | void | undefined, id?: string): EntityRef<T>;
 }
 export interface AsyncStreamFactory {
-    <T>(deps: null, p: (send: (val?: T) => void) => ((() => void) | void), id?: string): EntityRef<T>;
+    <T>(deps: null | never[], p: (send: (val?: T) => void) => ((() => void) | void), id?: string): EntityRef<T>;
     <T, A>(deps: [PortSpec<A>], p: (send: (val?: T) => void, a: A) => ((() => void) | void), id?: string): EntityRef<T>;
     <T, A, B>(deps: [PortSpec<A>, PortSpec<B>], p: (send: (val?: T) => void, a: A, b: B) => ((() => void) | void), id?: string): EntityRef<T>;
     <T, A, B, C>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>], p: (send: (val?: T) => void, a: A, b: B, c: C) => ((() => void) | void), id?: string): EntityRef<T>;

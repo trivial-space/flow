@@ -29,7 +29,7 @@ export type Procedure<T> = ProcedureSync<T> | ProcedureAsync<T> | ProcedureReact
 
 
 export interface StreamFactory {
-	<T>(deps: null, p: () => T, id?: string): EntityRef<T>
+	<T>(deps: null | never[], p: () => T, id?: string): EntityRef<T>
 	<T, A>(deps: [PortSpec<A>], p: (a: A) => T | void | undefined, id?: string): EntityRef<T>
 	<T, A, B>(deps: [PortSpec<A>, PortSpec<B>], p: (a: A, b: B) => T | void | undefined, id?: string): EntityRef<T>
 	<T, A, B, C>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>], p: (a: A, b: B, c: C) => T | void | undefined, id?: string): EntityRef<T>
@@ -41,7 +41,7 @@ export interface StreamFactory {
 }
 
 export interface AsyncStreamFactory {
-	<T>(deps: null, p: (send: (val?: T) => void) => ((() => void) | void), id?: string): EntityRef<T>
+	<T>(deps: null | never[], p: (send: (val?: T) => void) => ((() => void) | void), id?: string): EntityRef<T>
 	<T, A>(deps: [PortSpec<A>], p: (send: (val?: T) => void, a: A) => ((() => void) | void), id?: string): EntityRef<T>
 	<T, A, B>(deps: [PortSpec<A>, PortSpec<B>], p: (send: (val?: T) => void, a: A, b: B) => ((() => void) | void), id?: string): EntityRef<T>
 	<T, A, B, C>(deps: [PortSpec<A>, PortSpec<B>, PortSpec<C>], p: (send: (val?: T) => void, a: A, b: B, c: C) => ((() => void) | void), id?: string): EntityRef<T>
@@ -240,7 +240,7 @@ function getStreamSpec<T>(
 		procedure: procedure
 	}
 
-	if (dependencies != null) {
+	if (dependencies != null && dependencies.length) {
 		spec.dependencies = dependencies
 	}
 
