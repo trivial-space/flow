@@ -341,7 +341,7 @@ describe('flow entity reference', function() {
 
 
 	it('can add accept predicate', function() {
-		const e = val()
+		const e = val<N>()
 		const p = (o: number, n = 0) => o > n
 
 		e.accept(p)
@@ -361,7 +361,7 @@ describe('flow entity reference', function() {
 
 
 	it('can produce deltas', function() {
-		const e = val().id('e')
+		const e = val<N>().id('e')
 		const p = (newVal: N, oldVal: N) => newVal - oldVal
 		const d = delta(e, p)
 

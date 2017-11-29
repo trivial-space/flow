@@ -1,7 +1,7 @@
 export declare type Meta = {
     [m: string]: any;
 };
-export declare type AcceptPredicate<T> = (newValue?: T, oldValue?: T) => boolean;
+export declare type AcceptPredicate<T> = (newValue: T, oldValue?: T) => boolean;
 export interface EntityData {
     id?: string;
     value?: any;

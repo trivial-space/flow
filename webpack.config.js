@@ -36,8 +36,6 @@ module.exports = {
   },
 
   plugins: [
-    new UglifyJsPlugin({
-      beautify: true
-    })
+    new UglifyJsPlugin()
   ]
 }

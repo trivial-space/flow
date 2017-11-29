@@ -8,7 +8,7 @@ export type Meta = { [m: string]: any }
 
 
 export type AcceptPredicate<T> = (
-	newValue?: T,
+	newValue: T,
 	oldValue?: T
 ) => boolean
 
