@@ -7,7 +7,7 @@ export function deepmerge (obj1: any, obj2: any): any {
 		&& obj1 !== obj2
 	) {
 
-		const result: any = { ...obj1 }
+		const result = { ...obj1 }
 
 		for (const key in obj2) {
 			const val1 = obj1[key]
