@@ -10,7 +10,8 @@ export function deepmerge(obj1, obj2) {
     if (typeof obj1 === 'object'
         && typeof obj2 === 'object'
         && !Array.isArray(obj1)
-        && !Array.isArray(obj2)) {
+        && !Array.isArray(obj2)
+        && obj1 !== obj2) {
         var result = __assign({}, obj1);
         for (var key in obj2) {
             var val1 = obj1[key];
