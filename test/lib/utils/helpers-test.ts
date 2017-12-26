@@ -80,6 +80,16 @@ describe('helper utils', function() {
 				foo: 'bar'
 			})
 		})
+
+
+		it('doesnt merge equal objects', function() {
+			const nested = { foo: 'bar' }
+			const o1 = { kuu: 1, nested }
+			const o2 = { kuu: 5, nested }
+
+			const o = deepmerge(o1, o2)
+			expect(o.nested).to.equal(nested)
+		})
 	})
 
 })
