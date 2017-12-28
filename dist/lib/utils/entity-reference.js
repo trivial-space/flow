@@ -8,7 +8,7 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
 };
 import * as graphs from './graph-utils';
 import { PORT_TYPES, createEntity, createProcess, createArc } from '../runtime-types';
-import { v4 } from './uuid';
+import { v4 } from 'tvs-libs/dist/lib/utils/uuid';
 var streamNameSuffix = 'Stream';
 var reactionNameSuffix = 'Reaction';
 function mergePath(id, path) {

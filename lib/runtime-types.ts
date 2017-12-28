@@ -1,4 +1,4 @@
-import { v4 } from './utils/uuid'
+import { v4 } from 'tvs-libs/dist/lib/utils/uuid'
 import { evaluate } from './utils/code-evaluator'
 
 

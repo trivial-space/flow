@@ -1,6 +1,6 @@
 import * as graphs from './graph-utils'
 import { PORT_TYPES, PortType, ProcessData, Graph, createEntity, createProcess, createArc, AcceptPredicate } from '../runtime-types'
-import { v4 } from './uuid'
+import { v4 } from 'tvs-libs/dist/lib/utils/uuid'
 
 
 export interface PortSpec<T> {
