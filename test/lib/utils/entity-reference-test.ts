@@ -1,5 +1,5 @@
 import { resolveEntityIds, val, stream, asyncStreamStart, streamStart, asyncStream, getGraphFromAll, delta } from 'utils/entity-reference'
-import { createEntity, createProcess, createArc, PORT_TYPES } from 'runtime-types'
+import { createEntity, createProcess, createArc, PORT_TYPES, ProcessDataAsync } from 'runtime-types'
 
 
 type N = number
@@ -192,7 +192,7 @@ describe('flow entity reference', function() {
 					procedure: p1,
 					async: true,
 					autostart: true
-				}),
+				} as ProcessDataAsync),
 				createF: createProcess({
 					id: 'createF',
 					procedure: p2,

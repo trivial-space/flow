@@ -1739,7 +1739,7 @@ describe('Flow runtime', function() {
 				procedure: (send: FN) => send(42),
 				async: true,
 				autostart: true
-			})
+			} as types.ProcessDataAsync)
 			sys.addArc({
 				process: 'p_auto',
 				entity: 'dest'
