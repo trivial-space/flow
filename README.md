@@ -9,13 +9,10 @@ Other runtime manipulation and inspection mechanisms can also be easily applied,
 
 Developed and build for usage with TypeScript.
 
-*This library is currently alpha state, in heavy development and APIs are changing frequently!*
-
-Flow is currently primarily used in the [trivial space playground](https://github.com/trivial-space/playground) to experiment with graphics live coding inside browsers. Check it out for further examples.
-
+_This library is currently alpha state, in heavy development and APIs are changing frequently!_
 
 ## License
 
 MIT, see the LICENSE file in the repository.
 
-Copyright (c) 2016 - 2017 Thomas Gorny
+Copyright (c) 2016 - 2018 Thomas Gorny
